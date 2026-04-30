@@ -91,7 +91,7 @@ info:
     Free plans cannot access the IP Abuse Contact API. Requests made with a free plan API key return **HTTP 401 Unauthorized**.
   contact:
     name: IPGeolocation Support
-    url: https://ipgeolocation.io
+    url: https://ipgeolocation.io/contact.html
     email: support@ipgeolocation.io
   termsOfService: https://ipgeolocation.io/tos.html
   license:

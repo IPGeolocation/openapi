@@ -116,7 +116,7 @@ info:
     | Extended `asn` fields (`type`, `domain`, `rir`, `date_allocated`) | No | Yes |
   contact:
     name: IPGeolocation Support
-    url: https://ipgeolocation.io
+    url: https://ipgeolocation.io/contact.html
     email: support@ipgeolocation.io
   termsOfService: https://ipgeolocation.io/tos.html
   license:
