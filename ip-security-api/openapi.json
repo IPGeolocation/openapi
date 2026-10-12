@@ -94,9 +94,17 @@
                     "is_anonymous": true,
                     "is_known_attacker": true,
                     "is_bot": false,
+                    "bot_confidence_score": 0,
+                    "bot_operator_name": "",
+                    "bot_type": "",
+                    "is_known_good_bot": false,
+                    "bot_last_seen": "",
                     "is_spam": false,
                     "is_cloud_provider": true,
-                    "cloud_provider_name": "Packethub S.A."
+                    "cloud_provider_name": "Packethub S.A.",
+                    "is_corporate_gateway": false,
+                    "corporate_gateway_type": "",
+                    "corporate_gateway_provider_name": ""
                   }
                 }
               },
@@ -104,7 +112,7 @@
                 "schema": {
                   "$ref": "#/components/schemas/IpSecurityResponse"
                 },
-                "example": "<LinkedHashMap>\n  <ip>2.56.188.34</ip>\n  <security>\n      <threat_score>80</threat_score>\n      <is_tor>false</is_tor>\n      <is_proxy>true</is_proxy>\n      <proxy_provider_names>Zyte Proxy</proxy_provider_names>\n      <proxy_confidence_score>80</proxy_confidence_score>\n      <proxy_last_seen>2025-12-12</proxy_last_seen>\n      <is_residential_proxy>true</is_residential_proxy>\n      <is_vpn>true</is_vpn>\n      <vpn_provider_names>Nord VPN</vpn_provider_names>\n      <vpn_confidence_score>80</vpn_confidence_score>\n      <vpn_last_seen>2026-01-19</vpn_last_seen>\n      <is_relay>false</is_relay>\n      <relay_provider_name></relay_provider_name>\n      <is_anonymous>true</is_anonymous>\n      <is_known_attacker>true</is_known_attacker>\n      <is_bot>false</is_bot>\n      <is_spam>false</is_spam>\n      <is_cloud_provider>true</is_cloud_provider>\n      <cloud_provider_name>Packethub S.A.</cloud_provider_name>\n  </security>\n</LinkedHashMap>\n"
+                "example": "<LinkedHashMap>\n  <ip>2.56.188.34</ip>\n  <security>\n      <threat_score>80</threat_score>\n      <is_tor>false</is_tor>\n      <is_proxy>true</is_proxy>\n      <proxy_provider_names>Zyte Proxy</proxy_provider_names>\n      <proxy_confidence_score>80</proxy_confidence_score>\n      <proxy_last_seen>2025-12-12</proxy_last_seen>\n      <is_residential_proxy>true</is_residential_proxy>\n      <is_vpn>true</is_vpn>\n      <vpn_provider_names>Nord VPN</vpn_provider_names>\n      <vpn_confidence_score>80</vpn_confidence_score>\n      <vpn_last_seen>2026-01-19</vpn_last_seen>\n      <is_relay>false</is_relay>\n      <relay_provider_name></relay_provider_name>\n      <is_anonymous>true</is_anonymous>\n      <is_known_attacker>true</is_known_attacker>\n      <is_bot>false</is_bot>\n      <bot_confidence_score>0</bot_confidence_score>\n      <bot_operator_name></bot_operator_name>\n      <bot_type></bot_type>\n      <is_known_good_bot>false</is_known_good_bot>\n      <bot_last_seen></bot_last_seen>\n      <is_spam>false</is_spam>\n      <is_cloud_provider>true</is_cloud_provider>\n      <cloud_provider_name>Packethub S.A.</cloud_provider_name>\n      <is_corporate_gateway>false</is_corporate_gateway>\n      <corporate_gateway_type></corporate_gateway_type>\n      <corporate_gateway_provider_name></corporate_gateway_provider_name>\n  </security>\n</LinkedHashMap>\n"
               }
             }
           },
@@ -250,9 +258,17 @@
                       "is_anonymous": true,
                       "is_known_attacker": true,
                       "is_bot": false,
+                      "bot_confidence_score": 0,
+                      "bot_operator_name": "",
+                      "bot_type": "",
+                      "is_known_good_bot": false,
+                      "bot_last_seen": "",
                       "is_spam": false,
                       "is_cloud_provider": true,
-                      "cloud_provider_name": "Packethub S.A."
+                      "cloud_provider_name": "Packethub S.A.",
+                      "is_corporate_gateway": false,
+                      "corporate_gateway_type": "",
+                      "corporate_gateway_provider_name": ""
                     }
                   },
                   {
@@ -274,7 +290,7 @@
                     }
                   }
                 },
-                "example": "<ArrayList>\n  <item>\n    <ip>2.56.188.34</ip>\n    <security>\n        <threat_score>80</threat_score>\n        <is_tor>false</is_tor>\n        <is_proxy>true</is_proxy>\n        <proxy_provider_names>Zyte Proxy</proxy_provider_names>\n        <proxy_confidence_score>80</proxy_confidence_score>\n        <proxy_last_seen>2025-12-12</proxy_last_seen>\n        <is_residential_proxy>true</is_residential_proxy>\n        <is_vpn>true</is_vpn>\n        <vpn_provider_names>Nord VPN</vpn_provider_names>\n        <vpn_confidence_score>80</vpn_confidence_score>\n        <vpn_last_seen>2026-01-19</vpn_last_seen>\n        <is_relay>false</is_relay>\n        <relay_provider_name></relay_provider_name>\n        <is_anonymous>true</is_anonymous>\n        <is_known_attacker>true</is_known_attacker>\n        <is_bot>false</is_bot>\n        <is_spam>false</is_spam>\n        <is_cloud_provider>true</is_cloud_provider>\n        <cloud_provider_name>Packethub S.A.</cloud_provider_name>\n    </security>\n  <item>\n      <message>'10.0.0.0' is a bogon IP address.</message>\n  </item>\n</ArrayList>\n"
+                "example": "<ArrayList>\n  <item>\n    <ip>2.56.188.34</ip>\n    <security>\n        <threat_score>80</threat_score>\n        <is_tor>false</is_tor>\n        <is_proxy>true</is_proxy>\n        <proxy_provider_names>Zyte Proxy</proxy_provider_names>\n        <proxy_confidence_score>80</proxy_confidence_score>\n        <proxy_last_seen>2025-12-12</proxy_last_seen>\n        <is_residential_proxy>true</is_residential_proxy>\n        <is_vpn>true</is_vpn>\n        <vpn_provider_names>Nord VPN</vpn_provider_names>\n        <vpn_confidence_score>80</vpn_confidence_score>\n        <vpn_last_seen>2026-01-19</vpn_last_seen>\n        <is_relay>false</is_relay>\n        <relay_provider_name></relay_provider_name>\n        <is_anonymous>true</is_anonymous>\n        <is_known_attacker>true</is_known_attacker>\n        <is_bot>false</is_bot>\n        <bot_confidence_score>0</bot_confidence_score>\n        <bot_operator_name></bot_operator_name>\n        <bot_type></bot_type>\n        <is_known_good_bot>false</is_known_good_bot>\n        <bot_last_seen></bot_last_seen>\n        <is_spam>false</is_spam>\n        <is_cloud_provider>true</is_cloud_provider>\n        <cloud_provider_name>Packethub S.A.</cloud_provider_name>\n        <is_corporate_gateway>false</is_corporate_gateway>\n        <corporate_gateway_type></corporate_gateway_type>\n        <corporate_gateway_provider_name></corporate_gateway_provider_name>\n    </security>\n  <item>\n      <message>'10.0.0.0' is a bogon IP address.</message>\n  </item>\n</ArrayList>\n"
               }
             }
           },
@@ -910,6 +926,37 @@
             "description": "Whether the IP is associated with known bot activity.",
             "example": false
           },
+          "bot_confidence_score": {
+            "type": "number",
+            "description": "Confidence that this IP is associated with bot activity, from 0 to 100.\nOnly populated when `is_bot` is `true`; otherwise `0`.\n",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 0
+          },
+          "bot_operator_name": {
+            "type": "string",
+            "description": "Organization operating the bot. Typically only populated for known good\nbots (see `is_known_good_bot`). Empty string otherwise.\n",
+            "example": ""
+          },
+          "bot_type": {
+            "type": "string",
+            "description": "Type of bot activity detected, when available (e.g. `search_engine`,\n`ai_crawler`, `scraper`, `exploit`). Empty string if unknown.\n",
+            "example": "",
+            "externalDocs": {
+              "description": "bot_type values reference",
+              "url": "https://ipgeolocation.io/documentation/ip-security-api.html#bot-type-values"
+            }
+          },
+          "is_known_good_bot": {
+            "type": "boolean",
+            "description": "Whether the bot is declared and verifiable, such as a search engine\ncrawler, uptime monitor, or security scanner.\n",
+            "example": false
+          },
+          "bot_last_seen": {
+            "type": "string",
+            "description": "Date when this IP was last observed engaging in bot activity, in\n`YYYY-MM-DD` format. Empty string if never seen.\n",
+            "example": ""
+          },
           "is_spam": {
             "type": "boolean",
             "description": "Whether the IP is listed in spam databases.",
@@ -924,6 +971,25 @@
             "type": "string",
             "description": "Name of the cloud provider, if applicable. Empty string otherwise.",
             "example": "Packethub S.A."
+          },
+          "is_corporate_gateway": {
+            "type": "boolean",
+            "description": "Whether the IP is an egress address of a secure web gateway (SWG),\nsecurity service edge (SSE), or secure access service edge (SASE) product.\n",
+            "example": false
+          },
+          "corporate_gateway_type": {
+            "type": "string",
+            "description": "Type of corporate gateway service, when available (`secure_web_gateway`\nor `browser_isolation`). Empty string if unknown.\n",
+            "example": "",
+            "externalDocs": {
+              "description": "corporate_gateway_type values reference",
+              "url": "https://ipgeolocation.io/documentation/ip-security-api.html#corporate-gateway-type-values"
+            }
+          },
+          "corporate_gateway_provider_name": {
+            "type": "string",
+            "description": "Name of the corporate gateway provider, when available. Empty string\notherwise.\n",
+            "example": ""
           }
         }
       }
