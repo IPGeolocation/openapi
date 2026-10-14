@@ -303,6 +303,8 @@ paths:
                       connection_type: ""
                       route: "91.128.0.0/14"
                       is_anycast: false
+                      is_cdn: false
+                      cdn_provider_name: ""
                     currency:
                       code: "SEK"
                       name: "Swedish Krona"
@@ -336,9 +338,17 @@ paths:
                       is_anonymous: false
                       is_known_attacker: false
                       is_bot: false
+                      bot_confidence_score: 0
+                      bot_operator_name: ""
+                      bot_type: ""
+                      is_known_good_bot: false
+                      bot_last_seen: ""
                       is_spam: false
                       is_cloud_provider: false
                       cloud_provider_name: ""
+                      is_corporate_gateway: false
+                      corporate_gateway_type: ""
+                      corporate_gateway_provider_name: ""
                     abuse:
                       route: "91.128.0.0/14"
                       country: "SE"
@@ -863,6 +873,8 @@ paths:
                         connection_type: ""
                         route: "8.8.8.0/24"
                         is_anycast: true
+                        is_cdn: false
+                        cdn_provider_name: ""
                       currency:
                         code: "USD"
                         name: "US Dollar"
@@ -1176,9 +1188,17 @@ paths:
                   is_anonymous: true
                   is_known_attacker: true
                   is_bot: false
+                  bot_confidence_score: 0
+                  bot_operator_name: ""
+                  bot_type: ""
+                  is_known_good_bot: false
+                  bot_last_seen: ""
                   is_spam: false
                   is_cloud_provider: true
                   cloud_provider_name: "Packethub S.A."
+                  is_corporate_gateway: false
+                  corporate_gateway_type: ""
+                  corporate_gateway_provider_name: ""
         "400":
           description: |
             Bad request. Returned for one of the following reasons:
@@ -1501,9 +1521,17 @@ paths:
                     is_anonymous: true
                     is_known_attacker: true
                     is_bot: false
+                    bot_confidence_score: 0
+                    bot_operator_name: ""
+                    bot_type: ""
+                    is_known_good_bot: false
+                    bot_last_seen: ""
                     is_spam: false
                     is_cloud_provider: true
                     cloud_provider_name: "Packethub S.A."
+                    is_corporate_gateway: false
+                    corporate_gateway_type: ""
+                    corporate_gateway_provider_name: ""
                 - message: "'10.0.0.1' is a bogon IP address."
         "400":
           description: |
@@ -4768,6 +4796,18 @@ components:
           type: boolean
           description: Whether the IP is part of an anycast network.
           example: false
+        is_cdn:
+          type: boolean
+          description: |
+            Whether the IP is part of a Content Delivery Network (CDN) or cloud
+            provider network.
+          example: false
+        cdn_provider_name:
+          type: string
+          description: |
+            Name of the CDN provider when `is_cdn` is `true` (e.g. `Cloudflare`).
+            Empty string otherwise.
+          example: ""
     IPGeoCurrency:
       type: object
       description: Local currency of the country where the IP is located.
@@ -4942,6 +4982,41 @@ components:
           type: boolean
           description: Whether the IP is associated with known bot activity.
           example: false
+        bot_confidence_score:
+          type: number
+          description: |
+            Confidence that this IP is associated with bot activity, from 0 to 100.
+            Only populated when `is_bot` is `true`; otherwise `0`.
+          minimum: 0
+          maximum: 100
+          example: 0
+        bot_operator_name:
+          type: string
+          description: |
+            Organization operating the bot. Typically only populated for known good
+            bots (see `is_known_good_bot`). Empty string otherwise.
+          example: ""
+        bot_type:
+          type: string
+          description: |
+            Type of bot activity detected, when available (e.g. `search_engine`,
+            `ai_crawler`, `scraper`, `exploit`). Empty string if unknown.
+          example: ""
+          externalDocs:
+            description: bot_type values reference
+            url: "https://ipgeolocation.io/documentation/ip-security-api.html#bot-type-values"
+        is_known_good_bot:
+          type: boolean
+          description: |
+            Whether the bot is declared and verifiable, such as a search engine
+            crawler, uptime monitor, or security scanner.
+          example: false
+        bot_last_seen:
+          type: string
+          description: |
+            Date when this IP was last observed engaging in bot activity, in
+            `YYYY-MM-DD` format. Empty string if never seen.
+          example: ""
         is_spam:
           type: boolean
           description: Whether the IP is listed in spam databases.
@@ -4954,6 +5029,27 @@ components:
           type: string
           description: Name of the cloud provider, if applicable. Empty string otherwise.
           example: "Packethub S.A."
+        is_corporate_gateway:
+          type: boolean
+          description: |
+            Whether the IP is an egress address of a secure web gateway (SWG),
+            security service edge (SSE), or secure access service edge (SASE) product.
+          example: false
+        corporate_gateway_type:
+          type: string
+          description: |
+            Type of corporate gateway service, when available (`secure_web_gateway`
+            or `browser_isolation`). Empty string if unknown.
+          example: ""
+          externalDocs:
+            description: corporate_gateway_type values reference
+            url: "https://ipgeolocation.io/documentation/ip-security-api.html#corporate-gateway-type-values"
+        corporate_gateway_provider_name:
+          type: string
+          description: |
+            Name of the corporate gateway provider, when available. Empty string
+            otherwise.
+          example: ""
 
     IPGeoAbuse:
       type: object
@@ -5406,6 +5502,41 @@ components:
           type: boolean
           description: Whether the IP is associated with known bot activity.
           example: false
+        bot_confidence_score:
+          type: number
+          description: |
+            Confidence that this IP is associated with bot activity, from 0 to 100.
+            Only populated when `is_bot` is `true`; otherwise `0`.
+          minimum: 0
+          maximum: 100
+          example: 0
+        bot_operator_name:
+          type: string
+          description: |
+            Organization operating the bot. Typically only populated for known good
+            bots (see `is_known_good_bot`). Empty string otherwise.
+          example: ""
+        bot_type:
+          type: string
+          description: |
+            Type of bot activity detected, when available (e.g. `search_engine`,
+            `ai_crawler`, `scraper`, `exploit`). Empty string if unknown.
+          example: ""
+          externalDocs:
+            description: bot_type values reference
+            url: "https://ipgeolocation.io/documentation/ip-security-api.html#bot-type-values"
+        is_known_good_bot:
+          type: boolean
+          description: |
+            Whether the bot is declared and verifiable, such as a search engine
+            crawler, uptime monitor, or security scanner.
+          example: false
+        bot_last_seen:
+          type: string
+          description: |
+            Date when this IP was last observed engaging in bot activity, in
+            `YYYY-MM-DD` format. Empty string if never seen.
+          example: ""
         is_spam:
           type: boolean
           description: Whether the IP is listed in spam databases.
@@ -5418,6 +5549,27 @@ components:
           type: string
           description: Name of the cloud provider, if applicable. Empty string otherwise.
           example: "Packethub S.A."
+        is_corporate_gateway:
+          type: boolean
+          description: |
+            Whether the IP is an egress address of a secure web gateway (SWG),
+            security service edge (SSE), or secure access service edge (SASE) product.
+          example: false
+        corporate_gateway_type:
+          type: string
+          description: |
+            Type of corporate gateway service, when available (`secure_web_gateway`
+            or `browser_isolation`). Empty string if unknown.
+          example: ""
+          externalDocs:
+            description: corporate_gateway_type values reference
+            url: "https://ipgeolocation.io/documentation/ip-security-api.html#corporate-gateway-type-values"
+        corporate_gateway_provider_name:
+          type: string
+          description: |
+            Name of the corporate gateway provider, when available. Empty string
+            otherwise.
+          example: ""
 
     ASNLookupResponse:
       type: object
