@@ -58,12 +58,16 @@ info:
 
     | Plan | Extra API Keys + Request Origins |
     |---|---|
-    | Starter (150K requests) | 1 |
-    | Core (250K requests) | 1 |
-    | Plus (500K requests) | 2 |
-    | Pro (1M requests) | 2 |
-    | Business (2M requests) | 3 |
-    | Premium (5M requests) | 3 |
+    | Free | 0 |
+    | Starter | 1 |
+    | Plus | 2 |
+    | Pro | 2 |
+    | Business | 3 |
+    | Premium | 3 |
+
+    Plans are sized by API credits, not requests: Free includes 1,000 credits
+    per day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;
+    Business 2,000,000; Premium 5,000,000.
 
     Additional keys or origins can be added for $2.50 per month each.
 
@@ -155,13 +159,15 @@ info:
 
     ## Usage Limits
 
-    The Timezone API is available on **both Free and Paid plans**.
+    The Timezone API is available on **both Free and Paid plans** and costs
+    **1 credit** per successful request (including `/v3/timezone/convert`).
 
-    Free plan subscriptions include **up to 1,000 requests per day**.
+    Free plan subscriptions include **up to 1,000 credits per day** (hard limit).
 
-    Paid subscriptions do not enforce fixed daily or hourly rate limits.
-    If the monthly request quota is exceeded, requests continue and a
-    surcharge may be applied depending on the subscribed plan.
+    Paid subscriptions have no rate limits. Each billing period includes a fixed
+    credit allowance. After the allowance is exhausted, requests continue only
+    while overage (surcharge) is enabled and within its limit; otherwise the API
+    returns HTTP 429.
 
     Requests made using invalid API keys or unsupported subscriptions
     return **HTTP 401 Unauthorized**.
@@ -750,22 +756,22 @@ components:
     TooManyRequests:
       description: |
         Too Many Requests. Returned for one of the following reasons:
-        - The API usage limit has been reached for a Paid subscription with
+        - The API credit allowance has been reached for a Paid subscription with
           status 'past due', 'deleted', or 'trial expired'.
-        - The surcharge API usage limit has been reached for the subscribed plan.
+        - The surcharge (overage) credit limit has been reached for the subscribed plan.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           examples:
             usageLimitReached:
-              summary: API usage limit reached
+              summary: API credit limit reached
               value:
-                message: "You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
             surchargeLimitReached:
               summary: Surcharge usage limit reached
               value:
-                message: "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
 
     ClientClosedRequest:
       description: |
@@ -1495,6 +1501,12 @@ components:
           type: string
           description: ISO-8601 formatted date and time with timezone offset.
           example: "2025-04-24T11:30:12-0700"
+
+        current_time:
+          type: string
+          description: Current local time at the queried location. Observed formats
+            include `YYYY-MM-DDTHH:mm:ss±ZZZZ` and `YYYY-MM-DD HH:mm:ss.SSS±ZZZZ`.
+          example: "2025-04-24 11:30:12.353-0700"
 
         current_time_unix:
           type: number
