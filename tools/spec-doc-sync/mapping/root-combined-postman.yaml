@@ -1,0 +1,26 @@
+# Root combined file openapi.json — a Postman v2.1 collection export, NOT an
+# OpenAPI document. Fields are extracted from saved example response bodies.
+# Confirmed-good extraction path:
+#   "IP Geolocation API" > "Single IP Geolocation Lookup"
+#   > response "200 OK – Paid plan, all modules included"  (network/security inline)
+spec_file: openapi.json
+source: postman
+postman:
+  folder: IP Geolocation API
+  request: Single IP Geolocation Lookup
+  response: "200 OK – Paid plan, all modules included"
+
+entries:
+  - doc_slug: ip-location-api
+    doc_object_name: root
+    json_path: ""            # top-level fields of the example body
+    # `domain` is only returned when the `ip` request parameter holds a
+    # domain/hostname; this example is a plain IP lookup, so the field is
+    # legitimately absent from the body.
+    ignore_fields: [domain]
+  - doc_slug: ip-location-api
+    doc_object_name: network
+    json_path: network
+  - doc_slug: ip-location-api
+    doc_object_name: security
+    json_path: security

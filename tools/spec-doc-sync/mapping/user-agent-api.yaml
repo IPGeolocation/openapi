@@ -1,0 +1,10 @@
+# user-agent-api vs its per-API spec.
+# Single flat doc table with dotted rows (device.name, engine.version, ...);
+# no per-object h3 tables on this page.
+spec_file: user-agent-api/openapi.yaml
+
+entries:
+  - doc_slug: user-agent-api
+    doc_object_name: root
+    schema_name: UserAgentResponse
+    expand: true

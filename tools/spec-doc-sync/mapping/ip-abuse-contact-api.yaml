@@ -1,0 +1,9 @@
+# ip-abuse-contact-api vs its per-API spec.
+# Same flat/dotted-table pattern as asn-api (abuse.route, abuse.emails, ...).
+spec_file: ip-abuse-contact-api/openapi.yaml
+
+entries:
+  - doc_slug: ip-abuse-contact-api
+    doc_object_name: root
+    schema_name: AbuseLookupResponse
+    expand: true

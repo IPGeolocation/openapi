@@ -1,0 +1,11 @@
+# asn-api vs its per-API spec.
+# The doc page has a single flat response table whose rows are dotted
+# (asn.as_number, ...), so the root response schema is compared with
+# one-level object-$ref expansion.
+spec_file: asn-api/openapi.yaml
+
+entries:
+  - doc_slug: asn-api
+    doc_object_name: root
+    schema_name: ASNLookupResponse
+    expand: true

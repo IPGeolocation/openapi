@@ -1,0 +1,11 @@
+# ip-security-api vs its per-API spec.
+spec_file: ip-security-api/openapi.yaml
+
+entries:
+  - doc_slug: ip-security-api
+    doc_object_name: root
+    schema_name: IpSecurityResponse
+    expand: false
+  - doc_slug: ip-security-api
+    doc_object_name: security
+    schema_name: Security

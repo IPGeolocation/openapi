@@ -1,0 +1,15 @@
+# astronomy-api vs its per-API spec.
+# The astronomy table flattens morning.*/evening.* twilight fields.
+spec_file: astronomy-api/openapi.yaml
+
+entries:
+  - doc_slug: astronomy-api
+    doc_object_name: root
+    schema_name: AstronomyLookupResponse
+    expand: false
+  - doc_slug: astronomy-api
+    doc_object_name: location
+    schema_name: Location
+  - doc_slug: astronomy-api
+    doc_object_name: astronomy
+    schema_name: AstronomyData

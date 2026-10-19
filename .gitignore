@@ -1,1 +1,5 @@
 postman/
+.venv/
+__pycache__/
+tools/spec-doc-sync/.cache/
+tools/spec-doc-sync/.snapshots/

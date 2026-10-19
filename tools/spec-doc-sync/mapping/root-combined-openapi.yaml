@@ -1,0 +1,103 @@
+# Root combined OpenAPI document (openapi.yaml). Schema names are prefixed to
+# avoid collisions across APIs. Names below were read from
+# components.schemas of this file before writing:
+#   geo side:   IPGeoLocation (= location object!), IPGeoNetwork, IPGeoSecurity, ...
+#   security side of /v3/ipsecurity reuses the unprefixed `Security` schema.
+spec_file: openapi.yaml
+
+entries:
+  # ---- ip-location-api (geo side) ----
+  - doc_slug: ip-location-api
+    doc_object_name: root
+    schema_name: IpGeolocationResponse
+    expand: false
+  - doc_slug: ip-location-api
+    doc_object_name: location
+    schema_name: IPGeoLocation
+  - doc_slug: ip-location-api
+    doc_object_name: country_metadata
+    schema_name: IPGeoCountryMetadata
+  - doc_slug: ip-location-api
+    doc_object_name: currency
+    schema_name: IPGeoCurrency
+  - doc_slug: ip-location-api
+    doc_object_name: asn
+    schema_name: IPGeoAsn
+  - doc_slug: ip-location-api
+    doc_object_name: network
+    schema_name: IPGeoNetwork
+  - doc_slug: ip-location-api
+    doc_object_name: company
+    schema_name: IPGeoCompany
+  - doc_slug: ip-location-api
+    doc_object_name: time_zone
+    schema_name: IPGeoTimeZone
+  - doc_slug: ip-location-api
+    doc_object_name: user_agent
+    schema_name: IPGeoUserAgent
+  - doc_slug: ip-location-api
+    doc_object_name: security
+    schema_name: IPGeoSecurity
+  - doc_slug: ip-location-api
+    doc_object_name: abuse
+    schema_name: IPGeoAbuse
+
+  # ---- ip-security-api ----
+  - doc_slug: ip-security-api
+    doc_object_name: root
+    schema_name: IpSecurityResponse
+    expand: false
+  - doc_slug: ip-security-api
+    doc_object_name: security
+    schema_name: Security
+
+  # ---- asn-api (flat table -> dotted expansion) ----
+  - doc_slug: asn-api
+    doc_object_name: root
+    schema_name: ASNLookupResponse
+    expand: true
+
+  # ---- ip-abuse-contact-api (flat table -> dotted expansion) ----
+  - doc_slug: ip-abuse-contact-api
+    doc_object_name: root
+    schema_name: AbuseLookupResponse
+    expand: true
+
+  # ---- timezone-api ----
+  - doc_slug: timezone-api
+    doc_object_name: root
+    schema_name: TimezoneLookupResponse
+    expand: false
+  - doc_slug: timezone-api
+    doc_object_name: time_zone
+    schema_name: Timezone
+  - doc_slug: timezone-api
+    doc_object_name: location
+    schema_name: TimezoneLocation
+  - doc_slug: timezone-api
+    doc_object_name: airport_detail
+    schema_name: TimezoneAirportDetails
+  - doc_slug: timezone-api
+    doc_object_name: lo_code_details
+    schema_name: TimezoneLocodeDetails
+  - doc_slug: timezone-api
+    doc_heading: "Reference to Time Conversion API Response"
+    schema_name: TimeConversionResponse
+
+  # ---- user-agent-api (flat table -> dotted expansion) ----
+  - doc_slug: user-agent-api
+    doc_object_name: root
+    schema_name: UserAgentResponse
+    expand: true
+
+  # ---- astronomy-api ----
+  - doc_slug: astronomy-api
+    doc_object_name: root
+    schema_name: AstronomyLookupResponse
+    expand: false
+  - doc_slug: astronomy-api
+    doc_object_name: location
+    schema_name: Location
+  - doc_slug: astronomy-api
+    doc_object_name: astronomy
+    schema_name: AstronomyData

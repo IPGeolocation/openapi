@@ -1,0 +1,27 @@
+# timezone-api vs its per-API spec.
+# Doc object "airport_detail" maps to spec schema AirportDetails (prop
+# airport_details on the response); DST transitions appear as dotted
+# dst_start.* / dst_end.* rows inside the time_zone table.
+spec_file: timezone-api/openapi.yaml
+
+entries:
+  - doc_slug: timezone-api
+    doc_object_name: root
+    schema_name: TimezoneLookupResponse
+    expand: false
+  - doc_slug: timezone-api
+    doc_object_name: time_zone
+    schema_name: Timezone
+  - doc_slug: timezone-api
+    doc_object_name: location
+    schema_name: Location
+  - doc_slug: timezone-api
+    doc_object_name: airport_detail
+    schema_name: AirportDetails
+  - doc_slug: timezone-api
+    doc_object_name: lo_code_details
+    schema_name: LocodeDetails
+  # Second unlabeled table on the page (disambiguated by exact heading):
+  - doc_slug: timezone-api
+    doc_heading: "Reference to Time Conversion API Response"
+    schema_name: TimeConversionResponse

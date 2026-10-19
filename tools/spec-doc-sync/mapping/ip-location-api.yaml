@@ -1,0 +1,40 @@
+# ip-location-api vs its per-API spec (ip-location-api/openapi.{json,yaml}).
+# Doc page has one root "Standalone Fields" table plus one h3 table per nested
+# object; schema names in the per-API spec match the doc object names.
+spec_file: ip-location-api/openapi.yaml
+
+entries:
+  - doc_slug: ip-location-api
+    doc_object_name: root
+    schema_name: IpGeolocationResponse
+    expand: false          # object refs (location, network, ...) have their own tables
+  - doc_slug: ip-location-api
+    doc_object_name: location
+    schema_name: Location
+  - doc_slug: ip-location-api
+    doc_object_name: country_metadata
+    schema_name: CountryMetadata
+  - doc_slug: ip-location-api
+    doc_object_name: currency
+    schema_name: Currency
+  - doc_slug: ip-location-api
+    doc_object_name: asn
+    schema_name: Asn
+  - doc_slug: ip-location-api
+    doc_object_name: network
+    schema_name: Network
+  - doc_slug: ip-location-api
+    doc_object_name: company
+    schema_name: Company
+  - doc_slug: ip-location-api
+    doc_object_name: time_zone
+    schema_name: TimeZone
+  - doc_slug: ip-location-api
+    doc_object_name: user_agent
+    schema_name: UserAgent
+  - doc_slug: ip-location-api
+    doc_object_name: security
+    schema_name: Security
+  - doc_slug: ip-location-api
+    doc_object_name: abuse
+    schema_name: Abuse
