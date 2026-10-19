@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "607034d8-111f-44c3-9824-05476fc6acbb",
     "name": "IPGeolocation.io",
-    "description": "## IPGeolocation.io API Collection\n\nComplete API collection for all IPGeolocation.io v3 endpoints.\n\n### Authentication\nAll requests require an API key passed as the `apiKey` query parameter.\n\n**Setup:** Open the collection → Variables tab → set your `apiKey` value.\n\nGet your API key at https://app.ipgeolocation.io/\n\n---\n\n### API Groups\n- **IP Geolocation API**: Single and bulk IP/domain lookups\n- **IP Security API**: VPN, proxy, Tor, bot, and threat intelligence\n- **ASN API**: Autonomous System Number metadata\n- **Abuse Contact API**: Registry-based abuse contact info\n- **Timezone API**: Timezone lookup and time conversion\n- **User-Agent API**: Parse browser, device, and OS details\n- **Astronomy API**: Sunrise, sunset, moon phase, and more\n\nFull documentation: https://ipgeolocation.io/documentation",
+    "description": "## IPGeolocation.io API Collection\n\nComplete API collection for all IPGeolocation.io v3 endpoints.\n\n### Authentication\nAll requests require an API key passed as the `apiKey` query parameter.\n\n**Setup:** Open the collection → Variables tab → set your `apiKey` value.\n\nGet your API key at https://app.ipgeolocation.io/\n\n---\n\n### API Groups\n- **IP Geolocation API**: Single and bulk IP/domain lookups\n- **IP Security API**: VPN, proxy, Tor, bot, and threat intelligence\n- **ASN API**: Autonomous System Number metadata\n- **Abuse Contact API**: Registry-based abuse contact info\n- **Timezone API**: Timezone lookup and time conversion\n- **User-Agent API**: Parse browser, device, and OS details\n- **Astronomy API**: Sunrise, sunset, moon phase, and more\n\nFull documentation: https://ipgeolocation.io/documentation\n\n### Billing & Credits\n\nBilling is based on API credits, not requests. Credits are charged only on successful HTTP 200 responses; the exact charge for a request is returned in the `X-Credits-Charged` response header.\n\n- **Free plan:** 1,000 credits per day (hard limit — no overage).\n- **Paid plans:** No rate limits. Each billing period includes a fixed credit allowance (Starter 150,000/month, Plus 500,000/month, Pro 1,000,000/month, Business 2,000,000/month, Premium 5,000,000/month). After the allowance is exhausted, requests keep succeeding only while overage (surcharge) is enabled and within its limit; otherwise the API returns HTTP 429.\n\nCredit cost per successful request: IP geolocation base lookup 1 credit (adding `security` +2, adding `abuse` +1, `include=*` → 4 credits); IP Security 2; Abuse Contact 1; ASN 1; Timezone 1; User-Agent 1; Astronomy 1.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nAdditional keys or origins can be added for $2.50 per month each.\n\nCredits & usage: https://ipgeolocation.io/documentation/credits-usage.html\nPricing: https://ipgeolocation.io/pricing.html",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -329,7 +329,7 @@
               "body": "{\n  \"message\": \"'10.0.0.1' is a bogon IP address.\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -340,7 +340,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -640,7 +640,7 @@
               "body": "{\n  \"message\": \"Content-Type 'application/x-www-form-urlencoded' is not supported\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -651,7 +651,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -891,7 +891,7 @@
               "body": "{\n  \"message\": \"'10.0.0.1' is a bogon IP address.\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -902,7 +902,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -1178,7 +1178,7 @@
               "body": "{\n  \"message\": \"Content-Type 'application/x-www-form-urlencoded' is not supported\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -1189,7 +1189,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -1453,7 +1453,7 @@
               "body": "{\n  \"message\": \"'10.0.0.1' is a bogon IP address.\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -1464,7 +1464,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -1704,7 +1704,7 @@
               "body": "{\n  \"message\": \"'10.0.0.1' is a bogon IP address.\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -1715,7 +1715,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -2013,7 +2013,7 @@
               "body": "{\n  \"message\": \"'10.0.0.1' is a bogon IP address.\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -2024,7 +2024,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -2390,7 +2390,7 @@
               "body": "{\n  \"message\": \"'10.0.0.1' is a bogon IP address.\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -2401,7 +2401,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -2573,7 +2573,7 @@
               "body": "{\n  \"message\": \"Request method 'POST' is not supported\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -2584,7 +2584,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -2780,7 +2780,7 @@
               "body": "{\n  \"message\": \"Request method 'POST' is not supported\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -2791,7 +2791,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -2987,7 +2987,7 @@
               "body": "{\n  \"message\": \"Request method 'GET' is not supported\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -2998,7 +2998,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -3272,7 +3272,7 @@
               "body": "{\n  \"message\": \"'10.0.0.1' is a bogon IP address.\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -3283,7 +3283,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
@@ -3565,7 +3565,7 @@
               "body": "{\n  \"message\": \"'10.0.0.1' is a bogon IP address.\"\n}"
             },
             {
-              "name": "429 Too Many Requests – Rate limit hit",
+              "name": "429 Too Many Requests – Credit limit reached",
               "originalRequest": {},
               "status": "Too Many Requests",
               "code": 429,
@@ -3576,7 +3576,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT requests per PLAN_INERVAL for your subscribed PLAN plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
             },
             {
               "name": "499 Client Closed Request",
