@@ -1142,7 +1142,7 @@
             "items": {
               "type": "string"
             },
-            "examples": [
+            "example": [
               "8.8.8.8",
               "91.128.103.196",
               "2607:fb91:16c6:8860:e531:2d1d:4944:6c7c",
@@ -1428,7 +1428,7 @@
             "items": {
               "type": "string"
             },
-            "examples": [
+            "example": [
               "sv-SE",
               "se",
               "sma",
@@ -1578,7 +1578,7 @@
             "items": {
               "type": "string"
             },
-            "examples": [
+            "example": [
               "Zyte Proxy"
             ]
           },
@@ -1610,7 +1610,7 @@
             "items": {
               "type": "string"
             },
-            "examples": [
+            "example": [
               "Nord VPN"
             ]
           },
@@ -1759,7 +1759,7 @@
               "type": "string",
               "format": "email"
             },
-            "examples": [
+            "example": [
               "abuse@tele2.com"
             ]
           },
@@ -1769,7 +1769,7 @@
             "items": {
               "type": "string"
             },
-            "examples": [
+            "example": [
               "+46 8 5626 42 10"
             ]
           }

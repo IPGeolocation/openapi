@@ -692,7 +692,7 @@
             "items": {
               "type": "string"
             },
-            "examples": [
+            "example": [
               "192.76.177.0/24",
               "2607:f600::/32"
             ]

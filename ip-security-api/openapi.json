@@ -63,7 +63,7 @@
                 "description": "Number of API credits consumed by this request.",
                 "schema": {
                   "type": "number",
-                  "example": 1
+                  "example": 2
                 }
               }
             },
@@ -73,6 +73,7 @@
                   "$ref": "#/components/schemas/IpSecurityResponse"
                 },
                 "example": {
+                  "ip": "2.56.188.34",
                   "security": {
                     "threat_score": 80,
                     "is_tor": false,
@@ -215,14 +216,14 @@
                 "description": "Total number of API credits consumed. Equals credits per lookup\nmultiplied by the count of valid IPs.\n",
                 "schema": {
                   "type": "number",
-                  "example": 3
+                  "example": 2
                 }
               },
               "X-Successful-Record": {
                 "description": "Number of valid IP addresses that were successfully resolved in\nthis bulk request. Invalid, bogon, and private IPs are not counted.\nThis header is included only when at least one bulk entry returns an\nerror message and total successful lookups are fewer than submitted\nentries.\n",
                 "schema": {
                   "type": "number",
-                  "example": 4
+                  "example": 1
                 }
               }
             },
@@ -757,7 +758,7 @@
             "items": {
               "type": "string"
             },
-            "examples": [
+            "example": [
               "8.8.8.8",
               "91.128.103.196",
               "2607:fb91:16c6:8860:e531:2d1d:4944:6c7c"
@@ -853,7 +854,7 @@
             "items": {
               "type": "string"
             },
-            "examples": [
+            "example": [
               "Zyte Proxy"
             ]
           },
@@ -885,7 +886,7 @@
             "items": {
               "type": "string"
             },
-            "examples": [
+            "example": [
               "Nord VPN"
             ]
           },
