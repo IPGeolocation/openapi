@@ -610,14 +610,14 @@ components:
           items:
             type: string
             format: email
-          examples:
+          example:
             - "abuse@tele2.com"
         phone_numbers:
           type: array
           description: Phone numbers for the abuse contact.
           items:
             type: string
-          examples:
+          example:
             - "+46 8 5626 42 10"
 
 

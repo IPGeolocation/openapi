@@ -158,12 +158,13 @@ paths:
               description: Number of API credits consumed by this request.
               schema:
                 type: number
-                example: 1
+                example: 2
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/IpSecurityResponse"
               example:
+                ip: "2.56.188.34"
                 security:
                   threat_score: 80
                   is_tor: false
@@ -330,7 +331,7 @@ paths:
                 multiplied by the count of valid IPs.
               schema:
                 type: number
-                example: 3
+                example: 2
             X-Successful-Record:
               description: |
                 Number of valid IP addresses that were successfully resolved in
@@ -340,7 +341,7 @@ paths:
                 entries.
               schema:
                 type: number
-                example: 4
+                example: 1
           content:
             application/json:
               schema:
@@ -886,7 +887,7 @@ components:
           maxItems: 50000
           items:
             type: string
-          examples:
+          example:
             - "8.8.8.8"
             - "91.128.103.196"
             - "2607:fb91:16c6:8860:e531:2d1d:4944:6c7c"
@@ -970,7 +971,7 @@ components:
           description: Names of proxy providers associated with this IP, if any.
           items:
             type: string
-          examples:
+          example:
             - "Zyte Proxy"
         proxy_confidence_score:
           type: number
@@ -999,7 +1000,7 @@ components:
           description: Names of VPN providers associated with this IP, if any.
           items:
             type: string
-          examples:
+          example:
             - "Nord VPN"
         vpn_confidence_score:
           type: number
