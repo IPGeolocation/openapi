@@ -1043,13 +1043,13 @@ components:
         timezone. Must be provided together with the `lat` parameter.
 
         Valid longitude values range from **-180 to 180**.
+
+        Omit this parameter when it is not needed. When using coordinates,
+        provide both latitude and longitude.
       schema:
         type: number
         format: float
       examples:
-        none:
-          summary: Do not provide longitude
-          value: ""
         newyork:
           summary: Longitude of New York
           value: -74.0060
@@ -1062,13 +1062,13 @@ components:
         timezone. Must be provided together with the `long` parameter.
 
         Valid latitude values range from **-90 to 90**.
+
+        Omit this parameter when it is not needed. When using coordinates,
+        provide both latitude and longitude.
       schema:
         type: number
         format: float
       examples:
-        none:
-          summary: Do not provide latitude
-          value: ""
         newyork:
           summary: Latitude of New York
           value: 40.7128
@@ -1210,13 +1210,13 @@ components:
       name: lat_from
       in: query
       required: false
+      description: |
+        Omit this parameter when it is not needed. When using coordinates,
+        provide both latitude and longitude.
       schema:
         type: number
         format: float
       examples:
-        none:
-          summary: Do not provide source latitude
-          value: ""
         lat:
           summary: Source latitude
           value: 34.0207305
@@ -1224,13 +1224,13 @@ components:
       name: long_from
       in: query
       required: false
+      description: |
+        Omit this parameter when it is not needed. When using coordinates,
+        provide both latitude and longitude.
       schema:
         type: number
         format: float
       examples:
-        none:
-          summary: Do not provide source longitude
-          value: ""
         long:
           summary: Source longitude
           value: -118.6919163
@@ -1239,13 +1239,13 @@ components:
       name: lat_to
       in: query
       required: false
+      description: |
+        Omit this parameter when it is not needed. When using coordinates,
+        provide both latitude and longitude.
       schema:
         type: number
         format: float
       examples:
-        none:
-          summary: Do not provide destination latitude
-          value: ""
         lat:
           summary: Destination latitude
           value: 53.4736827
@@ -1254,13 +1254,13 @@ components:
       name: long_to
       in: query
       required: false
+      description: |
+        Omit this parameter when it is not needed. When using coordinates,
+        provide both latitude and longitude.
       schema:
         type: number
         format: float
       examples:
-        none:
-          summary: Do not provide destination longitude
-          value: ""
         long:
           summary: Destination longitude
           value: -77.3977062

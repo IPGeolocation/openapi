@@ -762,13 +762,13 @@ components:
         the `long` parameter.
 
         Valid latitude values range from **-90 to 90**.
+
+        Omit this parameter when it is not needed. When using coordinates,
+        provide both latitude and longitude.
       schema:
         type: number
         format: float
       examples:
-        none:
-          summary: Do not provide latitude
-          value: ""
         newYork:
           summary: Latitude of New York
           value: 40.76473
@@ -785,13 +785,13 @@ components:
         the `lat` parameter.
 
         Valid longitude values range from **-180 to 180**.
+
+        Omit this parameter when it is not needed. When using coordinates,
+        provide both latitude and longitude.
       schema:
         type: number
         format: float
       examples:
-        none:
-          summary: Do not provide longitude
-          value: ""
         newYork:
           summary: Longitude of New York
           value: -74.00084

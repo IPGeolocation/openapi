@@ -875,16 +875,12 @@
         "name": "long",
         "in": "query",
         "required": false,
-        "description": "Longitude coordinate of the location used to determine the\ntimezone. Must be provided together with the `lat` parameter.\n\nValid longitude values range from **-180 to 180**.\n",
+        "description": "Longitude coordinate of the location used to determine the\ntimezone. Must be provided together with the `lat` parameter.\n\nValid longitude values range from **-180 to 180**.\n\nOmit this parameter when it is not needed. When using coordinates,\nprovide both latitude and longitude.\n",
         "schema": {
           "type": "number",
           "format": "float"
         },
         "examples": {
-          "none": {
-            "summary": "Do not provide longitude",
-            "value": ""
-          },
           "newyork": {
             "summary": "Longitude of New York",
             "value": -74.006
@@ -895,16 +891,12 @@
         "name": "lat",
         "in": "query",
         "required": false,
-        "description": "Latitude coordinate of the location used to determine the\ntimezone. Must be provided together with the `long` parameter.\n\nValid latitude values range from **-90 to 90**.\n",
+        "description": "Latitude coordinate of the location used to determine the\ntimezone. Must be provided together with the `long` parameter.\n\nValid latitude values range from **-90 to 90**.\n\nOmit this parameter when it is not needed. When using coordinates,\nprovide both latitude and longitude.\n",
         "schema": {
           "type": "number",
           "format": "float"
         },
         "examples": {
-          "none": {
-            "summary": "Do not provide latitude",
-            "value": ""
-          },
           "newyork": {
             "summary": "Latitude of New York",
             "value": 40.7128
@@ -1056,15 +1048,12 @@
         "name": "lat_from",
         "in": "query",
         "required": false,
+        "description": "Omit this parameter when it is not needed. When using coordinates,\nprovide both latitude and longitude.\n",
         "schema": {
           "type": "number",
           "format": "float"
         },
         "examples": {
-          "none": {
-            "summary": "Do not provide source latitude",
-            "value": ""
-          },
           "lat": {
             "summary": "Source latitude",
             "value": 34.0207305
@@ -1075,15 +1064,12 @@
         "name": "long_from",
         "in": "query",
         "required": false,
+        "description": "Omit this parameter when it is not needed. When using coordinates,\nprovide both latitude and longitude.\n",
         "schema": {
           "type": "number",
           "format": "float"
         },
         "examples": {
-          "none": {
-            "summary": "Do not provide source longitude",
-            "value": ""
-          },
           "long": {
             "summary": "Source longitude",
             "value": -118.6919163
@@ -1094,15 +1080,12 @@
         "name": "lat_to",
         "in": "query",
         "required": false,
+        "description": "Omit this parameter when it is not needed. When using coordinates,\nprovide both latitude and longitude.\n",
         "schema": {
           "type": "number",
           "format": "float"
         },
         "examples": {
-          "none": {
-            "summary": "Do not provide destination latitude",
-            "value": ""
-          },
           "lat": {
             "summary": "Destination latitude",
             "value": 53.4736827
@@ -1113,15 +1096,12 @@
         "name": "long_to",
         "in": "query",
         "required": false,
+        "description": "Omit this parameter when it is not needed. When using coordinates,\nprovide both latitude and longitude.\n",
         "schema": {
           "type": "number",
           "format": "float"
         },
         "examples": {
-          "none": {
-            "summary": "Do not provide destination longitude",
-            "value": ""
-          },
           "long": {
             "summary": "Destination longitude",
             "value": -77.3977062
