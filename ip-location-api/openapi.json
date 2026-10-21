@@ -636,6 +636,95 @@
           }
         }
       }
+    },
+    "/v3/getip": {
+      "get": {
+        "operationId": "getCallerIp",
+        "summary": "Get caller's public IP address",
+        "description": "Returns the public IP address of the client that calls this endpoint. If\ncalled from a server, this returns the server's IP. If called from a browser\nvia client-side JavaScript, this returns the visitor's public IP address.\n\nThis endpoint does not require authentication. It can be called without an\n`apiKey` query parameter and without an IPGeolocation.io account.\n\nUse this endpoint when you only need the caller's public IP address. For\nfull geolocation, network, ASN, and other enrichment data, use\n`GET /v3/ipgeo` instead.\n",
+        "tags": [
+          "IP Geolocation"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "output",
+            "in": "query",
+            "required": false,
+            "description": "Desired response format. Defaults to `json` if not specified.\n\nIf `output` is unknown or unsupported, it is ignored and the response\ndefaults to JSON (`application/json`) with HTTP 200.\n",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "json",
+                "xml",
+                "text"
+              ],
+              "default": "json"
+            },
+            "examples": {
+              "json": {
+                "summary": "JSON response (default)",
+                "value": "json"
+              },
+              "xml": {
+                "summary": "XML response",
+                "value": "xml"
+              },
+              "text": {
+                "summary": "Plain text response",
+                "value": "text"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The caller's public IP address.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetIpResponse"
+                },
+                "example": {
+                  "ip": "1.1.1.1"
+                }
+              },
+              "application/xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/GetIpResponse"
+                },
+                "example": "<LinkedHashMap>\n  <ip>1.1.1.1</ip>\n</LinkedHashMap>\n"
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "description": "The caller's public IP address as a raw string, with no surrounding\nJSON or XML.\n",
+                  "example": "1.1.1.1"
+                },
+                "example": "1.1.1.1"
+              }
+            }
+          },
+          "499": {
+            "$ref": "#/components/responses/ClientClosedRequest"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          },
+          "505": {
+            "$ref": "#/components/responses/HttpVersionNotSupported"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1124,6 +1213,23 @@
             "type": "string",
             "description": "Human-readable explanation of what went wrong. Use HTTP status for control flow.",
             "example": "Provided name, service or IP address '999.999.999.999' is not valid."
+          }
+        }
+      },
+      "GetIpResponse": {
+        "type": "object",
+        "xml": {
+          "name": "LinkedHashMap"
+        },
+        "description": "Response body for the Get IP endpoint. Contains only the caller's public\nIP address.\n",
+        "required": [
+          "ip"
+        ],
+        "properties": {
+          "ip": {
+            "type": "string",
+            "description": "Public IP address of the client that called this endpoint. If called\nfrom a server, this is the server's IP. If called from client-side\nJavaScript, this is the visitor's public IP address.\n",
+            "example": "1.1.1.1"
           }
         }
       },

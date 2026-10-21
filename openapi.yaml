@@ -1083,6 +1083,88 @@ paths:
           $ref: "#/components/responses/HttpVersionNotSupported"
 
 
+  /v3/getip:
+    get:
+      operationId: getCallerIp
+      summary: Get caller's public IP address
+      description: |
+        Returns the public IP address of the client that calls this endpoint. If
+        called from a server, this returns the server's IP. If called from a browser
+        via client-side JavaScript, this returns the visitor's public IP address.
+
+        This endpoint does not require authentication. It can be called without an
+        `apiKey` query parameter and without an IPGeolocation.io account.
+
+        Use this endpoint when you only need the caller's public IP address. For
+        full geolocation, network, ASN, and other enrichment data, use
+        `GET /v3/ipgeo` instead.
+      tags:
+        - IP Geolocation
+      security: []
+      parameters:
+        - name: output
+          in: query
+          required: false
+          description: |
+            Desired response format. Defaults to `json` if not specified.
+
+            If `output` is unknown or unsupported, it is ignored and the response
+            defaults to JSON (`application/json`) with HTTP 200.
+          schema:
+            type: string
+            enum:
+              - "json"
+              - "xml"
+              - "text"
+            default: "json"
+          examples:
+            json:
+              summary: JSON response (default)
+              value: "json"
+            xml:
+              summary: XML response
+              value: "xml"
+            text:
+              summary: Plain text response
+              value: "text"
+      responses:
+        "200":
+          description: The caller's public IP address.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetIpResponse"
+              example:
+                ip: "1.1.1.1"
+            application/xml:
+              schema:
+                $ref: "#/components/schemas/GetIpResponse"
+              example: |
+                <LinkedHashMap>
+                  <ip>1.1.1.1</ip>
+                </LinkedHashMap>
+            text/plain:
+              schema:
+                type: string
+                description: |
+                  The caller's public IP address as a raw string, with no surrounding
+                  JSON or XML.
+                example: "1.1.1.1"
+              example: "1.1.1.1"
+        "499":
+          $ref: "#/components/responses/ClientClosedRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+        "505":
+          $ref: "#/components/responses/HttpVersionNotSupported"
+
+
   /v3/security:
     get:
       operationId: lookupIpSecurity
@@ -4518,6 +4600,23 @@ components:
           type: string
           description: Human-readable explanation of what went wrong. Use HTTP status for control flow.
           example: "Provided name, service or IP address '999.999.999.999' is not valid."
+    GetIpResponse:
+      type: object
+      xml:
+        name: LinkedHashMap
+      description: |
+        Response body for the Get IP endpoint. Contains only the caller's public
+        IP address.
+      required:
+        - ip
+      properties:
+        ip:
+          type: string
+          description: |
+            Public IP address of the client that called this endpoint. If called
+            from a server, this is the server's IP. If called from client-side
+            JavaScript, this is the visitor's public IP address.
+          example: "1.1.1.1"
     BulkGeolocationRequest:
       type: object
       description: |
