@@ -612,16 +612,12 @@
         "name": "lat",
         "in": "query",
         "required": false,
-        "description": "Latitude coordinate of the location. Must be provided together with\nthe `long` parameter.\n\nValid latitude values range from **-90 to 90**.\n",
+        "description": "Latitude coordinate of the location. Must be provided together with\nthe `long` parameter.\n\nValid latitude values range from **-90 to 90**.\n\nOmit this parameter when it is not needed. When using coordinates,\nprovide both latitude and longitude.\n",
         "schema": {
           "type": "number",
           "format": "float"
         },
         "examples": {
-          "none": {
-            "summary": "Do not provide latitude",
-            "value": ""
-          },
           "newYork": {
             "summary": "Latitude of New York",
             "value": 40.76473
@@ -636,16 +632,12 @@
         "name": "long",
         "in": "query",
         "required": false,
-        "description": "Longitude coordinate of the location. Must be provided together with\nthe `lat` parameter.\n\nValid longitude values range from **-180 to 180**.\n",
+        "description": "Longitude coordinate of the location. Must be provided together with\nthe `lat` parameter.\n\nValid longitude values range from **-180 to 180**.\n\nOmit this parameter when it is not needed. When using coordinates,\nprovide both latitude and longitude.\n",
         "schema": {
           "type": "number",
           "format": "float"
         },
         "examples": {
-          "none": {
-            "summary": "Do not provide longitude",
-            "value": ""
-          },
           "newYork": {
             "summary": "Longitude of New York",
             "value": -74.00084
