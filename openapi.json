@@ -682,6 +682,108 @@
               "body": "{\n  \"message\": \"Something went wrong on the server side.\"\n}"
             }
           ]
+        },
+        {
+          "name": "Get IP",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "https://api.ipgeolocation.io/v3/getip",
+              "protocol": "https",
+              "host": [
+                "api",
+                "ipgeolocation",
+                "io"
+              ],
+              "path": [
+                "v3",
+                "getip"
+              ],
+              "query": [
+                {
+                  "key": "output",
+                  "value": "json",
+                  "description": "Desired response format. Defaults to `json` if not specified. If `output` is unknown or unsupported, it is ignored and the response defaults to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`, `text`. Defaults to `json`.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Returns the public IP address of the client that calls this endpoint. If\ncalled from a server, this returns the server's IP. If called from a browser\nvia client-side JavaScript, this returns the visitor's public IP address.\n\nThis endpoint does not require authentication. It can be called without an\n`apiKey` query parameter and without an IPGeolocation.io account.\n\nUse this endpoint when you only need the caller's public IP address. For\nfull geolocation, network, ASN, and other enrichment data, use\n`GET /v3/ipgeo` instead."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "https://api.ipgeolocation.io/v3/getip",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "ipgeolocation",
+                    "io"
+                  ],
+                  "path": [
+                    "v3",
+                    "getip"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"ip\": \"1.1.1.1\"\n}"
+            },
+            {
+              "name": "499 Client Closed Request",
+              "originalRequest": {},
+              "status": "Client Closed Request",
+              "code": 499,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Client closed the request before the server could respond.\"\n}"
+            },
+            {
+              "name": "500 Internal Server Error",
+              "originalRequest": {},
+              "status": "Internal Server Error",
+              "code": 500,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Something went wrong on the server side.\"\n}"
+            }
+          ]
         }
       ]
     },
