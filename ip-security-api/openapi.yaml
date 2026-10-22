@@ -426,6 +426,7 @@ paths:
                         <corporate_gateway_type></corporate_gateway_type>
                         <corporate_gateway_provider_name></corporate_gateway_provider_name>
                     </security>
+                  </item>
                   <item>
                       <message>'10.0.0.0' is a bogon IP address.</message>
                   </item>
