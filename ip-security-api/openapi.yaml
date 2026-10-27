@@ -1,4 +1,4 @@
-openapi: 3.0.7
+openapi: 3.0.4
 info:
   title: 'IPGeolocation.io: IP Security API'
   version: "3.0"
@@ -307,7 +307,7 @@ paths:
                 summary: Multiple IPv4 addresses
                 value:
                   ips:
-                    - "1.1.1.1"
+                    - "8.8.8.8"
                     - "8.8.4.4"
                     - "165.227.0.0"
       responses:

@@ -1,5 +1,5 @@
 {
-  "openapi": "3.0.7",
+  "openapi": "3.0.4",
   "info": {
     "title": "IPGeolocation.io: IPGeolocation API",
     "version": "3.0",
@@ -436,7 +436,7 @@
                   "summary": "Multiple IPv4 addresses",
                   "value": {
                     "ips": [
-                      "1.1.1.1",
+                      "8.8.8.8",
                       "8.8.4.4",
                       "165.227.0.0"
                     ]
@@ -686,22 +686,22 @@
                   "$ref": "#/components/schemas/GetIpResponse"
                 },
                 "example": {
-                  "ip": "1.1.1.1"
+                  "ip": "8.8.8.8"
                 }
               },
               "application/xml": {
                 "schema": {
                   "$ref": "#/components/schemas/GetIpResponse"
                 },
-                "example": "<LinkedHashMap>\n  <ip>1.1.1.1</ip>\n</LinkedHashMap>\n"
+                "example": "<LinkedHashMap>\n  <ip>8.8.8.8</ip>\n</LinkedHashMap>\n"
               },
               "text/plain": {
                 "schema": {
                   "type": "string",
                   "description": "The caller's public IP address as a raw string, with no surrounding\nJSON or XML.\n",
-                  "example": "1.1.1.1"
+                  "example": "8.8.8.8"
                 },
-                "example": "1.1.1.1"
+                "example": "8.8.8.8"
               }
             }
           },
@@ -737,20 +737,7 @@
         "schema": {
           "type": "string"
         },
-        "examples": {
-          "ipv4": {
-            "summary": "IPv4 address",
-            "value": "91.128.103.196"
-          },
-          "ipv6": {
-            "summary": "IPv6 address",
-            "value": "2607:fb91:16c6:8860:e531:2d1d:4944:6c7c"
-          },
-          "domain": {
-            "summary": "Domain name (paid plans only)",
-            "value": "ipgeolocation.io"
-          }
-        }
+        "example": "165.227.0.0"
       },
       "Lang": {
         "name": "lang",
@@ -783,28 +770,6 @@
         "description": "Comma-separated list of optional data modules to add to the response. These are\nnot returned by default. Requires a paid plan.\n\n**Available values:**\n\n| Value | What it adds | Extra credits |\n|---|---|---|\n| `geo_accuracy` | `location.locality`, `location.accuracy_radius`, `location.confidence` | 0 |\n| `dma_code` | `location.dma_code` (US IPs only) | 0 |\n| `user_agent` | `user_agent` object (parses the `User-Agent` header) | 0 |\n| `security` | `security` object with threat signals | +2 |\n| `abuse` | `abuse` object with abuse contact info | +1 |\n| `hostname` | `hostname` field (from local database, fast, experimental) | 0 |\n| `liveHostname` | `hostname` field (live DNS lookup, slower, accurate) | 0 |\n| `hostnameFallbackLive` | `hostname` field (local first, falls back to live) | 0 |\n| `*` | All of the above | +3 |\n\nIf multiple hostname options are passed in `include`, hostname resolution uses\nthis precedence order: `liveHostname` first, then `hostname`, then\n`hostnameFallbackLive`.\nIf none is specified, the `hostname` field is not returned.\n\nFor `user_agent`, the API parses the `User-Agent` header from the request. For\nserver-side calls, forward your visitor's User-Agent string in the header so the\nparsed result matches the actual visitor.\n\nFor additional query parameters (`include`, `fields`, `excludes`, `output`),\nunknown values are ignored. The API still returns HTTP 200 and applies only\nrecognized values.\n\nFree plan behavior for `include=*`: the API returns HTTP 200 and ignores the\ninclude request, returning only base response fields. In contrast, specific\ninclude values such as `include=security` return HTTP 401 on free plans.\n",
         "schema": {
           "type": "string"
-        },
-        "examples": {
-          "none": {
-            "summary": "Do not include any optional modules",
-            "value": ""
-          },
-          "security": {
-            "summary": "Include security threat data",
-            "value": "security"
-          },
-          "multiple": {
-            "summary": "Include security and abuse data",
-            "value": "security,abuse"
-          },
-          "allNonBillable": {
-            "summary": "Include all free modules",
-            "value": "dma_code,geo_accuracy,hostname,user_agent"
-          },
-          "all": {
-            "summary": "Include everything",
-            "value": "*"
-          }
         }
       },
       "Fields": {
@@ -814,24 +779,6 @@
         "description": "Comma-separated list of fields or objects to return. Everything else is omitted.\nThe `ip` field is always returned regardless of this filter.\n\nSupports dot-notation for nested fields: `location.city`, `asn.organization`.\nTo return an entire object, use the object key: `location`, `security`.\n\nIf a field belongs to an optional module (e.g. `security.threat_score`), you\nmust also pass the corresponding `include` value.\nIf you omit `include`, the request still succeeds, but fields from optional\nmodules are not returned.\n\nIf the same field or object is specified in both `fields` and `excludes`, the\nobject is still returned, but it will be empty.\nIf the same field or object is specified in `include`, `fields`, and `excludes`,\n`include` takes priority over both `fields` and `excludes`.\n\nIf you list both an object key and one of its nested fields separated by comma\n(e.g. `security,security.threat_score`), the full object is returned.\n\nUnknown field paths are ignored. The API still returns HTTP 200.\n\nAvailable on all plans including Free.\n",
         "schema": {
           "type": "string"
-        },
-        "examples": {
-          "none": {
-            "summary": "Return the full response (no field filtering)",
-            "value": ""
-          },
-          "locationOnly": {
-            "summary": "Return only the location object",
-            "value": "location"
-          },
-          "nestedFields": {
-            "summary": "Return specific nested fields",
-            "value": "location.country_name,asn.organization"
-          },
-          "securityFields": {
-            "summary": "Return specific security fields (requires include=security)",
-            "value": "location.city,security.threat_score,security.is_vpn"
-          }
         }
       },
       "Excludes": {
@@ -841,16 +788,6 @@
         "description": "Comma-separated list of fields or objects to remove from the response. The `ip`\nfield cannot be excluded.\n\nSupports dot-notation for nested fields: `location.continent_code`.\nTo exclude an entire object, use the object key: `currency`, `time_zone`.\n\nIf the same field or object is specified in both `fields` and `excludes`, the\nobject is still returned, but it will be empty.\nIf the same field or object is specified in `include`, `fields`, and `excludes`,\n`include` takes priority over both `fields` and `excludes`.\n\nUnknown fields or object keys in `excludes` are ignored. The API still returns\nHTTP 200.\n\nAvailable on all plans including Free.\n",
         "schema": {
           "type": "string"
-        },
-        "examples": {
-          "none": {
-            "summary": "Do not exclude any fields",
-            "value": ""
-          },
-          "excludeObjects": {
-            "summary": "Exclude entire objects and a nested field",
-            "value": "location.continent_code,currency,company.type"
-          }
         }
       },
       "Output": {
@@ -1229,7 +1166,7 @@
           "ip": {
             "type": "string",
             "description": "Public IP address of the client that called this endpoint. If called\nfrom a server, this is the server's IP. If called from client-side\nJavaScript, this is the visitor's public IP address.\n",
-            "example": "1.1.1.1"
+            "example": "8.8.8.8"
           }
         }
       },
