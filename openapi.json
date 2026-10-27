@@ -30,7 +30,7 @@
       "key": "apiKey",
       "value": "",
       "type": "string",
-      "description": "Your IPGeolocation.io API key.\n\nGet yours at: https://app.ipgeolocation.io/\n\nPaste your key in the 'Current Value' field. It will be automatically appended as ?apiKey=... on every request in this collection."
+      "description": "Your IPGeolocation.io API key.\n\nGet yours at: https://app.ipgeolocation.io/\n\nPaste it as the local value, and don't share it. It will be automatically appended as ?apiKey=... on every request in this collection."
     }
   ],
   "item": [
@@ -753,7 +753,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"ip\": \"1.1.1.1\"\n}"
+              "body": "{\n  \"ip\": \"8.8.8.8\"\n}"
             },
             {
               "name": "499 Client Closed Request",

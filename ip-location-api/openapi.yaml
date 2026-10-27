@@ -1,4 +1,4 @@
-openapi: 3.0.7
+openapi: 3.0.4
 info:
   title: 'IPGeolocation.io: IPGeolocation API'
   version: "3.0"
@@ -722,7 +722,7 @@ paths:
                 summary: Multiple IPv4 addresses
                 value:
                   ips:
-                    - "1.1.1.1"
+                    - "8.8.8.8"
                     - "8.8.4.4"
                     - "165.227.0.0"
       responses:
@@ -1029,13 +1029,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/GetIpResponse"
               example:
-                ip: "1.1.1.1"
+                ip: "8.8.8.8"
             application/xml:
               schema:
                 $ref: "#/components/schemas/GetIpResponse"
               example: |
                 <LinkedHashMap>
-                  <ip>1.1.1.1</ip>
+                  <ip>8.8.8.8</ip>
                 </LinkedHashMap>
             text/plain:
               schema:
@@ -1043,8 +1043,8 @@ paths:
                 description: |
                   The caller's public IP address as a raw string, with no surrounding
                   JSON or XML.
-                example: "1.1.1.1"
-              example: "1.1.1.1"
+                example: "8.8.8.8"
+              example: "8.8.8.8"
         "499":
           $ref: "#/components/responses/ClientClosedRequest"
         "500":
@@ -1072,16 +1072,7 @@ components:
         values may be merged and treated as invalid input (HTTP 400).
       schema:
         type: string
-      examples:
-        ipv4:
-          summary: IPv4 address
-          value: "91.128.103.196"
-        ipv6:
-          summary: IPv6 address
-          value: "2607:fb91:16c6:8860:e531:2d1d:4944:6c7c"
-        domain:
-          summary: Domain name (paid plans only)
-          value: "ipgeolocation.io"
+      example: "165.227.0.0"
 
     Lang:
       name: lang
@@ -1148,22 +1139,6 @@ components:
         include values such as `include=security` return HTTP 401 on free plans.
       schema:
         type: string
-      examples:
-        none:
-          summary: Do not include any optional modules
-          value: ""
-        security:
-          summary: Include security threat data
-          value: "security"
-        multiple:
-          summary: Include security and abuse data
-          value: "security,abuse"
-        allNonBillable:
-          summary: Include all free modules
-          value: "dma_code,geo_accuracy,hostname,user_agent"
-        all:
-          summary: Include everything
-          value: "*"
 
     Fields:
       name: fields
@@ -1194,19 +1169,6 @@ components:
         Available on all plans including Free.
       schema:
         type: string
-      examples:
-        none:
-          summary: Return the full response (no field filtering)
-          value: ""
-        locationOnly:
-          summary: Return only the location object
-          value: "location"
-        nestedFields:
-          summary: Return specific nested fields
-          value: "location.country_name,asn.organization"
-        securityFields:
-          summary: Return specific security fields (requires include=security)
-          value: "location.city,security.threat_score,security.is_vpn"
 
     Excludes:
       name: excludes
@@ -1230,13 +1192,6 @@ components:
         Available on all plans including Free.
       schema:
         type: string
-      examples:
-        none:
-          summary: Do not exclude any fields
-          value: ""
-        excludeObjects:
-          summary: Exclude entire objects and a nested field
-          value: "location.continent_code,currency,company.type"
 
     Output:
       name: output
@@ -1598,7 +1553,7 @@ components:
             Public IP address of the client that called this endpoint. If called
             from a server, this is the server's IP. If called from client-side
             JavaScript, this is the visitor's public IP address.
-          example: "1.1.1.1"
+          example: "8.8.8.8"
 
     BulkGeolocationRequest:
       type: object

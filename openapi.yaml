@@ -1,4 +1,4 @@
-openapi: 3.0.7
+openapi: 3.0.4
 info:
   title: 'IPGeolocation.io'
   version: "3.0"
@@ -134,7 +134,6 @@ tags:
 paths:
   /v3/ipgeo:
     get:
-      name: IPGeolocaiton API
       operationId: lookupIpGeolocation
       security:
         - ApiKeyAuth: []
@@ -166,7 +165,7 @@ paths:
             values may be merged and treated as invalid input (HTTP 400).
           schema:
             type: string
-          example: "ipgeolocation.io"
+          example: "165.227.0.0"
         - name: lang
           in: query
           required: false
@@ -825,7 +824,7 @@ paths:
                 summary: Multiple IPv4 addresses
                 value:
                   ips:
-                    - "1.1.1.1"
+                    - "8.8.8.8"
                     - "8.8.4.4"
                     - "165.227.0.0"
       responses:
@@ -1135,13 +1134,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/GetIpResponse"
               example:
-                ip: "1.1.1.1"
+                ip: "8.8.8.8"
             application/xml:
               schema:
                 $ref: "#/components/schemas/GetIpResponse"
               example: |
                 <LinkedHashMap>
-                  <ip>1.1.1.1</ip>
+                  <ip>8.8.8.8</ip>
                 </LinkedHashMap>
             text/plain:
               schema:
@@ -1149,8 +1148,8 @@ paths:
                 description: |
                   The caller's public IP address as a raw string, with no surrounding
                   JSON or XML.
-                example: "1.1.1.1"
-              example: "1.1.1.1"
+                example: "8.8.8.8"
+              example: "8.8.8.8"
         "499":
           $ref: "#/components/responses/ClientClosedRequest"
         "500":
@@ -1563,7 +1562,7 @@ paths:
                 summary: Multiple IPv4 addresses
                 value:
                   ips:
-                    - "1.1.1.1"
+                    - "8.8.8.8"
                     - "8.8.4.4"
                     - "165.227.0.0"
       responses:
@@ -3150,34 +3149,34 @@ paths:
                   version_major: "10.11"
                   build: "??"
         "400":
-        description: |
-          Bad Request. Returned for one of the following reasons:
-          - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
-          - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
-          - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
-            field when calling `/v3/user-agent-bulk`.
-          - More than 50,000 user agent strings are provided in a single bulk request.
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-            examples:
-              specialCharacters:
-                summary: Invalid special characters in request
-                value:
-                  message: "Invalid character found in the request target."
-              emptyUaString:
-                summary: Empty or null user agent string
-                value:
-                  message: "User-Agent string must not be blank"
-              emptyBulkList:
-                summary: Empty uaStrings array or missing field
-                value:
-                  message: "User-Agent strings for bulk lookup are missing"
-              bulkLimitExceeded:
-                summary: More than 50,000 strings in bulk request
-                value:
-                  message: "No. of lookup queries cannot be more than 50000"
+          description: |
+            Bad Request. Returned for one of the following reasons:
+            - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
+            - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
+            - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
+              field when calling `/v3/user-agent-bulk`.
+            - More than 50,000 user agent strings are provided in a single bulk request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                specialCharacters:
+                  summary: Invalid special characters in request
+                  value:
+                    message: "Invalid character found in the request target."
+                emptyUaString:
+                  summary: Empty or null user agent string
+                  value:
+                    message: "User-Agent string must not be blank"
+                emptyBulkList:
+                  summary: Empty uaStrings array or missing field
+                  value:
+                    message: "User-Agent strings for bulk lookup are missing"
+                bulkLimitExceeded:
+                  summary: More than 50,000 strings in bulk request
+                  value:
+                    message: "No. of lookup queries cannot be more than 50000"
         "401":
           description: |
             Unauthorized. Returned for one of the following reasons:
@@ -3330,34 +3329,34 @@ paths:
                   version_major: "10.11"
                   build: "??"
         "400":
-        description: |
-          Bad Request. Returned for one of the following reasons:
-          - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
-          - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
-          - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
-            field when calling `/v3/user-agent-bulk`.
-          - More than 50,000 user agent strings are provided in a single bulk request.
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-            examples:
-              specialCharacters:
-                summary: Invalid special characters in request
-                value:
-                  message: "Invalid character found in the request target."
-              emptyUaString:
-                summary: Empty or null user agent string
-                value:
-                  message: "User-Agent string must not be blank"
-              emptyBulkList:
-                summary: Empty uaStrings array or missing field
-                value:
-                  message: "User-Agent strings for bulk lookup are missing"
-              bulkLimitExceeded:
-                summary: More than 50,000 strings in bulk request
-                value:
-                  message: "No. of lookup queries cannot be more than 50000"
+          description: |
+            Bad Request. Returned for one of the following reasons:
+            - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
+            - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
+            - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
+              field when calling `/v3/user-agent-bulk`.
+            - More than 50,000 user agent strings are provided in a single bulk request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                specialCharacters:
+                  summary: Invalid special characters in request
+                  value:
+                    message: "Invalid character found in the request target."
+                emptyUaString:
+                  summary: Empty or null user agent string
+                  value:
+                    message: "User-Agent string must not be blank"
+                emptyBulkList:
+                  summary: Empty uaStrings array or missing field
+                  value:
+                    message: "User-Agent strings for bulk lookup are missing"
+                bulkLimitExceeded:
+                  summary: More than 50,000 strings in bulk request
+                  value:
+                    message: "No. of lookup queries cannot be more than 50000"
         "401":
           description: |
             Unauthorized. Returned for one of the following reasons:
@@ -3542,34 +3541,34 @@ paths:
                     version_major: "??"
                     build: "??"
         "400":
-        description: |
-          Bad Request. Returned for one of the following reasons:
-          - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
-          - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
-          - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
-            field when calling `/v3/user-agent-bulk`.
-          - More than 50,000 user agent strings are provided in a single bulk request.
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ErrorResponse"
-            examples:
-              specialCharacters:
-                summary: Invalid special characters in request
-                value:
-                  message: "Invalid character found in the request target."
-              emptyUaString:
-                summary: Empty or null user agent string
-                value:
-                  message: "User-Agent string must not be blank"
-              emptyBulkList:
-                summary: Empty uaStrings array or missing field
-                value:
-                  message: "User-Agent strings for bulk lookup are missing"
-              bulkLimitExceeded:
-                summary: More than 50,000 strings in bulk request
-                value:
-                  message: "No. of lookup queries cannot be more than 50000"
+          description: |
+            Bad Request. Returned for one of the following reasons:
+            - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
+            - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
+            - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
+              field when calling `/v3/user-agent-bulk`.
+            - More than 50,000 user agent strings are provided in a single bulk request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                specialCharacters:
+                  summary: Invalid special characters in request
+                  value:
+                    message: "Invalid character found in the request target."
+                emptyUaString:
+                  summary: Empty or null user agent string
+                  value:
+                    message: "User-Agent string must not be blank"
+                emptyBulkList:
+                  summary: Empty uaStrings array or missing field
+                  value:
+                    message: "User-Agent strings for bulk lookup are missing"
+                bulkLimitExceeded:
+                  summary: More than 50,000 strings in bulk request
+                  value:
+                    message: "No. of lookup queries cannot be more than 50000"
         "401":
           description: |
             Unauthorized. Returned for one of the following reasons:
@@ -4616,7 +4615,7 @@ components:
             Public IP address of the client that called this endpoint. If called
             from a server, this is the server's IP. If called from client-side
             JavaScript, this is the visitor's public IP address.
-          example: "1.1.1.1"
+          example: "8.8.8.8"
     BulkGeolocationRequest:
       type: object
       description: |
