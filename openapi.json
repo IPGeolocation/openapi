@@ -431,7 +431,7 @@
                 }
               ]
             },
-            "description": "Returns geolocation and enrichment data for up to 50,000 IPv4 addresses, IPv6\naddresses, or domain names in a single request. The request body must be a JSON\nobject with an `ips` array.\n\nThis endpoint requires a paid plan. Calling it with a free\nplan API key returns HTTP 401.\n\nThe response is a JSON array with one element per IP in the request. Each element\nis either a full geolocation response object or an error object with only a\n`message` field. Invalid, bogon, and unresolvable entries appear as error\nobjects. Invalid, private, and bogon IPs are not billed.\n\nThis endpoint supports the same query parameters as the single lookup endpoint,\nincluding `lang`, `include`, `fields`, `excludes`, and `output`.\n\nCredits are calculated as: credits per lookup multiplied by the number of valid\nIPs in the request. The total is returned in the `X-Credits-Charged` response\nheader. When at least one submitted ip is invalid, the `X-Successful-Record`\nresponse header indicates how many entries were successfully resolved.\n\nOnly the `POST` method is accepted. Sending a `GET` request returns HTTP 405.",
+            "description": "Returns geolocation and enrichment data for up to 50,000 IPv4 addresses, IPv6\naddresses, or domain names in a single request. The request body must be a JSON\nobject with an `ips` array.\n\nThis endpoint is available on all plans, including Free. On a Free plan, the\nnumber of IPs in the request is checked against the remaining daily credit\nallowance; if the request contains more IPs than remain, the API returns HTTP\n429 instead of processing the request.\n\nThe response is a JSON array with one element per IP in the request. Each element\nis either a full geolocation response object or an error object with only a\n`message` field. Invalid, bogon, and unresolvable entries appear as error\nobjects. Invalid, private, and bogon IPs are not billed.\n\nThis endpoint supports the same query parameters as the single lookup endpoint,\nincluding `lang`, `include`, `fields`, `excludes`, and `output`.\n\nCredits are calculated as: credits per lookup multiplied by the number of valid\nIPs in the request. The total is returned in the `X-Credits-Charged` response\nheader. When at least one submitted ip is invalid, the `X-Successful-Record`\nresponse header indicates how many entries were successfully resolved.\n\nOnly the `POST` method is accepted. Sending a `GET` request returns HTTP 405.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"ips\": [\n    \"8.8.8.8\",\n    \"91.128.103.196\",\n    \"2607:fb91:16c6:8860:e531:2d1d:4944:6c7c\",\n    \"ipgeolocation.io\"\n  ]\n}",
@@ -584,10 +584,10 @@
               "body": "{\n  \"message\": \"Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io\"\n}"
             },
             {
-              "name": "401 Unauthorized – Free plan restriction",
+              "name": "429 Too Many Requests – Free plan bulk request exceeds remaining credits",
               "originalRequest": {},
-              "status": "Unauthorized",
-              "code": 401,
+              "status": "Too Many Requests",
+              "code": 429,
               "_postman_previewlanguage": "json",
               "header": [
                 {
@@ -595,7 +595,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Bulk IP to geolocation lookup is not supported on your current subscription. This feature is available to all paid subscriptions only.\"\n}"
+              "body": "{\n  \"message\": \"Your request contains 500 IPs but you only have 120 requests remaining in your current billing period. Please reduce the number of IPs in your bulk request or upgrade your plan.\"\n}"
             },
             {
               "name": "405 Method Not Allowed – GET used on bulk endpoint",
