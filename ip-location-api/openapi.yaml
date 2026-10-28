@@ -11,9 +11,7 @@ info:
 
     - **Single lookup** (`GET /v3/ipgeo`) returns data for one IP or domain per request.
     - **Bulk lookup** (`POST /v3/ipgeo-bulk`) accepts up to 50,000 IPs or domains in a
-      single request. Available on all plans, including Free; a Free plan request is
-      rejected with HTTP 429 if the number of IPs in the request exceeds the plan's
-      remaining daily credits.
+      single request. Requires a paid plan.
 
     Use query parameters to control which optional modules are included, which fields are
     returned, and which fields are excluded. Both endpoints share the same query parameters
@@ -117,7 +115,7 @@ info:
     |---|---|---|
     | IPv4 / IPv6 lookup | Yes | Yes |
     | Domain lookup | No | Yes |
-    | Bulk lookup (`/v3/ipgeo-bulk`) | Yes (limited by remaining daily credits) | Yes |
+    | Bulk lookup (`/v3/ipgeo-bulk`) | No | Yes |
     | `include` parameter (optional modules) | No | Yes |
     | `lang` (non-English responses) | No | Yes |
     | `fields` / `excludes` filtering | Yes | Yes |
@@ -676,10 +674,8 @@ paths:
         addresses, or domain names in a single request. The request body must be a JSON
         object with an `ips` array.
 
-        This endpoint is available on all plans, including Free. On a Free plan, the
-        number of IPs in the request is checked against the remaining daily credit
-        allowance; if the request contains more IPs than remain, the API returns HTTP
-        429 instead of processing the request.
+        This endpoint requires a paid plan. Calling it with a free
+        plan API key returns HTTP 401.
 
         The response is a JSON array with one element per IP in the request. Each element
         is either a full geolocation response object or an error object with only a
@@ -1277,6 +1273,7 @@ components:
         - Any of the following `include` values are used with a Free/Developer plan API key:
           `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
           `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
+        - The bulk IP geolocation endpoint is called using a Free subscription API key.
         - The bulk IP geolocation endpoint is called using Request Origin (CORS)
           authentication. Bulk requests require an `apiKey` and cannot be authenticated
           using Request Origin alone.
@@ -1312,6 +1309,10 @@ components:
               summary: Subscription expired or trial ended
               value:
                 message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+            freePlanBulk:
+              summary: Free plan used for bulk endpoint
+              value:
+                message: "Bulk IP to geolocation lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
             requestOriginBulk:
               summary: Bulk endpoint called using Request Origin authentication
               value:
@@ -1442,8 +1443,6 @@ components:
         - The API credit allowance has been reached for a Paid subscription with
           status 'past due', 'deleted', or 'trial expired'.
         - The surcharge (overage) credit limit has been reached for the subscribed plan.
-        - A Free plan bulk request (`POST /v3/ipgeo-bulk`) contains more IPs than the
-          number of requests remaining in the current billing period.
       content:
         application/json:
           schema:
@@ -1457,10 +1456,6 @@ components:
               summary: Surcharge usage limit reached
               value:
                 message: "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
-            freePlanBulkCreditExceeded:
-              summary: Free plan bulk request exceeds remaining daily credits
-              value:
-                message: "Your request contains 500 IPs but you only have 120 requests remaining in your current billing period. Please reduce the number of IPs in your bulk request or upgrade your plan."
 
     ClientClosedRequest:
       description: |
@@ -2414,8 +2409,7 @@ tags:
       abuse contact, and User-Agent data. Accepts IPv4 addresses, IPv6 addresses, and
       domain names. The single lookup endpoint (`GET /v3/ipgeo`) resolves one IP or domain
       per request. The bulk lookup endpoint (`POST /v3/ipgeo-bulk`) accepts up to 50,000
-      entries per request and is available on all plans, including Free (subject to the
-      Free plan's remaining daily credit allowance).
+      entries per request and requires a paid plan.
     externalDocs:
       description: IPGeolocation API documentation and integration guides
       url: https://ipgeolocation.io/documentation/ip-location-api.html
