@@ -151,7 +151,7 @@
                     "moon_azimuth": 220.5,
                     "moon_parallactic_angle": 30.1,
                     "moon_illumination_percentage": "25.40",
-                    "moon_angle": 0.52
+                    "moon_angle": 357.01
                   }
                 }
               },
@@ -164,7 +164,7 @@
             }
           },
           "400": {
-            "description": "Bad Request – Possible reasons include:\n  - If the provided IPv4 or IPv6 address is invalid.\n  - If special character(s) `( ) [ ] { } | ^ \\`` is passed in the\n    API URL either as a parameter or its value, especially in the\n    case of an API key.\n  - If the provided `date` is not in the format `yyyy-MM-dd`.\n  - If an invalid or unsupported `lang` parameter is provided.\n  - If the provided values for `lat` and `long` are not numbers,\n    or fall outside the acceptable ranges. Valid latitude range is\n    **-90 to 90**; valid longitude range is **-180 to 180**.\n  - If the provided `elevation` value exceeds the maximum allowed\n    value of **10,000 meters**.\n  - If the provided `time_zone` is invalid or unrecognized.\n",
+            "description": "Bad Request – Possible reasons include:\n  - If the provided IPv4 or IPv6 address is invalid.\n  - If special character(s) `( ) [ ] { } | ^ \\`` is passed in the\n    API URL either as a parameter or its value, especially in the\n    case of an API key.\n  - If the provided `date` is not in the format `yyyy-MM-dd`.\n  - If an invalid or unsupported `lang` parameter is provided.\n  - If only one of `lat` or `long` is provided; both must be\n    provided together.\n  - If the provided values for `lat` and `long` are not numbers,\n    or fall outside the acceptable ranges. Valid latitude range is\n    **-90 to 90**; valid longitude range is **-180 to 180**.\n  - If the provided `elevation` value exceeds the maximum allowed\n    value of **10,000 meters**.\n  - If the provided `time_zone` is invalid or unrecognized.\n  - If the provided IPv4 or IPv6 address does not exist in our\n    database.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -189,10 +189,28 @@
                       "message": "You must provide date in the 'yyyy-MM-dd' format"
                     }
                   },
-                  "invalidCoordinates": {
-                    "summary": "Coordinates out of range",
+                  "missingLat": {
+                    "summary": "Only 'long' provided, 'lat' missing",
                     "value": {
-                      "message": "Longitude must be between -180 and 180 or latitude must be between -90 and 90."
+                      "message": "'lat' must not be null"
+                    }
+                  },
+                  "missingLong": {
+                    "summary": "Only 'lat' provided, 'long' missing",
+                    "value": {
+                      "message": "'long' must not be null"
+                    }
+                  },
+                  "invalidLatitude": {
+                    "summary": "Latitude out of range",
+                    "value": {
+                      "message": "Latitude must be between -90 and 90."
+                    }
+                  },
+                  "invalidLongitude": {
+                    "summary": "Longitude out of range",
+                    "value": {
+                      "message": "Longitude must be between -180 and 180."
                     }
                   },
                   "invalidElevation": {
@@ -210,7 +228,13 @@
                   "invalidLang": {
                     "summary": "Unsupported language parameter",
                     "value": {
-                      "message": "This 'xx' lang is not valid. Please use 'en' as the default language."
+                      "message": "This 'xx' lang is not valid. Please use 'en' as the default language"
+                    }
+                  },
+                  "ipNotInDatabase": {
+                    "summary": "IP not found in database",
+                    "value": {
+                      "message": "Couldn't find astronomy detail for the IP address (8.8.8.8)"
                     }
                   }
                 }
@@ -452,14 +476,14 @@
               },
               "application/xml": {
                 "schema": {
-                  "$ref": "#/components/schemas/AstronomyLookupResponse"
+                  "$ref": "#/components/schemas/AstronomyTimeSeriesResponse"
                 },
-                "example": "<LinkedHashMap>\n  <location>\n      <latitude>40.76473</latitude>\n      <longitude>-74.00084</longitude>\n      <country_name>United States</country_name>\n      <state_prov>New York</state_prov>\n      <city>New York</city>\n      <locality>Midtown West</locality>\n      <elevation>9</elevation>\n  </location>\n  <astronomy>\n      <date>2026-03-18</date>\n      <current_time>15:54:15.261</current_time>\n      <mid_night>01:03</mid_night>\n      <night_end>05:31</night_end>\n      <morning>\n          <astronomical_twilight_begin>05:31</astronomical_twilight_begin>\n          <astronomical_twilight_end>06:03</astronomical_twilight_end>\n          <nautical_twilight_begin>06:03</nautical_twilight_begin>\n          <nautical_twilight_end>06:35</nautical_twilight_end>\n          <civil_twilight_begin>06:35</civil_twilight_begin>\n          <civil_twilight_end>07:02</civil_twilight_end>\n          <blue_hour_begin>06:24</blue_hour_begin>\n          <blue_hour_end>06:46</blue_hour_end>\n          <golden_hour_begin>06:46</golden_hour_begin>\n          <golden_hour_end>07:38</golden_hour_end>\n      </morning>\n      <sunrise>07:02</sunrise>\n      <sunset>19:06</sunset>\n      <evening>\n          <golden_hour_begin>18:30</golden_hour_begin>\n          <golden_hour_end>19:22</golden_hour_end>\n          <blue_hour_begin>19:22</blue_hour_begin>\n          <blue_hour_end>19:44</blue_hour_end>\n          <civil_twilight_begin>19:06</civil_twilight_begin>\n          <civil_twilight_end>19:33</civil_twilight_end>\n          <nautical_twilight_begin>19:33</nautical_twilight_begin>\n          <nautical_twilight_end>20:05</nautical_twilight_end>\n          <astronomical_twilight_begin>20:05</astronomical_twilight_begin>\n          <astronomical_twilight_end>20:38</astronomical_twilight_end>\n      </evening>\n      <night_begin>20:38</night_begin>\n      <sun_status>-</sun_status>\n      <solar_noon>13:04</solar_noon>\n      <day_length>12:04</day_length>\n      <sun_altitude>33.35169743090959</sun_altitude>\n      <sun_distance>148782269.19009596</sun_distance>\n      <sun_azimuth>234.07341944671086</sun_azimuth>\n      <moon_phase>NEW_MOON</moon_phase>\n      <moonrise>06:44</moonrise>\n      <moonset>18:57</moonset>\n      <moon_status>-</moon_status>\n      <moon_altitude>31.430127664137917</moon_altitude>\n      <moon_distance>374392.1525559059</moon_distance>\n      <moon_azimuth>237.27212480757834</moon_azimuth>\n      <moon_parallactic_angle>39.582319837764366</moon_parallactic_angle>\n      <moon_illumination_percentage>-0.07</moon_illumination_percentage>\n      <moon_angle>357.01360045404493</moon_angle>\n  </astronomy>\n</LinkedHashMap>\n"
+                "example": "<LinkedHashMap>\n  <location>\n      <latitude>40.76473</latitude>\n      <longitude>-74.00084</longitude>\n      <country_name>United States</country_name>\n      <state_prov>New York</state_prov>\n      <city>New York</city>\n      <locality>Midtown West</locality>\n      <elevation>9</elevation>\n  </location>\n  <astronomy>\n      <date>2026-03-18</date>\n      <mid_night>00:06</mid_night>\n      <night_end>04:49</night_end>\n      <morning>\n          <astronomical_twilight_begin>04:49</astronomical_twilight_begin>\n          <astronomical_twilight_end>05:21</astronomical_twilight_end>\n          <nautical_twilight_begin>05:21</nautical_twilight_begin>\n          <nautical_twilight_end>05:53</nautical_twilight_end>\n          <civil_twilight_begin>05:53</civil_twilight_begin>\n          <civil_twilight_end>06:20</civil_twilight_end>\n          <blue_hour_begin>05:42</blue_hour_begin>\n          <blue_hour_end>06:03</blue_hour_end>\n          <golden_hour_begin>06:03</golden_hour_begin>\n          <golden_hour_end>06:57</golden_hour_end>\n      </morning>\n      <sunrise>06:20</sunrise>\n      <sunset>19:00</sunset>\n      <evening>\n          <golden_hour_begin>18:23</golden_hour_begin>\n          <golden_hour_end>19:16</golden_hour_end>\n          <blue_hour_begin>19:16</blue_hour_begin>\n          <blue_hour_end>19:38</blue_hour_end>\n          <civil_twilight_begin>19:00</civil_twilight_begin>\n          <civil_twilight_end>19:27</civil_twilight_end>\n          <nautical_twilight_begin>19:27</nautical_twilight_begin>\n          <nautical_twilight_end>19:59</nautical_twilight_end>\n          <astronomical_twilight_begin>19:59</astronomical_twilight_begin>\n          <astronomical_twilight_end>20:31</astronomical_twilight_end>\n      </evening>\n      <night_begin>20:31</night_begin>\n      <sun_status>-</sun_status>\n      <solar_noon>12:40</solar_noon>\n      <day_length>12:40</day_length>\n      <moon_phase>WAXING_CRESCENT</moon_phase>\n      <moonrise>08:45</moonrise>\n      <moonset>22:10</moonset>\n      <moon_status>-</moon_status>\n  </astronomy>\n  <astronomy>\n      <date>2026-03-19</date>\n      <mid_night>00:06</mid_night>\n      <night_end>04:47</night_end>\n      <morning>\n          <astronomical_twilight_begin>04:47</astronomical_twilight_begin>\n          <astronomical_twilight_end>05:19</astronomical_twilight_end>\n          <nautical_twilight_begin>05:19</nautical_twilight_begin>\n          <nautical_twilight_end>05:51</nautical_twilight_end>\n          <civil_twilight_begin>05:51</civil_twilight_begin>\n          <civil_twilight_end>06:18</civil_twilight_end>\n          <blue_hour_begin>05:40</blue_hour_begin>\n          <blue_hour_end>06:01</blue_hour_end>\n          <golden_hour_begin>06:01</golden_hour_begin>\n          <golden_hour_end>06:55</golden_hour_end>\n      </morning>\n      <sunrise>06:18</sunrise>\n      <sunset>19:02</sunset>\n      <evening>\n          <golden_hour_begin>18:25</golden_hour_begin>\n          <golden_hour_end>19:18</golden_hour_end>\n          <blue_hour_begin>19:18</blue_hour_begin>\n          <blue_hour_end>19:40</blue_hour_end>\n          <civil_twilight_begin>19:02</civil_twilight_begin>\n          <civil_twilight_end>19:29</civil_twilight_end>\n          <nautical_twilight_begin>19:29</nautical_twilight_begin>\n          <nautical_twilight_end>20:01</nautical_twilight_end>\n          <astronomical_twilight_begin>20:01</astronomical_twilight_begin>\n          <astronomical_twilight_end>20:33</astronomical_twilight_end>\n      </evening>\n      <night_begin>20:33</night_begin>\n      <sun_status>-</sun_status>\n      <solar_noon>12:40</solar_noon>\n      <day_length>12:44</day_length>\n      <moon_phase>WAXING_CRESCENT</moon_phase>\n      <moonrise>09:30</moonrise>\n      <moonset>23:05</moonset>\n      <moon_status>-</moon_status>\n  </astronomy>\n</LinkedHashMap>\n"
               }
             }
           },
           "400": {
-            "description": "Bad Request – Possible reasons include:\n  - If the provided IPv4 or IPv6 address is invalid.\n  - If special character(s) `( ) [ ] { } | ^ \\`` is passed in the\n    API URL either as a parameter or its value.\n  - If `dateStart` or `dateEnd` is not in the format `yyyy-MM-dd`.\n  - If the span between `dateStart` and `dateEnd` is greater than\n    **90 days**.\n  - If the provided values for `lat` and `long` are not numbers,\n    or fall outside the acceptable ranges.\n  - If the provided `elevation` value exceeds **10,000 meters**.\n  - If the provided `time_zone` is invalid or unrecognized.\n  - If an invalid or unsupported `lang` parameter is provided.\n",
+            "description": "Bad Request – Possible reasons include:\n  - If the provided IPv4 or IPv6 address is invalid.\n  - If special character(s) `( ) [ ] { } | ^ \\`` is passed in the\n    API URL either as a parameter or its value.\n  - If `dateStart` or `dateEnd` is not in the format `yyyy-MM-dd`.\n  - If the span between `dateStart` and `dateEnd` is greater than\n    **90 days**.\n  - If only one of `lat` or `long` is provided; both must be\n    provided together.\n  - If the provided values for `lat` and `long` are not numbers,\n    or fall outside the acceptable ranges.\n  - If the provided `elevation` value exceeds **10,000 meters**.\n  - If the provided `time_zone` is invalid or unrecognized.\n  - If an invalid or unsupported `lang` parameter is provided.\n  - If the location address provided to the `location` parameter\n    is invalid. A city-level or state-level address must be\n    provided.\n  - If the provided IPv4 or IPv6 address does not exist in our\n    database.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -490,10 +514,28 @@
                       "message": "Date range cannot exceed 90 days."
                     }
                   },
-                  "invalidCoordinates": {
-                    "summary": "Coordinates out of range",
+                  "missingLat": {
+                    "summary": "Only 'long' provided, 'lat' missing",
                     "value": {
-                      "message": "Longitude must be between -180 and 180 or latitude must be between -90 and 90."
+                      "message": "'lat' must not be null"
+                    }
+                  },
+                  "missingLong": {
+                    "summary": "Only 'lat' provided, 'long' missing",
+                    "value": {
+                      "message": "'long' must not be null"
+                    }
+                  },
+                  "invalidLatitude": {
+                    "summary": "Latitude out of range",
+                    "value": {
+                      "message": "Latitude must be between -90 and 90."
+                    }
+                  },
+                  "invalidLongitude": {
+                    "summary": "Longitude out of range",
+                    "value": {
+                      "message": "Longitude must be between -180 and 180."
                     }
                   },
                   "invalidElevation": {
@@ -511,7 +553,19 @@
                   "invalidLang": {
                     "summary": "Unsupported language parameter",
                     "value": {
-                      "message": "This 'xx' lang is not valid. Please use 'en' as the default language."
+                      "message": "This 'xx' lang is not valid. Please use 'en' as the default language"
+                    }
+                  },
+                  "invalidLocation": {
+                    "summary": "Invalid location address",
+                    "value": {
+                      "message": "We couldn't find the location 'InvalidCity, XX'. Try a city or state level address only."
+                    }
+                  },
+                  "ipNotInDatabase": {
+                    "summary": "IP not found in database",
+                    "value": {
+                      "message": "Couldn't find astronomy detail for the IP address (8.8.8.8)"
                     }
                   }
                 }
@@ -573,7 +627,7 @@
             }
           },
           "404": {
-            "$ref": "#/components/responses/NotFound"
+            "$ref": "#/components/responses/NotFoundTimeSeries"
           },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowed"
@@ -750,7 +804,7 @@
         "name": "elevation",
         "in": "query",
         "required": false,
-        "description": "Elevation of the location above sea level in meters. Used to\nrefine astronomical calculations.\n\nDefaults to `0` if not provided. Maximum allowed value is\n**10,000 meters**. Negative values are treated as `0`.\n",
+        "description": "Elevation of the location above sea level in meters. Used to\nrefine astronomical calculations.\n\nWhen not provided, the elevation of the nearest known city to the\nresolved coordinates is used automatically; it falls back to `0`\nonly when no elevation data is available for that location.\nMaximum allowed value is **10,000 meters**; only this upper bound\nis enforced (HTTP 400 if exceeded) — negative values are not\nclamped and are passed through as provided.\n",
         "schema": {
           "type": "number",
           "format": "double",
@@ -796,7 +850,7 @@
         "name": "lang",
         "in": "query",
         "required": false,
-        "description": "Language code for translated location names in the `location` object.\nOnly applies when the lookup is performed via an IP address.\n\nDefaults to `en`. Non-English responses require a paid plan. Free\nplans always receive English regardless of this parameter. Unsupported\n`lang` values return HTTP 400.\n",
+        "description": "Language code for translated location names in the `location` object.\nOnly applies when the lookup is performed via an IP address.\n\nDefaults to `en`. Non-English responses require a paid plan.\nRequesting a non-English `lang` value on a Free/Developer plan\nreturns HTTP 401 (see the `freePlanLang` example under the 401\nresponse) rather than silently falling back to English. Unsupported\n`lang` values return HTTP 400.\n",
         "schema": {
           "type": "string",
           "default": "en",
@@ -812,26 +866,21 @@
             "it",
             "ko",
             "fa",
-            "pt"
+            "pt",
+            "ar"
           ]
         }
       }
     },
     "responses": {
       "NotFound": {
-        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address does not exist in the database.\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of a URL parameter (`ip=`).\n  - If the location address provided to the `location` parameter is\n    invalid. A city-level or state-level address must be provided.\n  - If the wrong endpoint is called that does not exist in the API.\n",
+        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of a URL parameter (`ip=`).\n  - If the location address provided to the `location` parameter is\n    invalid. A city-level or state-level address must be provided.\n    (This applies to the single-date `/v3/astronomy` endpoint only;\n    the `/v3/astronomy/timeSeries` endpoint returns HTTP 400 for\n    this case instead.)\n  - If the wrong endpoint is called that does not exist in the API.\n",
         "content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ErrorResponse"
             },
             "examples": {
-              "ipNotInDatabase": {
-                "summary": "IP not found in database",
-                "value": {
-                  "message": "Provided IPv4 or IPv6 address does not exist in our database."
-                }
-              },
               "invalidLocation": {
                 "summary": "Invalid location address",
                 "value": {
@@ -842,6 +891,24 @@
                 "summary": "Incorrect or non-existent endpoint",
                 "value": {
                   "message": "No endpoint GET /v3/astronomy-invalid."
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFoundTimeSeries": {
+        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of a URL parameter (`ip=`).\n  - If the wrong endpoint is called that does not exist in the API.\n\nNote: unlike the single-date `/v3/astronomy` endpoint, an invalid or\nunresolvable `location` address on this endpoint returns HTTP 400,\nnot 404 (see the `invalidLocation` example under the 400 response).\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "wrongEndpoint": {
+                "summary": "Incorrect or non-existent endpoint",
+                "value": {
+                  "message": "No endpoint GET /v3/astronomy/timeSeries-invalid."
                 }
               }
             }
@@ -1212,12 +1279,12 @@
           },
           "sunrise": {
             "type": "string",
-            "description": "Time at which the sun rises at the resolved location, in `HH:mm` format.\n",
+            "description": "Time at which the sun rises at the resolved location, in `HH:mm`\nformat. Returns `\"-:-\"` if the sun does not rise on this date\n(polar day or polar night).\n",
             "example": "06:20"
           },
           "sunset": {
             "type": "string",
-            "description": "Time at which the sun sets at the resolved location, in `HH:mm` format.\n",
+            "description": "Time at which the sun sets at the resolved location, in `HH:mm`\nformat. Returns `\"-:-\"` if the sun does not set on this date\n(polar day or polar night).\n",
             "example": "19:00"
           },
           "evening": {
@@ -1240,7 +1307,7 @@
           },
           "day_length": {
             "type": "string",
-            "description": "Total length of daylight for the date, from sunrise to sunset,\nin `HH:mm` format.\n",
+            "description": "Total length of daylight for the date, from sunrise to sunset,\nin `HH:mm` format. Returns `\"-:-\"` if sunrise or sunset does\nnot occur on this date (polar day or polar night).\n",
             "example": "12:40"
           },
           "sun_altitude": {
@@ -1323,8 +1390,8 @@
           "moon_angle": {
             "type": "number",
             "format": "float",
-            "description": "The angular diameter of the moon as observed from Earth,\nmeasured in degrees.\n",
-            "example": 0.52
+            "description": "The moon-sun ecliptic elongation angle, normalized to the\n0–360° range. This is the phase angle used to derive\n`moon_phase` and `moon_illumination_percentage`; it is not\nthe moon's angular diameter.\n",
+            "example": 357.01
           }
         }
       },
@@ -1332,6 +1399,11 @@
         "type": "object",
         "description": "Astronomical data for a single calendar day within the time series\nresponse.\n\nContains event times for sunrise, sunset, moonrise, moonset,\ntwilight phases, solar noon, and day length.\n\nNote: Real-time positional data (sun/moon altitude, azimuth,\ndistance, parallactic angle, illumination percentage, and moon\nangle) is not included in time series entries.\n",
         "properties": {
+          "time_zone": {
+            "type": "string",
+            "description": "The IANA timezone identifier used for timestamp conversion.\nThis field appears only when the `time_zone` query parameter\nwas provided in the request.\n",
+            "example": "Europe/London"
+          },
           "date": {
             "type": "string",
             "description": "The calendar date for this entry, in `yyyy-MM-dd` format.",
@@ -1380,7 +1452,7 @@
           },
           "day_length": {
             "type": "string",
-            "description": "Total daylight duration from sunrise to sunset, in `HH:mm` format.",
+            "description": "Total daylight duration from sunrise to sunset, in `HH:mm`\nformat. Returns `\"-:-\"` if sunrise or sunset does not occur\non this date (polar day or polar night).\n",
             "example": "12:40"
           },
           "moon_phase": {

@@ -360,7 +360,7 @@
         "name": "fields",
         "in": "query",
         "required": false,
-        "description": "Comma-separated list of fields or objects to return. Everything else is omitted.\nThe `ip` field is always returned regardless of this filter.\n\nSupports dot-notation for nested fields: `security.is_tor`, `security.threat_score`.\n\nIf the same field or object is specified in both `fields` and `excludes`, the\nobject is still returned, but it will be empty.\n\nIf you list both an object key and one of its nested fields separated by comma\n(e.g. `security,security.is_vpn`), the full object is returned.\n\nUnknown field paths are ignored. The API still returns HTTP 200.\n\nAvailable on all plans including Free.\n",
+        "description": "Comma-separated list of fields or objects to return. Everything else is omitted.\nThe `ip` field is always returned regardless of this filter.\n\nSupports dot-notation for nested fields: `security.is_tor`, `security.threat_score`.\n\nIf the same nested field path is specified in both `fields` and `excludes`\n(e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned\nas an empty value. Specifying the same top-level object name in both (e.g.\n`fields=security&excludes=security`) has no emptying effect — the full object\nis returned.\n\nIf you list both an object key and one of its nested fields separated by comma\n(e.g. `security,security.is_vpn`), the full object is returned.\n\nUnknown field paths are ignored. The API still returns HTTP 200.\n\nThis parameter only has an effect once a request is authorized; the IP Security\nAPI as a whole requires a paid plan (see Usage Limits above).\n",
         "schema": {
           "type": "string"
         },
@@ -383,7 +383,7 @@
         "name": "excludes",
         "in": "query",
         "required": false,
-        "description": "Comma-separated list of fields or objects to remove from the response. The `ip`\nfield cannot be excluded.\n\nSupports dot-notation for nested fields: `security.is_relay`.\n\nIf the same field or object is specified in both `fields` and `excludes`, the\nobject is still returned, but it will be empty.\n\nUnknown fields or object keys in `excludes` are ignored. The API still returns\nHTTP 200.\n\nAvailable on all plans including Free.\n",
+        "description": "Comma-separated list of fields or objects to remove from the response. The `ip`\nfield cannot be excluded.\n\nSupports dot-notation for nested fields: `security.is_relay`.\n\nIf the same nested field path is specified in both `fields` and `excludes`\n(e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned\nas an empty value. Specifying the same top-level object name in both (e.g.\n`fields=security&excludes=security`) has no emptying effect — the full object\nis returned.\n\nUnknown fields or object keys in `excludes` are ignored. The API still returns\nHTTP 200.\n\nThis parameter only has an effect once a request is authorized; the IP Security\nAPI as a whole requires a paid plan (see Usage Limits above).\n",
         "schema": {
           "type": "string"
         },
@@ -415,7 +415,7 @@
     },
     "responses": {
       "BadRequest": {
-        "description": "Bad request. Returned for one of the following reasons:\n\n- The provided IPv4 or IPv6 address is invalid.\n- Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,\n  either in a parameter name or its value (especially in the API key).\n- For the `security-bulk` endpoint:\n  - The request payload is empty or missing.\n  - The JSON body is malformed.\n  - The `ips` field is missing or the `ips` array is empty.\n  - More than 50,000 IP addresses are provided in the request.\n",
+        "description": "Bad request. Returned for one of the following reasons:\n\n- The provided IPv4 or IPv6 address is invalid. This API does not accept domain\n  names in the `ip` parameter — a domain name is rejected the same way as any\n  other non-IP string.\n- Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,\n  either in a parameter name or its value (especially in the API key).\n- For the `security-bulk` endpoint:\n  - The request payload is empty or missing.\n  - The JSON body is malformed.\n  - The `ips` field is missing or the `ips` array is empty.\n  - More than 50,000 IP addresses are provided in the request.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -463,7 +463,7 @@
         }
       },
       "Unauthorized": {
-        "description": "Unauthorized. Returned for one of the following reasons:\n\n- The `apiKey` URL parameter is missing.\n- An invalid (random or incorrect) API key is provided.\n- The account has been disabled or locked due to abuse or illegal activity.\n- The API request is made using an API key for a database subscription.\n- The API request is made using a free subscription API key.\n- The subscription is in a 'paused' state.\n- The subscription trial has expired.\n- The account’s active-until date has passed and renewal or upgrade is required.\n- A domain name is passed in the `ip` parameter when calling the IP Security API.\n- The bulk IP security lookup endpoint is called using a free subscription API key.\n- The bulk IP security lookup endpoint is called using Request Origin (CORS)\n  authentication. Bulk requests require an `apiKey` and cannot be authenticated\n  using Request Origin alone.\n",
+        "description": "Unauthorized. Returned for one of the following reasons:\n\n- The `apiKey` URL parameter is missing.\n- An invalid (random or incorrect) API key is provided.\n- The account has been disabled or locked due to abuse or illegal activity.\n- The API request is made using an API key for a database subscription.\n- The API request is made using a free subscription API key.\n- The subscription is in a 'paused' state.\n- The subscription trial has expired.\n- The account’s active-until date has passed and renewal or upgrade is required.\n- The bulk IP security lookup endpoint is called using a free subscription API key.\n- The bulk IP security lookup endpoint is called using Request Origin (CORS)\n  authentication. Bulk requests require an `apiKey` and cannot be authenticated\n  using Request Origin alone.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -495,9 +495,15 @@
                 }
               },
               "freePlanAccess": {
-                "summary": "Free subscription used for IP Security API",
+                "summary": "Free subscription used for single IP Security lookup",
                 "value": {
-                  "message": "IP Security API is not supported on your current subscription. This feature is available on paid subscriptions only."
+                  "message": "IP Security Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
+                }
+              },
+              "freePlanAccessBulk": {
+                "summary": "Free subscription used for bulk IP Security lookup",
+                "value": {
+                  "message": "Bulk IP Security Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
                 }
               },
               "pausedSubscription": {
@@ -506,22 +512,22 @@
                   "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                 }
               },
-              "expiredSubscription": {
-                "summary": "Subscription expired or trial ended",
+              "trialExpired": {
+                "summary": "Subscription trial has expired",
                 "value": {
-                  "message": "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
+                  "message": "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
                 }
               },
-              "domainLookupNotSupported": {
-                "summary": "Domain lookup used with Security API",
+              "subscriptionExpired": {
+                "summary": "Subscription active-until date has passed",
                 "value": {
-                  "message": "Domain lookup is not supported for the IP Security API."
+                  "message": "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 }
               },
               "requestOriginBulk": {
                 "summary": "Bulk endpoint called using Request Origin authentication",
                 "value": {
-                  "message": "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
+                  "message": "Bulk queries are not allowed with request origins. Please use some API key to perform bulk queries."
                 }
               }
             }

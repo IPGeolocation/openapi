@@ -74,9 +74,21 @@ info:
     - **`POST /v3/user-agent-bulk`** is available on **paid plans only**.
     - User agent data via `/v3/ipgeo?include=user_agent` is available on **paid plans only**.
 
+    ## Response Formats
+
+    The API supports JSON (default) and XML output.
+
+    - Set the `output` query parameter to `json` or `xml`.
+    - Alternatively, set the `Accept` header to `application/json`, `application/xml`,
+      or `text/xml`.
+
+    If neither is specified, the response is returned as JSON. XML responses use a
+    `LinkedHashMap` root element (an `ArrayList` of them for bulk requests).
+
     ## Parameter Name Casing
 
-    Query parameter names are case-sensitive. Use exact names such as `apiKey`.
+    Query parameter names are case-sensitive. Use exact names such as
+    `apiKey` and `output`.
 
   contact:
     name: IPGeolocation Support
@@ -137,6 +149,7 @@ paths:
           schema:
             type: string
           example: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+        - $ref: "#/components/parameters/Output"
 
       responses:
         "200":
@@ -207,6 +220,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "429":
@@ -245,6 +260,7 @@ paths:
 
       parameters:
         - $ref: "#/components/parameters/ApiKey"
+        - $ref: "#/components/parameters/Output"
 
       requestBody:
         required: true
@@ -331,8 +347,14 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
+        "413":
+          $ref: "#/components/responses/ContentTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "499":
@@ -366,6 +388,7 @@ paths:
 
       parameters:
         - $ref: "#/components/parameters/ApiKey"
+        - $ref: "#/components/parameters/Output"
 
       requestBody:
         required: true
@@ -452,6 +475,27 @@ paths:
                   version: "??"
                   version_major: "??"
                   build: "??"
+              - user_agent_string: "Mozilla/5.0 (Linux; U; en-US) AppleWebKit/528.5+ (KHTML, like Gecko, Safari/528.5+) Version/4.0 Kindle/3.0 (screen 600x800; rotate)"
+                name: "Kindle"
+                type: "Browser"
+                version: "4.0"
+                version_major: "4"
+                device:
+                  name: "Amazon Kindle"
+                  type: "eReader"
+                  brand: "Amazon"
+                  cpu: "Unknown"
+                engine:
+                  name: "AppleWebKit"
+                  type: "Browser"
+                  version: "528.5"
+                  version_major: "528"
+                operating_system:
+                  name: "FireOS"
+                  type: "Mobile"
+                  version: "??"
+                  version_major: "??"
+                  build: "??"
             application/xml:
               schema:
                 type: array
@@ -516,14 +560,46 @@ paths:
                           <build>??</build>
                       </operating_system>
                   </item>
+                  <item>
+                      <user_agent_string>Mozilla/5.0 (Linux; U; en-US) AppleWebKit/528.5+ (KHTML, like Gecko, Safari/528.5+) Version/4.0 Kindle/3.0 (screen 600x800; rotate)</user_agent_string>
+                      <name>Kindle</name>
+                      <type>Browser</type>
+                      <version>4.0</version>
+                      <version_major>4</version_major>
+                      <device>
+                          <name>Amazon Kindle</name>
+                          <type>eReader</type>
+                          <brand>Amazon</brand>
+                          <cpu>Unknown</cpu>
+                      </device>
+                      <engine>
+                          <name>AppleWebKit</name>
+                          <type>Browser</type>
+                          <version>528.5</version>
+                          <version_major>528</version_major>
+                      </engine>
+                      <operating_system>
+                          <name>FireOS</name>
+                          <type>Mobile</type>
+                          <version>??</version>
+                          <version_major>??</version_major>
+                          <build>??</build>
+                      </operating_system>
+                  </item>
                 </ArrayList>
 
         "400":
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
+        "413":
+          $ref: "#/components/responses/ContentTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "499":
@@ -554,6 +630,23 @@ components:
         type: string
       example: "YOUR_API_KEY"
 
+    Output:
+      name: output
+      in: query
+      required: false
+      description: |
+        Desired response format. Defaults to `json` if not specified. You can also
+        control the format using the `Accept` header (`application/json`,
+        `application/xml`, or `text/xml`). If both are provided, the `output` parameter
+        takes precedence.
+
+        If `output` is unknown or unsupported, it is ignored and the response defaults
+        to JSON (`application/json`) with HTTP 200.
+      schema:
+        type: string
+        enum: [json, xml]
+        default: json
+
   responses:
     BadRequest:
       description: |
@@ -563,6 +656,9 @@ components:
         - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
           field when calling `/v3/user-agent-bulk`.
         - More than 50,000 user agent strings are provided in a single bulk request.
+        - No `User-Agent` header is present when calling `GET /v3/user-agent`. Unlike the
+          POST body, there is no alternative way to supply the string for this call, so a
+          missing/blank header always fails validation.
       content:
         application/json:
           schema:
@@ -576,6 +672,10 @@ components:
               summary: Empty or null user agent string
               value:
                 message: "User-Agent string must not be blank"
+            missingUaStringHeader:
+              summary: Missing User-Agent header on GET
+              value:
+                message: "'userAgentString' must not be empty or null"
             emptyBulkList:
               summary: Empty uaStrings array or missing field
               value:

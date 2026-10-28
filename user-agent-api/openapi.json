@@ -3,7 +3,7 @@
   "info": {
     "title": "IPGeolocation.io: User Agent API",
     "version": "3.0",
-    "description": "Parse browser, device, and operating system details from a User Agent string.\nThe API also detects crawlers, bots, and potential attackers based on anomalies\nin the user agent string.\n\nTwo endpoints are available, supporting three usage modes:\n\n- **`GET /v3/user-agent`** supports two modes: omit the `User-Agent` header to\n  auto-detect the caller's own user agent, or pass any string in the `User-Agent`\n  header to parse it explicitly.\n- **`POST /v3/user-agent`** parses a custom user agent string from a JSON body\n  (`uaString` field). Available on paid plans only.\n- **`POST /v3/user-agent-bulk`** parses up to 50,000 user agent strings in a\n  single request. Available on paid plans only.\n\nUser agent data can also be retrieved alongside IP geolocation data via the\n`/v3/ipgeo` endpoint using `include=user_agent`.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Credit Usage\n\nCredits are charged only for successful **HTTP 200** responses. The exact number of\ncredits consumed by a request is returned in the `X-Credits-Charged` response header.\n\nEach successful user agent lookup costs **1 credit** per user agent string parsed.\nFor bulk requests, the total credits charged equals the number of user agent strings\nsubmitted.\n\nWhen using `/v3/ipgeo` with `include=user_agent`, no additional credits are charged\nbeyond the base IP lookup cost.\n\n## Plan Availability\n\n- **`GET /v3/user-agent`** (auto-detect or explicit `User-Agent` header) is available\n  on all plans including Free.\n- **`POST /v3/user-agent`** (custom string via JSON body) is available on **paid plans only**.\n- **`POST /v3/user-agent-bulk`** is available on **paid plans only**.\n- User agent data via `/v3/ipgeo?include=user_agent` is available on **paid plans only**.\n\n## Parameter Name Casing\n\nQuery parameter names are case-sensitive. Use exact names such as `apiKey`.\n",
+    "description": "Parse browser, device, and operating system details from a User Agent string.\nThe API also detects crawlers, bots, and potential attackers based on anomalies\nin the user agent string.\n\nTwo endpoints are available, supporting three usage modes:\n\n- **`GET /v3/user-agent`** supports two modes: omit the `User-Agent` header to\n  auto-detect the caller's own user agent, or pass any string in the `User-Agent`\n  header to parse it explicitly.\n- **`POST /v3/user-agent`** parses a custom user agent string from a JSON body\n  (`uaString` field). Available on paid plans only.\n- **`POST /v3/user-agent-bulk`** parses up to 50,000 user agent strings in a\n  single request. Available on paid plans only.\n\nUser agent data can also be retrieved alongside IP geolocation data via the\n`/v3/ipgeo` endpoint using `include=user_agent`.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Credit Usage\n\nCredits are charged only for successful **HTTP 200** responses. The exact number of\ncredits consumed by a request is returned in the `X-Credits-Charged` response header.\n\nEach successful user agent lookup costs **1 credit** per user agent string parsed.\nFor bulk requests, the total credits charged equals the number of user agent strings\nsubmitted.\n\nWhen using `/v3/ipgeo` with `include=user_agent`, no additional credits are charged\nbeyond the base IP lookup cost.\n\n## Plan Availability\n\n- **`GET /v3/user-agent`** (auto-detect or explicit `User-Agent` header) is available\n  on all plans including Free.\n- **`POST /v3/user-agent`** (custom string via JSON body) is available on **paid plans only**.\n- **`POST /v3/user-agent-bulk`** is available on **paid plans only**.\n- User agent data via `/v3/ipgeo?include=user_agent` is available on **paid plans only**.\n\n## Response Formats\n\nThe API supports JSON (default) and XML output.\n\n- Set the `output` query parameter to `json` or `xml`.\n- Alternatively, set the `Accept` header to `application/json`, `application/xml`,\n  or `text/xml`.\n\nIf neither is specified, the response is returned as JSON. XML responses use a\n`LinkedHashMap` root element (an `ArrayList` of them for bulk requests).\n\n## Parameter Name Casing\n\nQuery parameter names are case-sensitive. Use exact names such as\n`apiKey` and `output`.\n",
     "contact": {
       "name": "IPGeolocation Support",
       "url": "https://ipgeolocation.io/contact.html",
@@ -54,6 +54,9 @@
               "type": "string"
             },
             "example": "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+          },
+          {
+            "$ref": "#/components/parameters/Output"
           }
         ],
         "responses": {
@@ -114,6 +117,9 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowed"
           },
@@ -150,6 +156,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/ApiKey"
+          },
+          {
+            "$ref": "#/components/parameters/Output"
           }
         ],
         "requestBody": {
@@ -231,8 +240,17 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "413": {
+            "$ref": "#/components/responses/ContentTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequests"
@@ -269,6 +287,9 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/ApiKey"
+          },
+          {
+            "$ref": "#/components/parameters/Output"
           }
         ],
         "requestBody": {
@@ -373,6 +394,32 @@
                       "version_major": "??",
                       "build": "??"
                     }
+                  },
+                  {
+                    "user_agent_string": "Mozilla/5.0 (Linux; U; en-US) AppleWebKit/528.5+ (KHTML, like Gecko, Safari/528.5+) Version/4.0 Kindle/3.0 (screen 600x800; rotate)",
+                    "name": "Kindle",
+                    "type": "Browser",
+                    "version": "4.0",
+                    "version_major": "4",
+                    "device": {
+                      "name": "Amazon Kindle",
+                      "type": "eReader",
+                      "brand": "Amazon",
+                      "cpu": "Unknown"
+                    },
+                    "engine": {
+                      "name": "AppleWebKit",
+                      "type": "Browser",
+                      "version": "528.5",
+                      "version_major": "528"
+                    },
+                    "operating_system": {
+                      "name": "FireOS",
+                      "type": "Mobile",
+                      "version": "??",
+                      "version_major": "??",
+                      "build": "??"
+                    }
                   }
                 ]
               },
@@ -390,7 +437,7 @@
                     }
                   }
                 },
-                "example": "<ArrayList>\n  <item>\n      <user_agent_string>Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36</user_agent_string>\n      <name>Chrome</name>\n      <type>Browser</type>\n      <version>62.0.3202.84</version>\n      <version_major>62</version_major>\n      <device>\n          <name>Samsung SM-G960F</name>\n          <type>Phone</type>\n          <brand>Samsung</brand>\n          <cpu>Unknown</cpu>\n      </device>\n      <engine>\n          <name>Blink</name>\n          <type>Browser</type>\n          <version>62.0</version>\n          <version_major>62</version_major>\n      </engine>\n      <operating_system>\n          <name>Android</name>\n          <type>Mobile</type>\n          <version>8.0.0</version>\n          <version_major>8</version_major>\n          <build>R16NW</build>\n      </operating_system>\n  </item>\n  <item>\n      <user_agent_string>Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/531.2+ (KHTML, like Gecko) Version/5.0 Safari/533.2+ Kindle/3.0+</user_agent_string>\n      <name>Kindle</name>\n      <type>Browser</type>\n      <version>3.0</version>\n      <version_major>3</version_major>\n      <device>\n          <name>Amazon Kindle</name>\n          <type>eReader</type>\n          <brand>Amazon</brand>\n          <cpu>ARMv7l</cpu>\n      </device>\n      <engine>\n          <name>AppleWebKit</name>\n          <type>Browser</type>\n          <version>531.2</version>\n          <version_major>531</version_major>\n      </engine>\n      <operating_system>\n          <name>FireOS</name>\n          <type>Mobile</type>\n          <version>??</version>\n          <version_major>??</version_major>\n          <build>??</build>\n      </operating_system>\n  </item>\n</ArrayList>\n"
+                "example": "<ArrayList>\n  <item>\n      <user_agent_string>Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36</user_agent_string>\n      <name>Chrome</name>\n      <type>Browser</type>\n      <version>62.0.3202.84</version>\n      <version_major>62</version_major>\n      <device>\n          <name>Samsung SM-G960F</name>\n          <type>Phone</type>\n          <brand>Samsung</brand>\n          <cpu>Unknown</cpu>\n      </device>\n      <engine>\n          <name>Blink</name>\n          <type>Browser</type>\n          <version>62.0</version>\n          <version_major>62</version_major>\n      </engine>\n      <operating_system>\n          <name>Android</name>\n          <type>Mobile</type>\n          <version>8.0.0</version>\n          <version_major>8</version_major>\n          <build>R16NW</build>\n      </operating_system>\n  </item>\n  <item>\n      <user_agent_string>Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/531.2+ (KHTML, like Gecko) Version/5.0 Safari/533.2+ Kindle/3.0+</user_agent_string>\n      <name>Kindle</name>\n      <type>Browser</type>\n      <version>3.0</version>\n      <version_major>3</version_major>\n      <device>\n          <name>Amazon Kindle</name>\n          <type>eReader</type>\n          <brand>Amazon</brand>\n          <cpu>ARMv7l</cpu>\n      </device>\n      <engine>\n          <name>AppleWebKit</name>\n          <type>Browser</type>\n          <version>531.2</version>\n          <version_major>531</version_major>\n      </engine>\n      <operating_system>\n          <name>FireOS</name>\n          <type>Mobile</type>\n          <version>??</version>\n          <version_major>??</version_major>\n          <build>??</build>\n      </operating_system>\n  </item>\n  <item>\n      <user_agent_string>Mozilla/5.0 (Linux; U; en-US) AppleWebKit/528.5+ (KHTML, like Gecko, Safari/528.5+) Version/4.0 Kindle/3.0 (screen 600x800; rotate)</user_agent_string>\n      <name>Kindle</name>\n      <type>Browser</type>\n      <version>4.0</version>\n      <version_major>4</version_major>\n      <device>\n          <name>Amazon Kindle</name>\n          <type>eReader</type>\n          <brand>Amazon</brand>\n          <cpu>Unknown</cpu>\n      </device>\n      <engine>\n          <name>AppleWebKit</name>\n          <type>Browser</type>\n          <version>528.5</version>\n          <version_major>528</version_major>\n      </engine>\n      <operating_system>\n          <name>FireOS</name>\n          <type>Mobile</type>\n          <version>??</version>\n          <version_major>??</version_major>\n          <build>??</build>\n      </operating_system>\n  </item>\n</ArrayList>\n"
               }
             }
           },
@@ -400,8 +447,17 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowed"
+          },
+          "413": {
+            "$ref": "#/components/responses/ContentTooLarge"
+          },
+          "415": {
+            "$ref": "#/components/responses/UnsupportedMediaType"
           },
           "429": {
             "$ref": "#/components/responses/TooManyRequests"
@@ -439,11 +495,22 @@
           "type": "string"
         },
         "example": "YOUR_API_KEY"
+      },
+      "Output": {
+        "name": "output",
+        "in": "query",
+        "required": false,
+        "description": "Desired response format. Defaults to `json` if not specified. You can also\ncontrol the format using the `Accept` header (`application/json`,\n`application/xml`, or `text/xml`). If both are provided, the `output` parameter\ntakes precedence.\n\nIf `output` is unknown or unsupported, it is ignored and the response defaults\nto JSON (`application/json`) with HTTP 200.\n",
+        "schema": {
+          "type": "string",
+          "enum": ["json", "xml"],
+          "default": "json"
+        }
       }
     },
     "responses": {
       "BadRequest": {
-        "description": "Bad Request. Returned for one of the following reasons:\n- Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.\n- The `uaString` is empty or null when calling `/v3/user-agent`(POST).\n- The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`\n  field when calling `/v3/user-agent-bulk`.\n- More than 50,000 user agent strings are provided in a single bulk request.\n",
+        "description": "Bad Request. Returned for one of the following reasons:\n- Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.\n- The `uaString` is empty or null when calling `/v3/user-agent`(POST).\n- The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`\n  field when calling `/v3/user-agent-bulk`.\n- More than 50,000 user agent strings are provided in a single bulk request.\n- No `User-Agent` header is present when calling `GET /v3/user-agent`. Unlike the\n  POST body, there is no alternative way to supply the string for this call, so a\n  missing/blank header always fails validation.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -460,6 +527,12 @@
                 "summary": "Empty or null user agent string",
                 "value": {
                   "message": "User-Agent string must not be blank"
+                }
+              },
+              "missingUaStringHeader": {
+                "summary": "Missing User-Agent header on GET",
+                "value": {
+                  "message": "'userAgentString' must not be empty or null"
                 }
               },
               "emptyBulkList": {
