@@ -73,7 +73,6 @@ info:
 
     A **single IP abuse contact lookup** (`GET /v3/abuse`) consumes **1 credit** per request.
 
-
     ## Field Filtering
 
     Use `fields` to cherry-pick specific fields, or `excludes` to drop fields you do not
@@ -165,16 +164,16 @@ paths:
               example:
                   ip: "1.0.0.0"
                   abuse:
-                    route: "91.128.0.0/14"
-                    country: "SE"
-                    name: "Swipnet Staff"
+                    route: "1.0.0.0/24"
+                    country: "AU"
+                    name: "IRT-APNICRANDNET-AU"
                     organization: ""
                     kind: "group"
-                    address: "Tele2 AB/Swedish IP Network, IP Registry, Torshamnsgatan 17 164 40 Kista SWEDEN"
+                    address: "PO Box 3646, South Brisbane, QLD 4101, Australia"
                     emails:
-                      - "abuse@tele2.com"
+                      - "helpdesk@apnic.net"
                     phone_numbers:
-                      - "+46 8 5626 42 10"
+                      - "+61738583100"
 
             application/xml:
               schema:
@@ -253,8 +252,11 @@ components:
 
         Supports dot-notation for nested fields: `abuse.route`, `abuse.organization`.
 
-        If the same field or object is specified in both `fields` and `excludes`, the
-        object is still returned, but it will be empty.
+        If the same **nested** field path is specified in both `fields` and `excludes`
+        (e.g. `fields=abuse.name&excludes=abuse.name`), the parent object is still
+        returned, but that field will be empty. Duplicating a **bare top-level**
+        object name in both parameters (e.g. `fields=abuse&excludes=abuse`) has no
+        emptying effect: the full, unfiltered object is returned.
 
         If you list both an object key and one of its nested fields separated by comma
         (e.g. `abuse,abuse.name`), the full object is returned.
@@ -285,8 +287,11 @@ components:
 
         Supports dot-notation for nested fields: `abuse.name`.
 
-        If the same field or object is specified in both `fields` and `excludes`, the
-        object is still returned, but it will be empty.
+        If the same **nested** field path is specified in both `fields` and `excludes`
+        (e.g. `fields=abuse.name&excludes=abuse.name`), the parent object is still
+        returned, but that field will be empty. Duplicating a **bare top-level**
+        object name in both parameters (e.g. `fields=abuse&excludes=abuse`) has no
+        emptying effect: the full, unfiltered object is returned.
 
         Unknown fields or object keys in `excludes` are ignored. The API still returns
         HTTP 200.
@@ -309,8 +314,9 @@ components:
       description: |
         Desired response format. Defaults to `json` if not specified. You can also
         control the format using the `Accept` header (`application/json`,
-        `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-        takes precedence.
+        `application/xml`, or `text/xml`). If both are provided, the `Accept` header
+        takes precedence; `output` is used only as a fallback when the `Accept`
+        header is absent or set to `*/*`.
 
         If `output` is unknown or unsupported, it is ignored and the response defaults
         to JSON (`application/json`) with HTTP 200.
@@ -334,7 +340,7 @@ components:
             invalidIp:
               summary: Invalid IPv4/IPv6 input
               value:
-                message: "Provided name, service or IP address '999.999.999.999' is not valid."
+                message: "Provided IP address '999.999.999.999' is not valid."
             specialCharacters:
               summary: Special characters in API URL or key
               value:
@@ -406,7 +412,7 @@ components:
             ipNotInDatabase:
               summary: IPv4/IPv6 not found in database
               value:
-                message: "Provided IPv4 or IPv6 address does not exist in our database."
+                message: "Provided IP Address '203.0.113.5' doesn't exist in our database."
             ipAsPathVariable:
               summary: IP passed as path variable instead of query parameter
               value:
@@ -548,7 +554,7 @@ components:
         message:
           type: string
           description: Human-readable explanation of what went wrong. Use HTTP status for control flow.
-          example: "Provided name, service or IP address '999.999.999.999' is not valid."
+          example: "Provided IP address '999.999.999.999' is not valid."
       
     AbuseLookupResponse:
       type: object
@@ -619,7 +625,6 @@ components:
             type: string
           example:
             - "+46 8 5626 42 10"
-
 
   securitySchemes:
     ApiKeyAuth:

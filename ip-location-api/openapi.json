@@ -759,7 +759,8 @@
             "it",
             "ko",
             "fa",
-            "pt"
+            "pt",
+            "ar"
           ]
         }
       },
@@ -913,7 +914,7 @@
               "requestOriginBulk": {
                 "summary": "Bulk endpoint called using Request Origin authentication",
                 "value": {
-                  "message": "Bulk queries are not allowed with request origins. Please use some API key to perform bulk queries."
+                  "message": "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
                 }
               },
               "freePlanInclude": {
@@ -949,7 +950,7 @@
               "ipNotInDatabase": {
                 "summary": "IPv4/IPv6 not found in database",
                 "value": {
-                  "message": "Provided IPv4 or IPv6 address does not exist in our database."
+                  "message": "Provided IP Address '8.8.8.8' doesn't exist in our database."
                 }
               },
               "ipAsPathVariable": {
