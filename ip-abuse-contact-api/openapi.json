@@ -3,7 +3,7 @@
   "info": {
     "title": "IPGeolocation.io: Abuse Contact API",
     "version": "3.0",
-    "description": "Retrieve abuse contact information associated with an IPv4 address or IPv6 address.\nThe API returns the organization responsible for handling abuse complaints related\nto the queried IP address, including the abuse contact role, organization name,\nregistered address, email contacts, and phone numbers.\n\nThe abuse contact data helps organizations report malicious activities such as\nspam, phishing, DDoS attacks, IP spoofing, and other network abuse to the\nresponsible network operator.\n\nOne endpoint is available:\n\n- **Abuse lookup** (`GET /v3/abuse`) returns abuse contact information for a\n  single IPv4 or IPv6 address per request.\n\nUse query parameters to control which fields are returned and which fields are\nexcluded from the response to reduce payload size when only specific data\nis required.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Response Formats\n\nThe API supports JSON (default) and XML output.\n\n- Set the `output` query parameter to `json` or `xml`.\n- Alternatively, set the `Accept` header to `application/json`, `application/xml`,\n  or `text/xml`.\n\nIf neither is specified, the response is returned as JSON. XML responses use a\n`LinkedHashMap` root element.\n\n## Credit Usage\n\nCredits are charged only for successful **HTTP 200** responses. The exact number of\ncredits consumed by a request is returned in the `X-Credits-Charged` response header.\n\nA **single IP abuse contact lookup** (`GET /v3/abuse`) consumes **1 credit** per request.\n\n\n## Field Filtering\n\nUse `fields` to cherry-pick specific fields, or `excludes` to drop fields you do not\nneed. Both accept dot-notation for nested fields (e.g. `abuse.route`,\n`abuse.organization`). The `ip` field is always present regardless of filters.\n\n## Parameter Name Casing\n\nQuery parameter names are case-sensitive. Use exact names such as\n`apiKey`, `ip`, `fields`, `excludes`, and `output`.\n\n## Plan Availability and Usage Limits\n\nThe IP Abuse Contact API is available **only on paid plans** and costs\n**1 credit** per successful lookup (bulk: 1 credit per valid IP).\n\nBilling is based on API credits, not requests. Each billing period includes a\nfixed credit allowance. After the allowance is exhausted, requests continue\nonly while overage (surcharge) is enabled and within its limit; otherwise the\nAPI returns HTTP 429.\n\nFree plans cannot access the IP Abuse Contact API. Requests made with a free plan API key return **HTTP 401 Unauthorized**.\n",
+    "description": "Retrieve abuse contact information associated with an IPv4 address or IPv6 address.\nThe API returns the organization responsible for handling abuse complaints related\nto the queried IP address, including the abuse contact role, organization name,\nregistered address, email contacts, and phone numbers.\n\nThe abuse contact data helps organizations report malicious activities such as\nspam, phishing, DDoS attacks, IP spoofing, and other network abuse to the\nresponsible network operator.\n\nOne endpoint is available:\n\n- **Abuse lookup** (`GET /v3/abuse`) returns abuse contact information for a\n  single IPv4 or IPv6 address per request.\n\nUse query parameters to control which fields are returned and which fields are\nexcluded from the response to reduce payload size when only specific data\nis required.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Response Formats\n\nThe API supports JSON (default) and XML output.\n\n- Set the `output` query parameter to `json` or `xml`.\n- Alternatively, set the `Accept` header to `application/json`, `application/xml`,\n  or `text/xml`.\n\nIf neither is specified, the response is returned as JSON. XML responses use a\n`LinkedHashMap` root element.\n\n## Credit Usage\n\nCredits are charged only for successful **HTTP 200** responses. The exact number of\ncredits consumed by a request is returned in the `X-Credits-Charged` response header.\n\nA **single IP abuse contact lookup** (`GET /v3/abuse`) consumes **1 credit** per request.\n\n## Field Filtering\n\nUse `fields` to cherry-pick specific fields, or `excludes` to drop fields you do not\nneed. Both accept dot-notation for nested fields (e.g. `abuse.route`,\n`abuse.organization`). The `ip` field is always present regardless of filters.\n\n## Parameter Name Casing\n\nQuery parameter names are case-sensitive. Use exact names such as\n`apiKey`, `ip`, `fields`, `excludes`, and `output`.\n\n## Plan Availability and Usage Limits\n\nThe IP Abuse Contact API is available **only on paid plans** and costs\n**1 credit** per successful lookup (bulk: 1 credit per valid IP).\n\nBilling is based on API credits, not requests. Each billing period includes a\nfixed credit allowance. After the allowance is exhausted, requests continue\nonly while overage (surcharge) is enabled and within its limit; otherwise the\nAPI returns HTTP 429.\n\nFree plans cannot access the IP Abuse Contact API. Requests made with a free plan API key return **HTTP 401 Unauthorized**.\n",
     "contact": {
       "name": "IPGeolocation Support",
       "url": "https://ipgeolocation.io/contact.html",
@@ -27,9 +27,7 @@
   ],
   "security": [
     {
-      "ApiKeyAuth": [
-
-      ]
+      "ApiKeyAuth": []
     }
   ],
   "paths": {
@@ -75,17 +73,17 @@
                 "example": {
                   "ip": "1.0.0.0",
                   "abuse": {
-                    "route": "91.128.0.0/14",
-                    "country": "SE",
-                    "name": "Swipnet Staff",
+                    "route": "1.0.0.0/24",
+                    "country": "AU",
+                    "name": "IRT-APNICRANDNET-AU",
                     "organization": "",
                     "kind": "group",
-                    "address": "Tele2 AB/Swedish IP Network, IP Registry, Torshamnsgatan 17 164 40 Kista SWEDEN",
+                    "address": "PO Box 3646, South Brisbane, QLD 4101, Australia",
                     "emails": [
-                      "abuse@tele2.com"
+                      "helpdesk@apnic.net"
                     ],
                     "phone_numbers": [
-                      "+46 8 5626 42 10"
+                      "+61738583100"
                     ]
                   }
                 }
@@ -163,7 +161,7 @@
         "name": "fields",
         "in": "query",
         "required": false,
-        "description": "Comma-separated list of fields or objects to return. Everything else is omitted.\nThe `ip` field is always returned regardless of this filter.\n\nSupports dot-notation for nested fields: `abuse.route`, `abuse.organization`.\n\nIf the same field or object is specified in both `fields` and `excludes`, the\nobject is still returned, but it will be empty.\n\nIf you list both an object key and one of its nested fields separated by comma\n(e.g. `abuse,abuse.name`), the full object is returned.\n\nUnknown field paths are ignored. The API still returns HTTP 200.\n\nAvailable on all plans including Free.\n",
+        "description": "Comma-separated list of fields or objects to return. Everything else is omitted.\nThe `ip` field is always returned regardless of this filter.\n\nSupports dot-notation for nested fields: `abuse.route`, `abuse.organization`.\n\nIf the same **nested** field path is specified in both `fields` and `excludes`\n(e.g. `fields=abuse.name&excludes=abuse.name`), the parent object is still\nreturned, but that field will be empty. Duplicating a **bare top-level**\nobject name in both parameters (e.g. `fields=abuse&excludes=abuse`) has no\nemptying effect: the full, unfiltered object is returned.\n\nIf you list both an object key and one of its nested fields separated by comma\n(e.g. `abuse,abuse.name`), the full object is returned.\n\nUnknown field paths are ignored. The API still returns HTTP 200.\n\nAvailable on all plans including Free.\n",
         "schema": {
           "type": "string"
         },
@@ -186,7 +184,7 @@
         "name": "excludes",
         "in": "query",
         "required": false,
-        "description": "Comma-separated list of fields or objects to remove from the response. The `ip`\nfield cannot be excluded.\n\nSupports dot-notation for nested fields: `abuse.name`.\n\nIf the same field or object is specified in both `fields` and `excludes`, the\nobject is still returned, but it will be empty.\n\nUnknown fields or object keys in `excludes` are ignored. The API still returns\nHTTP 200.\n\nAvailable on all plans including Free.\n",
+        "description": "Comma-separated list of fields or objects to remove from the response. The `ip`\nfield cannot be excluded.\n\nSupports dot-notation for nested fields: `abuse.name`.\n\nIf the same **nested** field path is specified in both `fields` and `excludes`\n(e.g. `fields=abuse.name&excludes=abuse.name`), the parent object is still\nreturned, but that field will be empty. Duplicating a **bare top-level**\nobject name in both parameters (e.g. `fields=abuse&excludes=abuse`) has no\nemptying effect: the full, unfiltered object is returned.\n\nUnknown fields or object keys in `excludes` are ignored. The API still returns\nHTTP 200.\n\nAvailable on all plans including Free.\n",
         "schema": {
           "type": "string"
         },
@@ -205,7 +203,7 @@
         "name": "output",
         "in": "query",
         "required": false,
-        "description": "Desired response format. Defaults to `json` if not specified. You can also\ncontrol the format using the `Accept` header (`application/json`,\n`application/xml`, or `text/xml`). If both are provided, the `output` parameter\ntakes precedence.\n\nIf `output` is unknown or unsupported, it is ignored and the response defaults\nto JSON (`application/json`) with HTTP 200.\n",
+        "description": "Desired response format. Defaults to `json` if not specified. You can also\ncontrol the format using the `Accept` header (`application/json`,\n`application/xml`, or `text/xml`). If both are provided, the `Accept` header\ntakes precedence; `output` is used only as a fallback when the `Accept`\nheader is absent or set to `*/*`.\n\nIf `output` is unknown or unsupported, it is ignored and the response defaults\nto JSON (`application/json`) with HTTP 200.\n",
         "schema": {
           "type": "string",
           "enum": [
@@ -228,7 +226,7 @@
               "invalidIp": {
                 "summary": "Invalid IPv4/IPv6 input",
                 "value": {
-                  "message": "Provided name, service or IP address '999.999.999.999' is not valid."
+                  "message": "Invalid 'Abuse' Query '999.999.999.999' provided."
                 }
               },
               "specialCharacters": {
@@ -306,7 +304,7 @@
               "ipNotInDatabase": {
                 "summary": "IPv4/IPv6 not found in database",
                 "value": {
-                  "message": "Provided IPv4 or IPv6 address does not exist in our database."
+                  "message": "Provided IP Address '203.0.113.5' doesn't exist in our database."
                 }
               },
               "ipAsPathVariable": {
@@ -476,7 +474,7 @@
           "message": {
             "type": "string",
             "description": "Human-readable explanation of what went wrong. Use HTTP status for control flow.",
-            "example": "Provided name, service or IP address '999.999.999.999' is not valid."
+            "example": "Invalid 'Abuse' Query '999.999.999.999' provided."
           }
         }
       },

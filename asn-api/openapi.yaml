@@ -409,12 +409,17 @@ components:
         Pass `asn` only once. If multiple `asn` query parameters are sent,
         values may be merged and treated as invalid input (HTTP 400).
 
+        Accepted numeric values (after stripping an optional `AS` prefix) range
+        from 1 to 402332. A non-numeric value or a value outside this range
+        returns HTTP 400 (see the `invalidAsnQuery` example on the Bad Request
+        response).
+
       schema:
         type: string
 
       examples:
         none:
-          summary: No ASN provided 
+          summary: No ASN provided
           value: ""
         numeric:
           summary: ASN number
@@ -475,15 +480,18 @@ components:
 
         Supports dot-notation for nested fields: `asn.organization`, `asn.domain`.
 
-        If the same field or object is specified in both `fields` and `excludes`, the
-        object is still returned, but it will be empty.
+        If the same nested field path is specified in both `fields` and `excludes`
+        (e.g. `asn.organization` in both), the object is still returned, but it will
+        be empty. Duplicating a bare top-level object name (e.g. `asn` in both
+        `fields` and `excludes`) has no emptying effect; the full object is returned.
 
         If you list both an object key and one of its nested fields separated by comma
         (e.g. `asn,asn.organization`), the full object is returned.
 
         Unknown field paths are ignored. The API still returns HTTP 200.
 
-        Available on all plans including Free.
+        The ASN lookup endpoint itself requires a paid plan (see Usage Limits
+        above); this parameter only applies once a request is authorized.
 
       schema:
         type: string
@@ -509,13 +517,16 @@ components:
 
         Supports dot-notation for nested fields: `asn.domain`.
 
-        If the same field or object is specified in both `fields` and `excludes`, the
-        object is still returned, but it will be empty.
+        If the same nested field path is specified in both `fields` and `excludes`
+        (e.g. `asn.organization` in both), the object is still returned, but it will
+        be empty. Duplicating a bare top-level object name (e.g. `asn` in both
+        `fields` and `excludes`) has no emptying effect; the full object is returned.
 
         Unknown fields or object keys in `excludes` are ignored. The API still returns
         HTTP 200.
 
-        Available on all plans including Free.
+        The ASN lookup endpoint itself requires a paid plan (see Usage Limits
+        above); this parameter only applies once a request is authorized.
 
       schema:
         type: string
@@ -550,6 +561,8 @@ components:
       description: |
         Bad request. Returned for one of the following reasons:
         - The provided IPv4 address or IPv6 address is invalid.
+        - The provided `asn` value is non-numeric (once any `AS` prefix is stripped)
+          or outside the accepted range of 1-402332.
         - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
           either in a parameter name or its value (especially in the API key).
       content:
@@ -560,7 +573,11 @@ components:
             invalidIp:
               summary: Invalid IPv4/IPv6 input
               value:
-                message: "Provided name, service or IP address '999.999.999.999' is not valid."
+                message: "Provided IP address '999.999.999.999' is not valid"
+            invalidAsnQuery:
+              summary: Non-numeric or out-of-range ASN value
+              value:
+                message: "Invalid 'ASN' Query 'abc' provided."
             specialCharacters:
               summary: Special characters in API URL or key
               value:
@@ -618,9 +635,11 @@ components:
         Not found. Returned for one of the following reasons:
 
         - A syntactically valid IPv4, IPv6, or ASN does not exist in the IPGeolocation database.
+        - A syntactically valid IP address resolves successfully but has no ASN
+          associated with it in the database.
         - An IPv4, IPv6, or ASN is passed as a path variable
-          instead of as a URL query parameter (e.g., using `/v3/ipgeo/8.8.8.8`
-          instead of `/v3/ipgeo?ip=8.8.8.8`).
+          instead of as a URL query parameter (e.g., using `/v3/asn/8.8.8.8`
+          instead of `/v3/asn?ip=8.8.8.8`).
         - A non-existent or incorrect API endpoint is called.
 
         Invalid or malformed IPv4, IPv6, or domain input returns HTTP 400 instead.
@@ -632,15 +651,19 @@ components:
             ipNotInDatabase:
               summary: IPv4/IPv6/ASN not found in database
               value:
-                message: "Provided ASN or IP Address does not exist in our database."
+                message: "Provided ASN or IP Address '24940' doesn't exist in our database."
+            asnForIpNotFound:
+              summary: IP resolves but has no associated ASN in the database
+              value:
+                message: "Provided IP Address '8.8.8.8' doesn't have an associated ASN in our database."
             ipAsPathVariable:
               summary: IP passed as path variable instead of query parameter
               value:
-                message: "No endpoint GET /v3/ipgeo/8.8.8.8."
+                message: "No endpoint GET /v3/asn/8.8.8.8."
             asnAsPathVariable:
               summary: ASN passed as path variable instead of query parameter
               value:
-                message: "No endpoint GET /v3/ipgeo/24940."
+                message: "No endpoint GET /v3/asn/24940."
             wrongEndpoint:
               summary: Incorrect or non-existent endpoint
               value:
@@ -778,7 +801,7 @@ components:
         message:
           type: string
           description: Human-readable explanation of what went wrong. Use HTTP status for control flow.
-          example: "Provided name, service or IP address '999.999.999.999' is not valid."
+          example: "Provided IP address '999.999.999.999' is not valid"
       
     ASNLookupResponse:
       type: object

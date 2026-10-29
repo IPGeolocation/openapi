@@ -1098,6 +1098,7 @@ components:
           - ko
           - fa
           - pt
+          - ar
 
     Include:
       name: include
@@ -1348,7 +1349,7 @@ components:
             ipNotInDatabase:
               summary: IPv4/IPv6 not found in database
               value:
-                message: "Provided IPv4 or IPv6 address does not exist in our database."
+                message: "Provided IP Address '8.8.8.8' doesn't exist in our database."
             ipAsPathVariable:
               summary: IP passed as path variable instead of query parameter
               value:

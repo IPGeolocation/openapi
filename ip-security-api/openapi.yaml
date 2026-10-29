@@ -488,15 +488,19 @@ components:
 
         Supports dot-notation for nested fields: `security.is_tor`, `security.threat_score`.
 
-        If the same field or object is specified in both `fields` and `excludes`, the
-        object is still returned, but it will be empty.
+        If the same nested field path is specified in both `fields` and `excludes`
+        (e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned
+        as an empty value. Specifying the same top-level object name in both (e.g.
+        `fields=security&excludes=security`) has no emptying effect — the full object
+        is returned.
 
         If you list both an object key and one of its nested fields separated by comma
         (e.g. `security,security.is_vpn`), the full object is returned.
 
         Unknown field paths are ignored. The API still returns HTTP 200.
 
-        Available on all plans including Free.
+        This parameter only has an effect once a request is authorized; the IP Security
+        API as a whole requires a paid plan (see Usage Limits above).
       schema:
         type: string
       examples:
@@ -520,13 +524,17 @@ components:
 
         Supports dot-notation for nested fields: `security.is_relay`.
 
-        If the same field or object is specified in both `fields` and `excludes`, the
-        object is still returned, but it will be empty.
+        If the same nested field path is specified in both `fields` and `excludes`
+        (e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned
+        as an empty value. Specifying the same top-level object name in both (e.g.
+        `fields=security&excludes=security`) has no emptying effect — the full object
+        is returned.
 
         Unknown fields or object keys in `excludes` are ignored. The API still returns
         HTTP 200.
 
-        Available on all plans including Free.
+        This parameter only has an effect once a request is authorized; the IP Security
+        API as a whole requires a paid plan (see Usage Limits above).
       schema:
         type: string
       examples:
@@ -559,7 +567,9 @@ components:
       description: |
         Bad request. Returned for one of the following reasons:
 
-        - The provided IPv4 or IPv6 address is invalid.
+        - The provided IPv4 or IPv6 address is invalid. This API does not accept domain
+          names in the `ip` parameter — a domain name is rejected the same way as any
+          other non-IP string.
         - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
           either in a parameter name or its value (especially in the API key).
         - For the `security-bulk` endpoint:
@@ -609,7 +619,6 @@ components:
         - The subscription is in a 'paused' state.
         - The subscription trial has expired.
         - The account’s active-until date has passed and renewal or upgrade is required.
-        - A domain name is passed in the `ip` parameter when calling the IP Security API.
         - The bulk IP security lookup endpoint is called using a free subscription API key.
         - The bulk IP security lookup endpoint is called using Request Origin (CORS)
           authentication. Bulk requests require an `apiKey` and cannot be authenticated
@@ -640,29 +649,34 @@ components:
                 message: "You cannot query IPGeolocation API on a database plan subscription."
 
             freePlanAccess:
-              summary: Free subscription used for IP Security API
+              summary: Free subscription used for single IP Security lookup
               value:
-                message: "IP Security API is not supported on your current subscription. This feature is available on paid subscriptions only."
+                message: "IP Security Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
+
+            freePlanAccessBulk:
+              summary: Free subscription used for bulk IP Security lookup
+              value:
+                message: "Bulk IP Security Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
 
             pausedSubscription:
               summary: Subscription is paused
               value:
                 message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
 
-            expiredSubscription:
-              summary: Subscription expired or trial ended
+            trialExpired:
+              summary: Subscription trial has expired
               value:
-                message: "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
+                message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
 
-            domainLookupNotSupported:
-              summary: Domain lookup used with Security API
+            subscriptionExpired:
+              summary: Subscription active-until date has passed
               value:
-                message: "Domain lookup is not supported for the IP Security API."
+                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
 
             requestOriginBulk:
               summary: Bulk endpoint called using Request Origin authentication
               value:
-                message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
+                message: "Bulk queries are not allowed with request origins. Please use some API key to perform bulk queries."
 
     NotFound:
       description: |
