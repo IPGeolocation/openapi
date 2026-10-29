@@ -605,7 +605,7 @@ paths:
                 requestOriginBulk:
                   summary: Bulk endpoint called using Request Origin authentication
                   value:
-                    message: "Bulk queries are not allowed with request origins. Please use some API key to perform bulk queries."
+                    message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
                 freePlanInclude:
                   summary: Free plan used with restricted include parameter
                   value:
@@ -1047,7 +1047,7 @@ paths:
                 requestOriginBulk:
                   summary: Bulk endpoint called using Request Origin authentication
                   value:
-                    message: "Bulk queries are not allowed with request origins. Please use some API key to perform bulk queries."
+                    message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
                 freePlanInclude:
                   summary: Free plan used with restricted include parameter
                   value:
@@ -1334,7 +1334,7 @@ paths:
                 invalidIp:
                   summary: Invalid IPv4/IPv6 input
                   value:
-                    message: "Provided name, service or IP address '999.999.999.999' is not valid."
+                    message: "Provided IP address '999.999.999.999' is not valid."
                 specialCharacters:
                   summary: Special characters in API URL or key
                   value:
@@ -1424,7 +1424,7 @@ paths:
                 requestOriginBulk:
                   summary: Bulk endpoint called using Request Origin authentication
                   value:
-                    message: "Bulk queries are not allowed with request origins. Please use some API key to perform bulk queries."
+                    message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
         "404":
           description: |
             Not found. Returned for one of the following reasons:
@@ -1682,7 +1682,7 @@ paths:
                 invalidIp:
                   summary: Invalid IPv4/IPv6 input
                   value:
-                    message: "Provided name, service or IP address '999.999.999.999' is not valid."
+                    message: "Provided IP address '999.999.999.999' is not valid."
                 specialCharacters:
                   summary: Special characters in API URL or key
                   value:
@@ -1772,7 +1772,7 @@ paths:
                 requestOriginBulk:
                   summary: Bulk endpoint called using Request Origin authentication
                   value:
-                    message: "Bulk queries are not allowed with request origins. Please use some API key to perform bulk queries."
+                    message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "413":
@@ -1861,9 +1861,9 @@ paths:
             values may be merged and treated as invalid input (HTTP 400).
 
             Accepted numeric values (after stripping an optional `AS` prefix) range
-            from 1 to 402332. A non-numeric value or a value outside this range
-            returns HTTP 400 (see the `invalidAsnQuery` example on the Bad Request
-            response).
+            from 1 to 4294967295 (the full 32-bit ASN range per RFC 6793). A
+            non-numeric value or a value outside this range returns HTTP 400
+            (see the `invalidAsnQuery` example on the Bad Request response).
 
           schema:
             type: string
@@ -2062,7 +2062,7 @@ paths:
             Bad request. Returned for one of the following reasons:
             - The provided IPv4 address or IPv6 address is invalid.
             - The provided `asn` value is non-numeric (once any `AS` prefix is stripped)
-              or outside the accepted range of 1-402332.
+              or outside the accepted range of 1-4294967295.
             - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
               either in a parameter name or its value (especially in the API key).
           content:
@@ -2073,11 +2073,11 @@ paths:
                 invalidIp:
                   summary: Invalid IPv4/IPv6 input
                   value:
-                    message: "Provided IP address '999.999.999.999' is not valid"
+                    message: "Provided IP address '999.999.999.999' is not valid."
                 invalidAsnQuery:
                   summary: Non-numeric or out-of-range ASN value
                   value:
-                    message: "Invalid 'ASN' Query 'abc' provided."
+                    message: "Provided ASN 'abc' is not valid."
                 specialCharacters:
                   summary: Special characters in API URL or key
                   value:
@@ -2323,7 +2323,7 @@ paths:
                 invalidIp:
                   summary: Invalid IPv4/IPv6 input
                   value:
-                    message: "Invalid 'Abuse' Query '999.999.999.999' provided."
+                    message: "Provided IP address '999.999.999.999' is not valid."
                 specialCharacters:
                   summary: Special characters in API URL or key
                   value:
@@ -4111,7 +4111,7 @@ paths:
                 invalidIp:
                   summary: Invalid IPv4 or IPv6 address
                   value:
-                    message: "Provided name, service or IP address '999.999.999.999' is not valid."
+                    message: "'999.999.999.999' is not an IP string literal."
                 specialCharacters:
                   summary: Invalid characters in request
                   value:
@@ -4535,7 +4535,7 @@ paths:
                 invalidIp:
                   summary: Invalid IPv4 or IPv6 address
                   value:
-                    message: "Provided name, service or IP address '999.999.999.999' is not valid."
+                    message: "'999.999.999.999' is not an IP string literal."
                 specialCharacters:
                   summary: Invalid characters in request
                   value:
@@ -5770,7 +5770,7 @@ components:
         message:
           type: string
           description: Human-readable error for the specific bulk entry.
-          example: "Provided name, service or IP address 'invalid-ip' is not valid."
+          example: "Provided IP address 'invalid-ip' is not valid."
 
 
     IpSecurityResponse:

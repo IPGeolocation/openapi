@@ -2,3 +2,6 @@ postman/
 .venv/
 __pycache__/
 tools/
+.env
+.env.local
+.env.*.local

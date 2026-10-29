@@ -914,7 +914,7 @@
               "requestOriginBulk": {
                 "summary": "Bulk endpoint called using Request Origin authentication",
                 "value": {
-                  "message": "Bulk queries are not allowed with request origins. Please use some API key to perform bulk queries."
+                  "message": "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
                 }
               },
               "freePlanInclude": {

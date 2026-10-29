@@ -212,7 +212,7 @@
         "name": "asn",
         "in": "query",
         "required": false,
-        "description": "An Autonomous System Number (ASN) to look up.\n\nWhen provided, the lookup is performed directly using the specified ASN,\nand the `ip` parameter must not be included in the request.\n\nThe API returns detailed information about the ASN including the\norganization name, country of registration, ASN type, routing statistics,\nand other related network metadata.\n\nPass `asn` only once. If multiple `asn` query parameters are sent,\nvalues may be merged and treated as invalid input (HTTP 400).\n\nAccepted numeric values (after stripping an optional `AS` prefix) range\nfrom 1 to 402332. A non-numeric value or a value outside this range\nreturns HTTP 400 (see the `invalidAsnQuery` example on the Bad Request\nresponse).\n",
+        "description": "An Autonomous System Number (ASN) to look up.\n\nWhen provided, the lookup is performed directly using the specified ASN,\nand the `ip` parameter must not be included in the request.\n\nThe API returns detailed information about the ASN including the\norganization name, country of registration, ASN type, routing statistics,\nand other related network metadata.\n\nPass `asn` only once. If multiple `asn` query parameters are sent,\nvalues may be merged and treated as invalid input (HTTP 400).\n\nAccepted numeric values (after stripping an optional `AS` prefix) range\nfrom 1 to 4294967295 (the full 32-bit ASN range per RFC 6793). A\nnon-numeric value or a value outside this range returns HTTP 400 (see\nthe `invalidAsnQuery` example on the Bad Request response).\n",
         "schema": {
           "type": "string"
         },
@@ -321,7 +321,7 @@
     },
     "responses": {
       "BadRequest": {
-        "description": "Bad request. Returned for one of the following reasons:\n- The provided IPv4 address or IPv6 address is invalid.\n- The provided `asn` value is non-numeric (once any `AS` prefix is stripped)\n  or outside the accepted range of 1-402332.\n- Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,\n  either in a parameter name or its value (especially in the API key).\n",
+        "description": "Bad request. Returned for one of the following reasons:\n- The provided IPv4 address or IPv6 address is invalid.\n- The provided `asn` value is non-numeric (once any `AS` prefix is stripped)\n  or outside the accepted range of 1-4294967295.\n- Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,\n  either in a parameter name or its value (especially in the API key).\n",
         "content": {
           "application/json": {
             "schema": {
@@ -331,13 +331,13 @@
               "invalidIp": {
                 "summary": "Invalid IPv4/IPv6 input",
                 "value": {
-                  "message": "Provided IP address '999.999.999.999' is not valid"
+                  "message": "Provided IP address '999.999.999.999' is not valid."
                 }
               },
               "invalidAsnQuery": {
                 "summary": "Non-numeric or out-of-range ASN value",
                 "value": {
-                  "message": "Invalid 'ASN' Query 'abc' provided."
+                  "message": "Provided ASN 'abc' is not valid."
                 }
               },
               "specialCharacters": {
@@ -597,7 +597,7 @@
           "message": {
             "type": "string",
             "description": "Human-readable explanation of what went wrong. Use HTTP status for control flow.",
-            "example": "Provided IP address '999.999.999.999' is not valid"
+            "example": "Provided IP address '999.999.999.999' is not valid."
           }
         }
       },

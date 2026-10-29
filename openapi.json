@@ -920,7 +920,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"Provided IP address 'not_an_ip' is not valid.\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -1179,7 +1179,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"Provided IP address 'not_an_ip' is not valid.\"\n}"
             },
             {
               "name": "400 Bad Request – Empty array",
@@ -1482,7 +1482,21 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"Provided IP address 'not_an_ip' is not valid.\"\n}"
+            },
+            {
+              "name": "400 Bad Request – Invalid ASN parameter",
+              "originalRequest": {},
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Provided ASN 'AS0' is not valid.\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -1733,7 +1747,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"Provided IP address 'not_an_ip' is not valid.\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -2056,7 +2070,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"'999.999.999.999' is not an IP string literal.\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -2433,7 +2447,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"'999.999.999.999' is not an IP string literal.\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -2619,7 +2633,7 @@
               "body": "{\n  \"user_agent_string\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9\",\n  \"name\": \"Safari\",\n  \"type\": \"Browser\",\n  \"version\": \"9.0.2\",\n  \"version_major\": \"9\",\n  \"device\": {\n    \"name\": \"Apple Macintosh\",\n    \"type\": \"Desktop\",\n    \"brand\": \"Apple\",\n    \"cpu\": \"Intel\"\n  },\n  \"engine\": {\n    \"name\": \"AppleWebKit\",\n    \"type\": \"Browser\",\n    \"version\": \"601.3.9\",\n    \"version_major\": \"601\"\n  },\n  \"operating_system\": {\n    \"name\": \"Mac OS\",\n    \"type\": \"Desktop\",\n    \"version\": \"10.11.2\",\n    \"version_major\": \"10.11\",\n    \"build\": \"??\"\n  }\n}"
             },
             {
-              "name": "400 Bad Request – Invalid IP or parameter",
+              "name": "400 Bad Request – Missing User-Agent header",
               "originalRequest": {},
               "status": "Bad Request",
               "code": 400,
@@ -2630,7 +2644,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"'userAgentString' must not be empty or null\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -2812,7 +2826,7 @@
               "body": "{\n  \"user_agent_string\": \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/601.3.9 (KHTML, like Gecko) Version/9.0.2 Safari/601.3.9\",\n  \"name\": \"Safari\",\n  \"type\": \"Browser\",\n  \"version\": \"9.0.2\",\n  \"version_major\": \"9\",\n  \"device\": {\n    \"name\": \"Apple Macintosh\",\n    \"type\": \"Desktop\",\n    \"brand\": \"Apple\",\n    \"cpu\": \"Intel\"\n  },\n  \"engine\": {\n    \"name\": \"AppleWebKit\",\n    \"type\": \"Browser\",\n    \"version\": \"601.3.9\",\n    \"version_major\": \"601\"\n  },\n  \"operating_system\": {\n    \"name\": \"Mac OS\",\n    \"type\": \"Desktop\",\n    \"version\": \"10.11.2\",\n    \"version_major\": \"10.11\",\n    \"build\": \"??\"\n  }\n}"
             },
             {
-              "name": "400 Bad Request – Invalid IP or parameter",
+              "name": "400 Bad Request – Empty user agent string",
               "originalRequest": {},
               "status": "Bad Request",
               "code": 400,
@@ -2823,7 +2837,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"User-Agent string must not be blank\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -3019,7 +3033,7 @@
               "body": "[\n  {\n    \"user_agent_string\": \"Mozilla/5.0 (Linux; Android 8.0.0; SM-G960F Build/R16NW) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.84 Mobile Safari/537.36\",\n    \"name\": \"Chrome\",\n    \"type\": \"Browser\",\n    \"version\": \"62.0.3202.84\",\n    \"version_major\": \"62\",\n    \"device\": {\n      \"name\": \"Samsung SM-G960F\",\n      \"type\": \"Phone\",\n      \"brand\": \"Samsung\",\n      \"cpu\": \"Unknown\"\n    },\n    \"engine\": {\n      \"name\": \"Blink\",\n      \"type\": \"Browser\",\n      \"version\": \"62.0\",\n      \"version_major\": \"62\"\n    },\n    \"operating_system\": {\n      \"name\": \"Android\",\n      \"type\": \"Mobile\",\n      \"version\": \"8.0.0\",\n      \"version_major\": \"8\",\n      \"build\": \"R16NW\"\n    }\n  },\n  {\n    \"user_agent_string\": \"Mozilla/5.0 (X11; U; Linux armv7l like Android; en-us) AppleWebKit/531.2+ (KHTML, like Gecko) Version/5.0 Safari/533.2+ Kindle/3.0+\",\n    \"name\": \"Kindle\",\n    \"type\": \"Browser\",\n    \"version\": \"3.0\",\n    \"version_major\": \"3\",\n    \"device\": {\n      \"name\": \"Amazon Kindle\",\n      \"type\": \"eReader\",\n      \"brand\": \"Amazon\",\n      \"cpu\": \"ARMv7l\"\n    },\n    \"engine\": {\n      \"name\": \"AppleWebKit\",\n      \"type\": \"Browser\",\n      \"version\": \"531.2\",\n      \"version_major\": \"531\"\n    },\n    \"operating_system\": {\n      \"name\": \"FireOS\",\n      \"type\": \"Mobile\",\n      \"version\": \"??\",\n      \"version_major\": \"??\",\n      \"build\": \"??\"\n    }\n  }\n]"
             },
             {
-              "name": "400 Bad Request – Invalid IP or parameter",
+              "name": "400 Bad Request – Empty bulk list",
               "originalRequest": {},
               "status": "Bad Request",
               "code": 400,
@@ -3030,7 +3044,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"User-Agent strings for bulk lookup are missing\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -3315,7 +3329,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"'999.999.999.999' is not an IP string literal.\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -3608,7 +3622,7 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"'999.999.999.999' is not an IP string literal.\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",

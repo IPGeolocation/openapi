@@ -425,7 +425,7 @@
               "invalidIp": {
                 "summary": "Invalid IPv4/IPv6 input",
                 "value": {
-                  "message": "Provided name, service or IP address '999.999.999.999' is not valid."
+                  "message": "Provided IP address '999.999.999.999' is not valid."
                 }
               },
               "specialCharacters": {
@@ -527,7 +527,7 @@
               "requestOriginBulk": {
                 "summary": "Bulk endpoint called using Request Origin authentication",
                 "value": {
-                  "message": "Bulk queries are not allowed with request origins. Please use some API key to perform bulk queries."
+                  "message": "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
                 }
               }
             }
@@ -745,7 +745,7 @@
           "message": {
             "type": "string",
             "description": "Human-readable explanation of what went wrong. Use HTTP status for control flow.",
-            "example": "Provided name, service or IP address '999.999.999.999' is not valid."
+            "example": "Provided IP address '999.999.999.999' is not valid."
           }
         }
       },
@@ -810,7 +810,7 @@
           "message": {
             "type": "string",
             "description": "Human-readable error for the specific bulk entry.",
-            "example": "Provided name, service or IP address 'invalid-ip' is not valid."
+            "example": "Provided IP address 'invalid-ip' is not valid."
           }
         }
       },

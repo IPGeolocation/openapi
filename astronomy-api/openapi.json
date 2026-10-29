@@ -174,7 +174,7 @@
                   "invalidIp": {
                     "summary": "Invalid IPv4 or IPv6 address",
                     "value": {
-                      "message": "Provided name, service or IP address '999.999.999.999' is not valid."
+                      "message": "'999.999.999.999' is not an IP string literal."
                     }
                   },
                   "specialCharacters": {
@@ -493,7 +493,7 @@
                   "invalidIp": {
                     "summary": "Invalid IPv4 or IPv6 address",
                     "value": {
-                      "message": "Provided name, service or IP address '999.999.999.999' is not valid."
+                      "message": "'999.999.999.999' is not an IP string literal."
                     }
                   },
                   "specialCharacters": {
@@ -1055,7 +1055,7 @@
           "message": {
             "type": "string",
             "description": "Human-readable explanation of what went wrong.",
-            "example": "Provided name, service or IP address '999.999.999.999' is not valid."
+            "example": "'999.999.999.999' is not an IP string literal."
           }
         }
       },
