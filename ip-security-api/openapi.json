@@ -83,6 +83,9 @@
                     ],
                     "proxy_confidence_score": 80,
                     "proxy_last_seen": "2025-12-12",
+                    "proxy_days_seen_30d": 4,
+                    "proxy_days_seen_7d": 1,
+                    "proxy_provider_count_30d": 1,
                     "is_residential_proxy": true,
                     "is_vpn": true,
                     "vpn_provider_names": [
@@ -247,6 +250,9 @@
                       ],
                       "proxy_confidence_score": 80,
                       "proxy_last_seen": "2025-12-12",
+                      "proxy_days_seen_30d": 4,
+                      "proxy_days_seen_7d": 1,
+                      "proxy_provider_count_30d": 1,
                       "is_residential_proxy": true,
                       "is_vpn": true,
                       "vpn_provider_names": [
@@ -875,6 +881,21 @@
             "type": "string",
             "description": "Date when this IP was last observed acting as a proxy, in `YYYY-MM-DD`\nformat. Empty string if never seen.\n",
             "example": "2025-12-12"
+          },
+          "proxy_days_seen_30d": {
+            "type": "integer",
+            "description": "Number of days in the last 30 days this IP was observed acting as a proxy.",
+            "example": 4
+          },
+          "proxy_days_seen_7d": {
+            "type": "integer",
+            "description": "Number of days in the last 7 days this IP was observed acting as a proxy.",
+            "example": 1
+          },
+          "proxy_provider_count_30d": {
+            "type": "integer",
+            "description": "Number of distinct proxy providers associated with this IP in the last 30 days.",
+            "example": 1
           },
           "is_residential_proxy": {
             "type": "boolean",
