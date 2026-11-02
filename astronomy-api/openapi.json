@@ -242,7 +242,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key.\n  - If your account has been disabled or locked by the admin due\n    to abuse or illegal activity.\n  - When the request is made using an API key for a database\n    subscription.\n  - When the request is made on a paused subscription.\n  - If you are making API requests after your subscription trial\n    has expired.\n  - If your active-until date has passed and you need to renew\n    or upgrade your subscription.\n  - A language other than English is specified in the `lang`\n    parameter while using a Free/Developer plan API key.\n",
+            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key.\n  - If your account has been disabled or locked by the admin due\n    to abuse or illegal activity.\n  - When the request is made using an API key for a database\n    subscription.\n  - When the request is made on a paused subscription.\n  - If you are making API requests after your subscription trial\n    has expired.\n  - A language other than English is specified in the `lang`\n    parameter while using a Free/Developer plan API key.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -279,12 +279,6 @@
                       "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                     }
                   },
-                  "expiredSubscription": {
-                    "summary": "Subscription expired",
-                    "value": {
-                      "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
-                    }
-                  },
                   "freePlanLang": {
                     "summary": "Non-English language on Free plan",
                     "value": {
@@ -294,6 +288,9 @@
                 }
               }
             }
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -573,7 +570,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key.\n  - If your account has been disabled or locked by the admin.\n  - When the request is made using an API key for a database\n    subscription.\n  - When the request is made on a paused subscription.\n  - If your subscription trial has expired.\n  - If your active-until date has passed.\n  - A language other than English is specified in the `lang`\n    parameter while using a Free/Developer plan API key.\n",
+            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key.\n  - If your account has been disabled or locked by the admin.\n  - When the request is made using an API key for a database\n    subscription.\n  - When the request is made on a paused subscription.\n  - If your subscription trial has expired.\n  - A language other than English is specified in the `lang`\n    parameter while using a Free/Developer plan API key.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -610,12 +607,6 @@
                       "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                     }
                   },
-                  "expiredSubscription": {
-                    "summary": "Subscription expired",
-                    "value": {
-                      "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
-                    }
-                  },
                   "freePlanLang": {
                     "summary": "Non-English language on Free plan",
                     "value": {
@@ -625,6 +616,9 @@
                 }
               }
             }
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
           },
           "404": {
             "$ref": "#/components/responses/NotFoundTimeSeries"
@@ -1039,6 +1033,24 @@
             },
             "example": {
               "message": "HTTP version not supported."
+            }
+          }
+        }
+      },
+      "PaymentRequired": {
+        "description": "Payment Required. Returned when the subscription is not on a Free plan and its\nactive-until date has passed, before any usage quota is checked. Renewing or\nupgrading the plan is required to continue using IPGeolocation API.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "expiredSubscription": {
+                "summary": "Subscription expired",
+                "value": {
+                  "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                }
+              }
             }
           }
         }

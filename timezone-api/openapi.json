@@ -282,7 +282,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key\n  - If your account has been disabled or locked to use by the admin due to abuse or illegal activity.\n  - When the request to Timezone API is made using API key for a database subscription\n  - When the request to Timezone API is made on the 'paused' subscription.\n  - If you’re making API requests after your subscription trial has been expired.\n  - If your active until date has passed and you need to upgrade your account.\n  - A language other than English is specified in the `lang` parameter\n    while using a Free/Developer plan API key.\n",
+            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key\n  - If your account has been disabled or locked to use by the admin due to abuse or illegal activity.\n  - When the request to Timezone API is made using API key for a database subscription\n  - When the request to Timezone API is made on the 'paused' subscription.\n  - If you’re making API requests after your subscription trial has been expired.\n  - A language other than English is specified in the `lang` parameter\n    while using a Free/Developer plan API key.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -319,12 +319,6 @@
                       "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                     }
                   },
-                  "expiredSubscription": {
-                    "summary": "Subscription expired",
-                    "value": {
-                      "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
-                    }
-                  },
                   "freePlanLang": {
                     "summary": "Non-English language requested on Free plan",
                     "value": {
@@ -334,6 +328,9 @@
                 }
               }
             }
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
           },
           "404": {
             "$ref": "#/components/responses/NotFoundTimezone"
@@ -507,7 +504,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key\n  - If your account has been disabled or locked to use by the admin due to abuse or illegal activity.\n  - When the request to Timezone API is made using API key for a database subscription\n  - When the request to Timezone API is made on the 'paused' subscription.\n  - If you’re making API requests after your subscription trial has been expired.\n  - If your active until date has passed and you need to upgrade your account.\n",
+            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key\n  - If your account has been disabled or locked to use by the admin due to abuse or illegal activity.\n  - When the request to Timezone API is made using API key for a database subscription\n  - When the request to Timezone API is made on the 'paused' subscription.\n  - If you’re making API requests after your subscription trial has been expired.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -537,16 +534,13 @@
                     "value": {
                       "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                     }
-                  },
-                  "expiredSubscription": {
-                    "summary": "Subscription expired",
-                    "value": {
-                      "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
-                    }
                   }
                 }
               }
             }
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
           },
           "404": {
             "$ref": "#/components/responses/NotFoundConvert"
@@ -807,6 +801,24 @@
                 "summary": "Incorrect or non-existent endpoint",
                 "value": {
                   "message": "No endpoint GET /v3/timezone/convert-invalid."
+                }
+              }
+            }
+          }
+        }
+      },
+      "PaymentRequired": {
+        "description": "Payment Required. Returned when the subscription is not on a Free plan and its\nactive-until date has passed, before any usage quota is checked. Renewing or\nupgrading the plan is required to continue using IPGeolocation API.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "expiredSubscription": {
+                "summary": "Subscription expired",
+                "value": {
+                  "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 }
               }
             }
