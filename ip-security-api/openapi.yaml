@@ -243,6 +243,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           $ref: "#/components/responses/NotFound"
         "405":
@@ -448,6 +450,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "413":
@@ -630,7 +634,6 @@ components:
         - The API request is made using a free subscription API key.
         - The subscription is in a 'paused' state.
         - The subscription trial has expired.
-        - The account’s active-until date has passed and renewal or upgrade is required.
         - The bulk IP security lookup endpoint is called using a free subscription API key.
         - The bulk IP security lookup endpoint is called using Request Origin (CORS)
           authentication. Bulk requests require an `apiKey` and cannot be authenticated
@@ -680,15 +683,25 @@ components:
               value:
                 message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
 
-            subscriptionExpired:
-              summary: Subscription active-until date has passed
-              value:
-                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
-
             requestOriginBulk:
               summary: Bulk endpoint called using Request Origin authentication
               value:
                 message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
+
+    PaymentRequired:
+      description: |
+        Payment Required. Returned when the subscription is not on a Free plan and its
+        active-until date has passed, before any usage quota is checked. Renewing or
+        upgrading the plan is required to continue using IPGeolocation API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            subscriptionExpired:
+              summary: Subscription active-until date has passed
+              value:
+                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
 
     NotFound:
       description: |

@@ -197,6 +197,8 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           $ref: "#/components/responses/NotFound"
         "405":
@@ -358,7 +360,6 @@ components:
         - The API request is made using a free subscription API key.
         - The subscription is in a 'paused' state.
         - The subscription trial has expired.
-        - The account’s active-until date has passed and renewal or upgrade is required.
       content:
         application/json:
           schema:
@@ -388,8 +389,19 @@ components:
               summary: Subscription is paused
               value:
                 message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
+
+    PaymentRequired:
+      description: |
+        Payment Required. Returned when the subscription is not on a Free plan and its
+        active-until date has passed, before any usage quota is checked. Renewing or
+        upgrading the plan is required to continue using IPGeolocation API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
             expiredSubscription:
-              summary: Subscription expired or trial ended
+              summary: Subscription expired
               value:
                 message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
 

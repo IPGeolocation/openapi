@@ -126,6 +126,9 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -307,6 +310,9 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowed"
           },
@@ -469,7 +475,7 @@
         }
       },
       "Unauthorized": {
-        "description": "Unauthorized. Returned for one of the following reasons:\n\n- The `apiKey` URL parameter is missing.\n- An invalid (random or incorrect) API key is provided.\n- The account has been disabled or locked due to abuse or illegal activity.\n- The API request is made using an API key for a database subscription.\n- The API request is made using a free subscription API key.\n- The subscription is in a 'paused' state.\n- The subscription trial has expired.\n- The account’s active-until date has passed and renewal or upgrade is required.\n- The bulk IP security lookup endpoint is called using a free subscription API key.\n- The bulk IP security lookup endpoint is called using Request Origin (CORS)\n  authentication. Bulk requests require an `apiKey` and cannot be authenticated\n  using Request Origin alone.\n",
+        "description": "Unauthorized. Returned for one of the following reasons:\n\n- The `apiKey` URL parameter is missing.\n- An invalid (random or incorrect) API key is provided.\n- The account has been disabled or locked due to abuse or illegal activity.\n- The API request is made using an API key for a database subscription.\n- The API request is made using a free subscription API key.\n- The subscription is in a 'paused' state.\n- The subscription trial has expired.\n- The bulk IP security lookup endpoint is called using a free subscription API key.\n- The bulk IP security lookup endpoint is called using Request Origin (CORS)\n  authentication. Bulk requests require an `apiKey` and cannot be authenticated\n  using Request Origin alone.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -522,12 +528,6 @@
                 "summary": "Subscription trial has expired",
                 "value": {
                   "message": "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
-                }
-              },
-              "subscriptionExpired": {
-                "summary": "Subscription active-until date has passed",
-                "value": {
-                  "message": "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 }
               },
               "requestOriginBulk": {
@@ -735,6 +735,24 @@
             },
             "example": {
               "message": "HTTP version not supported."
+            }
+          }
+        }
+      },
+      "PaymentRequired": {
+        "description": "Payment Required. Returned when the subscription is not on a Free plan and its\nactive-until date has passed, before any usage quota is checked. Renewing or\nupgrading the plan is required to continue using IPGeolocation API.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "subscriptionExpired": {
+                "summary": "Subscription active-until date has passed",
+                "value": {
+                  "message": "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                }
+              }
             }
           }
         }

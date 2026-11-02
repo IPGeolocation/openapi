@@ -561,7 +561,6 @@ paths:
             - The API request is made using an API key for a database subscription.
             - The subscription is in a 'paused' state.
             - The subscription trial has expired.
-            - The account’s active-until date has passed and renewal or upgrade is required.
             - Any of the following `include` values are used with a Free/Developer plan API key:
               `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
               `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
@@ -597,10 +596,6 @@ paths:
                   summary: Subscription is paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired or trial ended
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 freePlanBulk:
                   summary: Free plan used for bulk endpoint
                   value:
@@ -621,6 +616,8 @@ paths:
                   summary: Free plan used with non-English lang value
                   value:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           description: |
             Not found. Returned for one of the following reasons:
@@ -1003,7 +1000,6 @@ paths:
             - The API request is made using an API key for a database subscription.
             - The subscription is in a 'paused' state.
             - The subscription trial has expired.
-            - The account’s active-until date has passed and renewal or upgrade is required.
             - Any of the following `include` values are used with a Free/Developer plan API key:
               `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
               `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
@@ -1039,10 +1035,6 @@ paths:
                   summary: Subscription is paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired or trial ended
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 freePlanBulk:
                   summary: Free plan used for bulk endpoint
                   value:
@@ -1063,6 +1055,8 @@ paths:
                   summary: Free plan used with non-English lang value
                   value:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "413":
@@ -1372,7 +1366,6 @@ paths:
             - The API request is made using a free subscription API key.
             - The subscription is in a 'paused' state.
             - The subscription trial has expired.
-            - The account’s active-until date has passed and renewal or upgrade is required.
             - The bulk IP security lookup endpoint is called using a free subscription API key.
             - The bulk IP security lookup endpoint is called using Request Origin (CORS)
               authentication. Bulk requests require an `apiKey` and cannot be authenticated
@@ -1422,15 +1415,13 @@ paths:
                   value:
                     message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
 
-                subscriptionExpired:
-                  summary: Subscription active-until date has passed
-                  value:
-                    message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
 
                 requestOriginBulk:
                   summary: Bulk endpoint called using Request Origin authentication
                   value:
                     message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           description: |
             Not found. Returned for one of the following reasons:
@@ -1723,7 +1714,6 @@ paths:
             - The API request is made using a free subscription API key.
             - The subscription is in a 'paused' state.
             - The subscription trial has expired.
-            - The account’s active-until date has passed and renewal or upgrade is required.
             - The bulk IP security lookup endpoint is called using a free subscription API key.
             - The bulk IP security lookup endpoint is called using Request Origin (CORS)
               authentication. Bulk requests require an `apiKey` and cannot be authenticated
@@ -1773,15 +1763,13 @@ paths:
                   value:
                     message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
 
-                subscriptionExpired:
-                  summary: Subscription active-until date has passed
-                  value:
-                    message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
 
                 requestOriginBulk:
                   summary: Bulk endpoint called using Request Origin authentication
                   value:
                     message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "413":
@@ -2102,7 +2090,6 @@ paths:
             - The API request is made using a free subscription API key.
             - The subscription is in a 'paused' state.
             - The subscription trial has expired.
-            - The account’s active-until date has passed and renewal or upgrade is required.
           content:
             application/json:
               schema:
@@ -2132,10 +2119,8 @@ paths:
                   summary: Subscription is paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired or trial ended
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "423":
@@ -2348,7 +2333,6 @@ paths:
             - The API request is made using a free subscription API key.
             - The subscription is in a 'paused' state.
             - The subscription trial has expired.
-            - The account’s active-until date has passed and renewal or upgrade is required.
           content:
             application/json:
               schema:
@@ -2378,10 +2362,8 @@ paths:
                   summary: Subscription is paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired or trial ended
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "423":
@@ -2774,7 +2756,6 @@ paths:
               - When the request to Timezone API is made using API key for a database subscription
               - When the request to Timezone API is made on the 'paused' subscription.
               - If you’re making API requests after your subscription trial has been expired.
-              - If your active until date has passed and you need to upgrade your account.
               - A language other than English is specified in the `lang` parameter
                 while using a Free/Developer plan API key.
           content:
@@ -2802,14 +2783,12 @@ paths:
                   summary: Subscription paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 freePlanLang:
                   summary: Non-English language requested on Free plan
                   value:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           description: |
             Not found. Returned for one of the following reasons:
@@ -3121,7 +3100,6 @@ paths:
               - When the request to Timezone API is made using API key for a database subscription
               - When the request to Timezone API is made on the 'paused' subscription.
               - If you’re making API requests after your subscription trial has been expired.
-              - If your active until date has passed and you need to upgrade your account.
           content:
             application/json:
               schema:
@@ -3143,10 +3121,8 @@ paths:
                   summary: Subscription paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           description: |
             Not found. Returned for one of the following reasons:
@@ -3337,8 +3313,7 @@ paths:
             - The request is made using an API key of a database subscription.
             - The account has been disabled or locked due to illegal activity.
             - Requests are made after the subscription trial has expired.
-            - The subscription is paused or not active.
-            - The account’s active-until date has passed.
+            - The subscription is paused.
             - A paid feature is accessed using a free subscription.
             - The bulk user agent parsing endpoint is called using a free subscription API key.
           content:
@@ -3362,18 +3337,14 @@ paths:
                   summary: Account locked or disabled
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+                pausedSubscription:
+                  summary: Subscription is paused
+                  value:
+                    message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                 expiredTrial:
                   summary: Subscription trial expired
                   value:
                     message: "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
-                inactiveSubscription:
-                  summary: Subscription inactive or paused
-                  value:
-                    message: "Your subscription is not active."
-                expiredAccount:
-                  summary: Account active-until date passed
-                  value:
-                    message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                 freePlanPaidFeature:
                   summary: Paid feature accessed on free plan
                   value:
@@ -3382,6 +3353,8 @@ paths:
                   summary: Bulk endpoint called with free subscription key
                   value:
                     message: "Bulk User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           description: |
             Not Found. Returned when an invalid or non-existent endpoint is called.
@@ -3532,8 +3505,7 @@ paths:
             - The request is made using an API key of a database subscription.
             - The account has been disabled or locked due to illegal activity.
             - Requests are made after the subscription trial has expired.
-            - The subscription is paused or not active.
-            - The account’s active-until date has passed.
+            - The subscription is paused.
             - A paid feature is accessed using a free subscription.
             - The bulk user agent parsing endpoint is called using a free subscription API key.
           content:
@@ -3557,18 +3529,14 @@ paths:
                   summary: Account locked or disabled
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+                pausedSubscription:
+                  summary: Subscription is paused
+                  value:
+                    message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                 expiredTrial:
                   summary: Subscription trial expired
                   value:
                     message: "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
-                inactiveSubscription:
-                  summary: Subscription inactive or paused
-                  value:
-                    message: "Your subscription is not active."
-                expiredAccount:
-                  summary: Account active-until date passed
-                  value:
-                    message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                 freePlanPaidFeature:
                   summary: Paid feature accessed on free plan
                   value:
@@ -3577,6 +3545,8 @@ paths:
                   summary: Bulk endpoint called with free subscription key
                   value:
                     message: "Bulk User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           description: |
             Not Found. Returned when an invalid or non-existent endpoint is called.
@@ -3785,8 +3755,7 @@ paths:
             - The request is made using an API key of a database subscription.
             - The account has been disabled or locked due to illegal activity.
             - Requests are made after the subscription trial has expired.
-            - The subscription is paused or not active.
-            - The account’s active-until date has passed.
+            - The subscription is paused.
             - A paid feature is accessed using a free subscription.
             - The bulk user agent parsing endpoint is called using a free subscription API key.
           content:
@@ -3810,18 +3779,14 @@ paths:
                   summary: Account locked or disabled
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+                pausedSubscription:
+                  summary: Subscription is paused
+                  value:
+                    message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                 expiredTrial:
                   summary: Subscription trial expired
                   value:
                     message: "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
-                inactiveSubscription:
-                  summary: Subscription inactive or paused
-                  value:
-                    message: "Your subscription is not active."
-                expiredAccount:
-                  summary: Account active-until date passed
-                  value:
-                    message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                 freePlanPaidFeature:
                   summary: Paid feature accessed on free plan
                   value:
@@ -3830,6 +3795,8 @@ paths:
                   summary: Bulk endpoint called with free subscription key
                   value:
                     message: "Bulk User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           description: |
             Not Found. Returned when an invalid or non-existent endpoint is called.
@@ -4174,8 +4141,6 @@ paths:
               - When the request is made on a paused subscription.
               - If you are making API requests after your subscription trial
                 has expired.
-              - If your active-until date has passed and you need to renew
-                or upgrade your subscription.
               - A language other than English is specified in the `lang`
                 parameter while using a Free/Developer plan API key.
           content:
@@ -4203,14 +4168,12 @@ paths:
                   summary: Subscription paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 freePlanLang:
                   summary: Non-English language on Free plan
                   value:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           description: |
             Not Found. Returned for one of the following reasons:
@@ -4604,7 +4567,6 @@ paths:
                 subscription.
               - When the request is made on a paused subscription.
               - If your subscription trial has expired.
-              - If your active-until date has passed.
               - A language other than English is specified in the `lang`
                 parameter while using a Free/Developer plan API key.
           content:
@@ -4632,14 +4594,12 @@ paths:
                   summary: Subscription paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 freePlanLang:
                   summary: Non-English language on Free plan
                   value:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           description: |
             Not Found. Returned for one of the following reasons:
@@ -4754,6 +4714,21 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
           example:
             message: "'10.0.0.1' is a bogon IP address."
+
+    PaymentRequired:
+      description: |
+        Payment Required. Returned when the subscription is not on a Free plan and its
+        active-until date has passed, before any usage quota is checked. Renewing or
+        upgrading the plan is required to continue using IPGeolocation API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            expiredSubscription:
+              summary: Subscription expired
+              value:
+                message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
 
     TooManyRequests:
       description: |

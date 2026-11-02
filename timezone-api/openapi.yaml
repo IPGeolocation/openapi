@@ -498,7 +498,6 @@ paths:
               - When the request to Timezone API is made using API key for a database subscription
               - When the request to Timezone API is made on the 'paused' subscription.
               - If you’re making API requests after your subscription trial has been expired.
-              - If your active until date has passed and you need to upgrade your account.
               - A language other than English is specified in the `lang` parameter
                 while using a Free/Developer plan API key.
           content:
@@ -526,15 +525,13 @@ paths:
                   summary: Subscription paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 freePlanLang:
                   summary: Non-English language requested on Free plan
                   value:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
 
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           $ref: "#/components/responses/NotFoundTimezone"
         "405":
@@ -690,7 +687,6 @@ paths:
               - When the request to Timezone API is made using API key for a database subscription
               - When the request to Timezone API is made on the 'paused' subscription.
               - If you’re making API requests after your subscription trial has been expired.
-              - If your active until date has passed and you need to upgrade your account.
           content:
             application/json:
               schema:
@@ -712,10 +708,8 @@ paths:
                   summary: Subscription paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           $ref: "#/components/responses/NotFoundConvert"
         "405":
@@ -739,6 +733,21 @@ paths:
 
 components:
   responses:
+    PaymentRequired:
+      description: |
+        Payment Required. Returned when the subscription is not on a Free plan and its
+        active-until date has passed, before any usage quota is checked. Renewing or
+        upgrading the plan is required to continue using IPGeolocation API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            expiredSubscription:
+              summary: Subscription expired
+              value:
+                message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+
     NotFoundTimezone:
       description: |
         Not found. Returned for one of the following reasons:

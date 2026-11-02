@@ -117,6 +117,9 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -239,6 +242,9 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -447,6 +453,9 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -552,7 +561,7 @@
         }
       },
       "Unauthorized": {
-        "description": "Unauthorized. Returned for one of the following reasons:\n- The `apiKey` URL parameter is missing from the request.\n- The provided API key is not valid.\n- The request is made using an API key of a database subscription.\n- The account has been disabled or locked due to illegal activity.\n- Requests are made after the subscription trial has expired.\n- The subscription is paused or not active.\n- The account’s active-until date has passed.\n- A paid feature is accessed using a free subscription.\n- The bulk user agent parsing endpoint is called using a free subscription API key.\n",
+        "description": "Unauthorized. Returned for one of the following reasons:\n- The `apiKey` URL parameter is missing from the request.\n- The provided API key is not valid.\n- The request is made using an API key of a database subscription.\n- The account has been disabled or locked due to illegal activity.\n- Requests are made after the subscription trial has expired.\n- The subscription is paused.\n- A paid feature is accessed using a free subscription.\n- The bulk user agent parsing endpoint is called using a free subscription API key.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -583,22 +592,16 @@
                   "message": "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 }
               },
+              "pausedSubscription": {
+                "summary": "Subscription is paused",
+                "value": {
+                  "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
+                }
+              },
               "expiredTrial": {
                 "summary": "Subscription trial expired",
                 "value": {
                   "message": "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
-                }
-              },
-              "inactiveSubscription": {
-                "summary": "Subscription inactive or paused",
-                "value": {
-                  "message": "Your subscription is not active."
-                }
-              },
-              "expiredAccount": {
-                "summary": "Account active-until date passed",
-                "value": {
-                  "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                 }
               },
               "freePlanPaidFeature": {
@@ -770,6 +773,24 @@
             },
             "example": {
               "message": "HTTP version not supported."
+            }
+          }
+        }
+      },
+      "PaymentRequired": {
+        "description": "Payment Required. Returned when the subscription is not on a Free plan and its\nactive-until date has passed, before any usage quota is checked. Renewing or\nupgrading the plan is required to continue using IPGeolocation API.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "expiredSubscription": {
+                "summary": "Subscription expired",
+                "value": {
+                  "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                }
+              }
             }
           }
         }

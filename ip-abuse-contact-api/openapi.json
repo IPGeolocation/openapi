@@ -27,7 +27,9 @@
   ],
   "security": [
     {
-      "ApiKeyAuth": []
+      "ApiKeyAuth": [
+
+      ]
     }
   ],
   "paths": {
@@ -101,6 +103,9 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -240,7 +245,7 @@
         }
       },
       "Unauthorized": {
-        "description": "Unauthorized. Returned for one of the following reasons:\n\n- The `apiKey` URL parameter is missing.\n- An invalid (random or incorrect) API key is provided.\n- The account has been disabled or locked due to abuse or illegal activity.\n- The API request is made using an API key for a database subscription.\n- The API request is made using a free subscription API key.\n- The subscription is in a 'paused' state.\n- The subscription trial has expired.\n- The account’s active-until date has passed and renewal or upgrade is required.\n",
+        "description": "Unauthorized. Returned for one of the following reasons:\n\n- The `apiKey` URL parameter is missing.\n- An invalid (random or incorrect) API key is provided.\n- The account has been disabled or locked due to abuse or illegal activity.\n- The API request is made using an API key for a database subscription.\n- The API request is made using a free subscription API key.\n- The subscription is in a 'paused' state.\n- The subscription trial has expired.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -281,12 +286,6 @@
                 "summary": "Subscription is paused",
                 "value": {
                   "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                }
-              },
-              "expiredSubscription": {
-                "summary": "Subscription expired or trial ended",
-                "value": {
-                  "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 }
               }
             }
@@ -458,6 +457,24 @@
             },
             "example": {
               "message": "HTTP version not supported."
+            }
+          }
+        }
+      },
+      "PaymentRequired": {
+        "description": "Payment Required. Returned when the subscription is not on a Free plan and its\nactive-until date has passed, before any usage quota is checked. Renewing or\nupgrading the plan is required to continue using IPGeolocation API.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "expiredSubscription": {
+                "summary": "Subscription expired",
+                "value": {
+                  "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                }
+              }
             }
           }
         }

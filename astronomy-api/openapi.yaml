@@ -398,8 +398,6 @@ paths:
               - When the request is made on a paused subscription.
               - If you are making API requests after your subscription trial
                 has expired.
-              - If your active-until date has passed and you need to renew
-                or upgrade your subscription.
               - A language other than English is specified in the `lang`
                 parameter while using a Free/Developer plan API key.
           content:
@@ -427,15 +425,13 @@ paths:
                   summary: Subscription paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 freePlanLang:
                   summary: Non-English language on Free plan
                   value:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
 
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           $ref: "#/components/responses/NotFound"
         "405":
@@ -769,7 +765,6 @@ paths:
                 subscription.
               - When the request is made on a paused subscription.
               - If your subscription trial has expired.
-              - If your active-until date has passed.
               - A language other than English is specified in the `lang`
                 parameter while using a Free/Developer plan API key.
           content:
@@ -797,15 +792,13 @@ paths:
                   summary: Subscription paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                expiredSubscription:
-                  summary: Subscription expired
-                  value:
-                    message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 freePlanLang:
                   summary: Non-English language on Free plan
                   value:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
 
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
         "404":
           $ref: "#/components/responses/NotFoundTimeSeries"
         "405":
@@ -1069,6 +1062,21 @@ components:
           - ar
 
   responses:
+    PaymentRequired:
+      description: |
+        Payment Required. Returned when the subscription is not on a Free plan and its
+        active-until date has passed, before any usage quota is checked. Renewing or
+        upgrading the plan is required to continue using IPGeolocation API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            expiredSubscription:
+              summary: Subscription expired
+              value:
+                message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+
     NotFound:
       description: |
         Not Found. Returned for one of the following reasons:
