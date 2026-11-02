@@ -4759,8 +4759,9 @@ components:
         Too Many Requests. Returned for one of the following reasons:
 
         - The API credit allowance has been reached for a Free subscription.
-        - The API credit allowance has been reached for a Paid subscription with
-          status 'past due', 'deleted', or 'trial expired'.
+        - The API credit allowance has been reached for an active trial subscription (capped at 100,000 requests).
+        - The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.
+        - The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.
         - The surcharge (overage) credit limit has been reached for the subscribed plan.
       content:
         application/json:
