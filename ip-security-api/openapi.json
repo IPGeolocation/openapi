@@ -638,7 +638,7 @@
         }
       },
       "TooManyRequests": {
-        "description": "Too Many Requests. Returned for one of the following reasons:\n- The API credit allowance has been reached for a Paid subscription with\n  status 'past due', 'deleted', or 'trial expired'.\n- The surcharge (overage) credit limit has been reached for the subscribed plan.\n",
+        "description": "Too Many Requests. Returned for one of the following reasons:\n- The API credit allowance has been reached for an active trial subscription (capped at 100,000 requests).\n- The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.\n- The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.\n- The surcharge (overage) credit limit has been reached for the subscribed plan.\n",
         "content": {
           "application/json": {
             "schema": {
