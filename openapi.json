@@ -70,7 +70,7 @@
                 {
                   "key": "lang",
                   "value": "en",
-                  "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                  "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                   "disabled": true
                 },
                 {
@@ -134,7 +134,7 @@
                     {
                       "key": "lang",
                       "value": "en",
-                      "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                      "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                       "disabled": true
                     },
                     {
@@ -402,7 +402,7 @@
                 {
                   "key": "lang",
                   "value": "en",
-                  "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                  "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                   "disabled": true
                 },
                 {
@@ -473,7 +473,7 @@
                     {
                       "key": "lang",
                       "value": "en",
-                      "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                      "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                       "disabled": true
                     },
                     {
@@ -1901,7 +1901,7 @@
                 {
                   "key": "lang",
                   "value": "en",
-                  "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                  "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                   "disabled": true
                 },
                 {
@@ -1989,7 +1989,7 @@
                     {
                       "key": "lang",
                       "value": "en",
-                      "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                      "description": "Language code for translated location names. Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                       "disabled": true
                     },
                     {
@@ -3220,7 +3220,7 @@
                 {
                   "key": "lang",
                   "value": "en",
-                  "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                  "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                   "disabled": true
                 }
               ]
@@ -3296,7 +3296,7 @@
                     {
                       "key": "lang",
                       "value": "en",
-                      "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                      "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                       "disabled": true
                     }
                   ]
@@ -3506,7 +3506,7 @@
                 {
                   "key": "lang",
                   "value": "en",
-                  "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                  "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                   "disabled": true
                 }
               ]
@@ -3589,7 +3589,7 @@
                     {
                       "key": "lang",
                       "value": "en",
-                      "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`. Defaults to `en`.",
+                      "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Non-English responses require a paid plan. Free plans always receive English regardless of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.",
                       "disabled": true
                     }
                   ]
