@@ -646,9 +646,11 @@ paths:
               
               - If the time zone names provided to one of the parameters `tz_from` and `tz_to` is/are wrong or not registered in the IANA time zone database.
 
-              - If the address provided to either `location_from` or `location_to` can't be resolved to a location. A city-level or state-level address must be provided.
-              
-              - If none of the query parameter combination is provided for time conversion. `tz_from` and `tz_to` or `location_from` and `location_to` or `lat_from`, `long_from`, `lat_to`, `long_to` combination must be provided.
+              - If one of the query parameters `iata_from` and `iata_to`, `icao_from` and `icao_to`, or `locode_from` and `locode_to` is provided and the other is missing, for time conversion.
+
+              - If the value provided to `iata_from` or `iata_to` is not a three-letter code (AAA), to `icao_from` or `icao_to` is not a four-letter code (AAAA), or to `locode_from` or `locode_to` is not two country letters followed by three alphanumeric characters, for time conversion.
+
+              - If none of the query parameter combination is provided for time conversion. `tz_from` and `tz_to` or `location_from` and `location_to` or `lat_from`, `long_from`, `lat_to`, `long_to` or `iata_from` and `iata_to` or `icao_from` and `icao_to` or `locode_from` and `locode_to` combination must be provided.
             
           content:
             application/json: 
@@ -675,14 +677,6 @@ paths:
                   summary: Invalid timezone identifier
                   value:
                     message: "Check whether your input values are correct; source_time_zone = Europe/InvalidCity, destined_time_zone = Asia/Kabul, date_time = 2025-01-30 09:00"
-                invalidLocationFrom:
-                  summary: Source location not found
-                  value:
-                    message: "We couldn't find the (from) location (Germany, jaakjsdfjhb8wobv). Try a city or state level address only."
-                invalidLocationTo:
-                  summary: Destination location not found
-                  value:
-                    message: "We couldn't find the (to) location (Germany, jaakjsdfjhb8wobv). Try a city or state level address only."
                 noConversionParams:
                   summary: Missing conversion parameters
                   value:
@@ -792,9 +786,9 @@ components:
         Not found. Returned for one of the following reasons:
         - If the provided UN/LOCODE, IATA code or ICAO code to one of the query parameters `locode_from`/`locode_to`, `iata_from`/`iata_to`, or `icao_from`/`icao_to` does not exist in our database.
 
-        - If the wrong endpoint is called, that does not exist in our API.
+        - If the address provided to `location_from` or `location_to` can't be resolved to a location. A city-level or state-level address must be provided.
 
-        Note: an unresolvable `location_from`/`location_to` address returns HTTP 400, not 404 — see the 400 response's `invalidLocationFrom`/`invalidLocationTo` examples.
+        - If the wrong endpoint is called, that does not exist in our API.
       content:
         application/json:
           schema:
@@ -808,6 +802,14 @@ components:
               summary: Invalid UN/LOCODE
               value:
                 message: "'Data not found for the provided LO code: USATL1 Please contact at support@ipgeolocation.io if provided LO code exists.'"
+            invalidLocationFrom:
+              summary: Source location not found
+              value:
+                message: "We couldn't find the (from) location (Germany, jaakjsdfjhb8wobv). Try a city or state level address only."
+            invalidLocationTo:
+              summary: Destination location not found
+              value:
+                message: "We couldn't find the (to) location (Germany, jaakjsdfjhb8wobv). Try a city or state level address only."
             wrongEndpoint:
               summary: Incorrect or non-existent endpoint
               value:
@@ -1633,8 +1635,8 @@ components:
     DSTTransition:
       type: object
       description: |
-        Represents a daylight saving time transition event including the
-        moment when DST begins or ends.
+        A daylight saving time transition. `dst_start` and `dst_end` describe
+        the current DST period while DST is in effect, otherwise the next one.
       properties:
         utc_time:
           type: string

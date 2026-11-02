@@ -459,7 +459,7 @@
             }
           },
           "400": {
-            "description": "Bad Request – Possible reasons include:\n  - If one of the query parameters `tz_from` and `tz_to` is provided and the other is missing, for time conversion.\n\n  - If one of the query parameters `location_from` and `location_to` is provided and the other is missing, for time conversion.\n  \n  - If one of the query parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is provided and other(s) is/are missing, for time conversion.\n                \n  - If the geographic coordinates provided to one of the parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is/are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180.\n  \n  - If the time zone names provided to one of the parameters `tz_from` and `tz_to` is/are wrong or not registered in the IANA time zone database.\n\n  - If the address provided to either `location_from` or `location_to` can't be resolved to a location. A city-level or state-level address must be provided.\n  \n  - If none of the query parameter combination is provided for time conversion. `tz_from` and `tz_to` or `location_from` and `location_to` or `lat_from`, `long_from`, `lat_to`, `long_to` combination must be provided.\n",
+            "description": "Bad Request – Possible reasons include:\n  - If one of the query parameters `tz_from` and `tz_to` is provided and the other is missing, for time conversion.\n\n  - If one of the query parameters `location_from` and `location_to` is provided and the other is missing, for time conversion.\n  \n  - If one of the query parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is provided and other(s) is/are missing, for time conversion.\n                \n  - If the geographic coordinates provided to one of the parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is/are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180.\n  \n  - If the time zone names provided to one of the parameters `tz_from` and `tz_to` is/are wrong or not registered in the IANA time zone database.\n\n  - If one of the query parameters `iata_from` and `iata_to`, `icao_from` and `icao_to`, or `locode_from` and `locode_to` is provided and the other is missing, for time conversion.\n\n  - If the value provided to `iata_from` or `iata_to` is not a three-letter code (AAA), to `icao_from` or `icao_to` is not a four-letter code (AAAA), or to `locode_from` or `locode_to` is not two country letters followed by three alphanumeric characters, for time conversion.\n\n  - If none of the query parameter combination is provided for time conversion. `tz_from` and `tz_to` or `location_from` and `location_to` or `lat_from`, `long_from`, `lat_to`, `long_to` or `iata_from` and `iata_to` or `icao_from` and `icao_to` or `locode_from` and `locode_to` combination must be provided.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -494,18 +494,6 @@
                     "summary": "Invalid timezone identifier",
                     "value": {
                       "message": "Check whether your input values are correct; source_time_zone = Europe/InvalidCity, destined_time_zone = Asia/Kabul, date_time = 2025-01-30 09:00"
-                    }
-                  },
-                  "invalidLocationFrom": {
-                    "summary": "Source location not found",
-                    "value": {
-                      "message": "We couldn't find the (from) location (Germany, jaakjsdfjhb8wobv). Try a city or state level address only."
-                    }
-                  },
-                  "invalidLocationTo": {
-                    "summary": "Destination location not found",
-                    "value": {
-                      "message": "We couldn't find the (to) location (Germany, jaakjsdfjhb8wobv). Try a city or state level address only."
                     }
                   },
                   "noConversionParams": {
@@ -784,7 +772,7 @@
         }
       },
       "NotFoundConvert": {
-        "description": "Not found. Returned for one of the following reasons:\n- If the provided UN/LOCODE, IATA code or ICAO code to one of the query parameters `locode_from`/`locode_to`, `iata_from`/`iata_to`, or `icao_from`/`icao_to` does not exist in our database.\n\n- If the wrong endpoint is called, that does not exist in our API.\n\nNote: an unresolvable `location_from`/`location_to` address returns HTTP 400, not 404 — see the 400 response's `invalidLocationFrom`/`invalidLocationTo` examples.\n",
+        "description": "Not found. Returned for one of the following reasons:\n- If the provided UN/LOCODE, IATA code or ICAO code to one of the query parameters `locode_from`/`locode_to`, `iata_from`/`iata_to`, or `icao_from`/`icao_to` does not exist in our database.\n\n- If the address provided to `location_from` or `location_to` can't be resolved to a location. A city-level or state-level address must be provided.\n\n- If the wrong endpoint is called, that does not exist in our API.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -801,6 +789,18 @@
                 "summary": "Invalid UN/LOCODE",
                 "value": {
                   "message": "'Data not found for the provided LO code: USATL1 Please contact at support@ipgeolocation.io if provided LO code exists.'"
+                }
+              },
+              "invalidLocationFrom": {
+                "summary": "Source location not found",
+                "value": {
+                  "message": "We couldn't find the (from) location (Germany, jaakjsdfjhb8wobv). Try a city or state level address only."
+                }
+              },
+              "invalidLocationTo": {
+                "summary": "Destination location not found",
+                "value": {
+                  "message": "We couldn't find the (to) location (Germany, jaakjsdfjhb8wobv). Try a city or state level address only."
                 }
               },
               "wrongEndpoint": {
@@ -1499,7 +1499,7 @@
       },
       "DSTTransition": {
         "type": "object",
-        "description": "Represents a daylight saving time transition event including the\nmoment when DST begins or ends.\n",
+        "description": "A daylight saving time transition. `dst_start` and `dst_end` describe\nthe current DST period while DST is in effect, otherwise the next one.\n",
         "properties": {
           "utc_time": {
             "type": "string",
