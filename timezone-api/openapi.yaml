@@ -1427,7 +1427,7 @@ components:
             shape (`LocationFromIp`). When the lookup is performed using
             the `location` parameter, this is the smaller, geocoded-address
             shape (`LocationFromName`).
-          oneOf:
+          anyOf:
             - $ref: "#/components/schemas/LocationFromIp"
             - $ref: "#/components/schemas/LocationFromName"
 
