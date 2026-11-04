@@ -2265,7 +2265,7 @@ components:
           description: |
             Start DST transition details. When `dst_exists` is `false`, this is
             returned as an empty object with no properties.
-          oneOf:
+          anyOf:
           - $ref: "#/components/schemas/DstTransition"
           - type: object
             maxProperties: 0
@@ -2273,7 +2273,7 @@ components:
           description: |
             End DST transition details. When `dst_exists` is `false`, this is
             returned as an empty object with no properties.
-          oneOf:
+          anyOf:
           - $ref: "#/components/schemas/DstTransition"
           - type: object
             maxProperties: 0

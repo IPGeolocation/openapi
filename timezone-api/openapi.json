@@ -1321,7 +1321,7 @@
           },
           "location": {
             "description": "Geolocation details for the resolved location.\n\nWhen the lookup is performed using the `ip` parameter (or the\ncaller's IP is resolved automatically), this is the IP-based\nshape (`LocationFromIp`). When the lookup is performed using\nthe `location` parameter, this is the smaller, geocoded-address\nshape (`LocationFromName`).\n",
-            "oneOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/LocationFromIp"
               },

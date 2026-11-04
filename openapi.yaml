@@ -5552,7 +5552,7 @@ components:
           description: |
             Start DST transition details. When `dst_exists` is `false`, this is
             returned as an empty object with no properties.
-          oneOf:
+          anyOf:
             - $ref: "#/components/schemas/IPGeoDstTransition"
             - type: object
               maxProperties: 0
@@ -5560,7 +5560,7 @@ components:
           description: |
             End DST transition details. When `dst_exists` is `false`, this is
             returned as an empty object with no properties.
-          oneOf:
+          anyOf:
             - $ref: "#/components/schemas/IPGeoDstTransition"
             - type: object
               maxProperties: 0
@@ -6213,7 +6213,7 @@ components:
             shape (`TimezoneLocationFromIp`). When the lookup is performed
             using the `location` parameter, this is the smaller,
             geocoded-address shape (`TimezoneLocationFromName`).
-          oneOf:
+          anyOf:
             - $ref: "#/components/schemas/TimezoneLocationFromIp"
             - $ref: "#/components/schemas/TimezoneLocationFromName"
 

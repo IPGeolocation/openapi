@@ -1931,7 +1931,7 @@
           },
           "dst_start": {
             "description": "Start DST transition details. When `dst_exists` is `false`, this is\nreturned as an empty object with no properties.\n",
-            "oneOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/DstTransition"
               },
@@ -1943,7 +1943,7 @@
           },
           "dst_end": {
             "description": "End DST transition details. When `dst_exists` is `false`, this is\nreturned as an empty object with no properties.\n",
-            "oneOf": [
+            "anyOf": [
               {
                 "$ref": "#/components/schemas/DstTransition"
               },
