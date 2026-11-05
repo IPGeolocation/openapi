@@ -3,7 +3,7 @@
   "info": {
     "title": "IPGeolocation.io: User Agent API",
     "version": "3.0",
-    "description": "Parse browser, device, and operating system details from a User Agent string.\nThe API also detects crawlers, bots, and potential attackers based on anomalies\nin the user agent string.\n\nTwo endpoints are available, supporting three usage modes:\n\n- **`GET /v3/user-agent`** supports two modes: omit the `User-Agent` header to\n  auto-detect the caller's own user agent, or pass any string in the `User-Agent`\n  header to parse it explicitly.\n- **`POST /v3/user-agent`** parses a custom user agent string from a JSON body\n  (`uaString` field). Available on paid plans only.\n- **`POST /v3/user-agent-bulk`** parses up to 50,000 user agent strings in a\n  single request. Available on paid plans only.\n\nUser agent data can also be retrieved alongside IP geolocation data via the\n`/v3/ipgeo` endpoint using `include=user_agent`.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Credit Usage\n\nCredits are charged only for successful **HTTP 200** responses. The exact number of\ncredits consumed by a request is returned in the `X-Credits-Charged` response header.\n\nEach successful user agent lookup costs **1 credit** per user agent string parsed.\nFor bulk requests, the total credits charged equals the number of user agent strings\nsubmitted.\n\nWhen using `/v3/ipgeo` with `include=user_agent`, no additional credits are charged\nbeyond the base IP lookup cost.\n\n## Plan Availability\n\n- **`GET /v3/user-agent`** (auto-detect or explicit `User-Agent` header) is available\n  on all plans including Free.\n- **`POST /v3/user-agent`** (custom string via JSON body) is available on **paid plans only**.\n- **`POST /v3/user-agent-bulk`** is available on **paid plans only**.\n- User agent data via `/v3/ipgeo?include=user_agent` is available on **paid plans only**.\n\n## Response Formats\n\nThe API supports JSON (default) and XML output.\n\n- Set the `output` query parameter to `json` or `xml`.\n- Alternatively, set the `Accept` header to `application/json`, `application/xml`,\n  or `text/xml`.\n\nIf neither is specified, the response is returned as JSON. XML responses use a\n`LinkedHashMap` root element (an `ArrayList` of them for bulk requests).\n\n## Parameter Name Casing\n\nQuery parameter names are case-sensitive. Use exact names such as\n`apiKey` and `output`.\n",
+    "description": "Parse browser, device, and operating system details from a User Agent string.\nThe API also detects crawlers, bots, and potential attackers based on anomalies\nin the user agent string.\n\nTwo endpoints are available, supporting three usage modes:\n\n- **`GET /v3/user-agent`** supports two modes: don't set a custom `User-Agent`\n  header to parse the caller's own user agent (browsers and most HTTP clients send\n  one automatically), or pass any string in the `User-Agent` header to parse it\n  explicitly. A request with no `User-Agent` header at all returns HTTP 400.\n- **`POST /v3/user-agent`** parses a custom user agent string from a JSON body\n  (`uaString` field). Available on paid plans only.\n- **`POST /v3/user-agent-bulk`** parses up to 50,000 user agent strings in a\n  single request. Available on paid plans only.\n\nUser agent data can also be retrieved alongside IP geolocation data via the\n`/v3/ipgeo` endpoint using `include=user_agent`.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Credit Usage\n\nCredits are charged only for successful **HTTP 200** responses. The exact number of\ncredits consumed by a request is returned in the `X-Credits-Charged` response header.\n\nEach successful user agent lookup costs **1 credit** per user agent string parsed.\nFor bulk requests, the total credits charged equals the number of user agent strings\nsubmitted.\n\nWhen using `/v3/ipgeo` with `include=user_agent`, no additional credits are charged\nbeyond the base IP lookup cost.\n\n## Plan Availability\n\n- **`GET /v3/user-agent`** (auto-detect or explicit `User-Agent` header) is available\n  on all plans including Free.\n- **`POST /v3/user-agent`** (custom string via JSON body) is available on **paid plans only**.\n- **`POST /v3/user-agent-bulk`** is available on **paid plans only**.\n- User agent data via `/v3/ipgeo?include=user_agent` is available on **paid plans only**.\n\n## Response Formats\n\nThe API supports JSON (default) and XML output.\n\n- Set the `output` query parameter to `json` or `xml`.\n- Alternatively, set the `Accept` header to `application/json`, `application/xml`,\n  or `text/xml`.\n\nIf neither is specified, the response is returned as JSON. XML responses use a\n`LinkedHashMap` root element (an `ArrayList` of them for bulk requests).\n\n## Parameter Name Casing\n\nQuery parameter names are case-sensitive. Use exact names such as\n`apiKey` and `output`.\n",
     "contact": {
       "name": "IPGeolocation Support",
       "url": "https://ipgeolocation.io/contact.html",
@@ -37,7 +37,7 @@
       "get": {
         "operationId": "parseUserAgent",
         "summary": "Parse user agent string (auto-detect or explicit header)",
-        "description": "Parses a user agent string and returns browser, device, and operating system\ndetails. Also detects bots, crawlers, and malicious or malformed user agent strings.\n\nThis endpoint supports two usage modes:\n\n**Mode 1 — Auto-detect caller's user agent:**\nOmit the `User-Agent` header entirely. The API will parse the user agent string\nof the calling client automatically. This is the default browser behavior — when\nexecuted in browser JavaScript, the header is appended automatically and no\nadditional configuration is needed.\n\n**Mode 2 — Explicit user agent header:**\nPass any user agent string in the `User-Agent` request header. The API parses\nthat string instead of detecting the caller's own user agent. Use this to\nsimulate or test specific user agent strings server-side.\n\nEach successful lookup consumes **1 credit**.\n",
+        "description": "Parses a user agent string and returns browser, device, and operating system\ndetails. Also detects bots, crawlers, and malicious or malformed user agent strings.\n\nThis endpoint supports two usage modes:\n\n**Mode 1 — Caller's own user agent:**\nDon't set a custom `User-Agent` header. Browsers and most HTTP clients send one\nautomatically, and the API parses it. If the request carries no `User-Agent`\nheader at all, the API returns HTTP 400.\n\n**Mode 2 — Explicit user agent header:**\nPass any user agent string in the `User-Agent` request header. The API parses\nthat string instead of detecting the caller's own user agent. Use this to\nsimulate or test specific user agent strings server-side.\n\nEach successful lookup consumes **1 credit**.\n",
         "tags": [
           "User Agent"
         ],
@@ -49,7 +49,7 @@
             "name": "User-Agent",
             "in": "header",
             "required": false,
-            "description": "The user agent string to parse. When omitted, the API automatically parses\nthe user agent of the calling client. When provided, the supplied string is\nparsed instead.\n",
+            "description": "The user agent string to parse. Browsers and most HTTP clients send their own\n`User-Agent` header automatically, so by default the caller's own user agent is\nparsed. Set it to any string to parse that string instead. If the request has\nno `User-Agent` header at all, the API returns HTTP 400.\n",
             "schema": {
               "type": "string"
             },
@@ -119,6 +119,9 @@
           },
           "402": {
             "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -246,6 +249,9 @@
           "402": {
             "$ref": "#/components/responses/PaymentRequired"
           },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -286,7 +292,7 @@
       "post": {
         "operationId": "parseUserAgentBulk",
         "summary": "Bulk parse user agent strings",
-        "description": "Parses up to **50,000 user agent strings** in a single request.\n\nPass a JSON body containing the `uaStrings` array. Each entry in the array\nis parsed independently. The total credits charged equals the number of strings\nin the array.\n\nThis endpoint is available on **paid plans only**.\n",
+        "description": "Parses up to **50,000 user agent strings** in a single request.\n\nPass a JSON body containing the `uaStrings` array. Each entry is parsed as sent.\nA `null` or blank entry fails the whole request with HTTP 400\n(`'userAgentString' must not be empty or null`) and nothing is charged. The total\ncredits charged equals the number of strings in the array.\n\nThis endpoint is available on **paid plans only**.\n",
         "tags": [
           "User Agent"
         ],
@@ -311,9 +317,8 @@
                 "properties": {
                   "uaStrings": {
                     "type": "array",
-                    "description": "Array of user agent strings to parse. Maximum 50,000 entries per request.\n",
+                    "description": "Array of user agent strings to parse. Maximum 50,000 entries per request.\nA `null` or blank entry fails the whole request with HTTP 400. An empty\narray is not an error: it returns HTTP 200 with `[]` and 0 credits.\n",
                     "maxItems": 50000,
-                    "minItems": 1,
                     "items": {
                       "type": "string"
                     },
@@ -456,6 +461,9 @@
           "402": {
             "$ref": "#/components/responses/PaymentRequired"
           },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
           "404": {
             "$ref": "#/components/responses/NotFound"
           },
@@ -509,7 +517,7 @@
         "name": "output",
         "in": "query",
         "required": false,
-        "description": "Desired response format. Defaults to `json` if not specified. You can also\ncontrol the format using the `Accept` header (`application/json`,\n`application/xml`, or `text/xml`). If both are provided, the `output` parameter\ntakes precedence.\n\nIf `output` is unknown or unsupported, it is ignored and the response defaults\nto JSON (`application/json`) with HTTP 200.\n",
+        "description": "Desired response format. Defaults to `json` if not specified. You can also\ncontrol the format using the `Accept` header (`application/json`,\n`application/xml`, or `text/xml`). For successful responses and authentication\nerrors, the `Accept` header takes precedence if both are provided: `output` is\nused only when the `Accept` header is absent or set to `*/*`, and an `Accept`\nvalue other than `application/xml` or `text/xml` (for example a browser's\ndefault) returns JSON even with `output=xml`. Values are matched exactly (use\nlowercase `xml`).\n\nIf `output` is unknown or unsupported, it is ignored and the response defaults\nto JSON (`application/json`) with HTTP 200.\n",
         "schema": {
           "type": "string",
           "enum": ["json", "xml"],
@@ -519,7 +527,7 @@
     },
     "responses": {
       "BadRequest": {
-        "description": "Bad Request. Returned for one of the following reasons:\n- Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.\n- The `uaString` is empty or null when calling `/v3/user-agent`(POST).\n- The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`\n  field when calling `/v3/user-agent-bulk`.\n- More than 50,000 user agent strings are provided in a single bulk request.\n- No `User-Agent` header is present when calling `GET /v3/user-agent`. Unlike the\n  POST body, there is no alternative way to supply the string for this call, so a\n  missing/blank header always fails validation.\n",
+        "description": "Bad Request. Returned for one of the following reasons:\n- Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.\n- The `uaString` is empty or null when calling `/v3/user-agent`(POST).\n- The JSON body has no `uaStrings` field (or it is `null`) when calling\n  `/v3/user-agent-bulk`. An empty array is not an error: it returns HTTP 200\n  with `[]` and 0 credits.\n- The `uaStrings` array contains a `null` or blank entry when calling\n  `/v3/user-agent-bulk` (`'userAgentString' must not be empty or null`). The whole\n  request fails and nothing is charged.\n- More than 50,000 user agent strings are provided in a single bulk request.\n- The request body is not valid JSON (`Malformed JSON request or invalid field`) or\n  `uaStrings` is not a JSON array of strings.\n- No `User-Agent` header is present when calling `GET /v3/user-agent`. Unlike the\n  POST body, there is no alternative way to supply the string for this call, so a\n  missing/blank header always fails validation.\n\nRequest body validation (malformed JSON, a missing or blank `uaString`, a missing\n`uaStrings` field, more than 50,000 entries) runs before the API key is checked.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -545,9 +553,27 @@
                 }
               },
               "emptyBulkList": {
-                "summary": "Empty uaStrings array or missing field",
+                "summary": "Missing uaStrings field",
                 "value": {
                   "message": "User-Agent strings for bulk lookup are missing"
+                }
+              },
+              "blankBulkEntry": {
+                "summary": "Null or blank entry in uaStrings",
+                "value": {
+                  "message": "'userAgentString' must not be empty or null"
+                }
+              },
+              "malformedJson": {
+                "summary": "Request body is not valid JSON",
+                "value": {
+                  "message": "Malformed JSON request or invalid field"
+                }
+              },
+              "uaStringsNotArray": {
+                "summary": "uaStrings is not a JSON array of strings",
+                "value": {
+                  "message": "'uaStrings' must be a JSON array of strings, e.g. {\"uaStrings\": [\"value1\", \"value2\"]}"
                 }
               },
               "bulkLimitExceeded": {
@@ -561,7 +587,7 @@
         }
       },
       "Unauthorized": {
-        "description": "Unauthorized. Returned for one of the following reasons:\n- The `apiKey` URL parameter is missing from the request.\n- The provided API key is not valid.\n- The request is made using an API key of a database subscription.\n- The account has been disabled or locked due to illegal activity.\n- Requests are made after the subscription trial has expired.\n- The subscription is paused.\n- A paid feature is accessed using a free subscription.\n- The bulk user agent parsing endpoint is called using a free subscription API key.\n",
+        "description": "Unauthorized. Returned for one of the following reasons:\n- An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.\n- The provided API key is not valid, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.\n- The request is made using an API key of a database subscription.\n- The account's email address has not been verified.\n- The account has been locked due to abuse or illegal activity.\n- Requests are made after the subscription trial has expired.\n- The subscription is paused.\n- A paid feature is accessed using a free subscription.\n- The bulk user agent parsing endpoint is called using a free subscription API key.\n- The bulk user agent parsing endpoint is called using Request Origin (CORS) authentication. Bulk requests require an `apiKey`.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -586,8 +612,14 @@
                   "message": "You cannot query IPGeolocation API on a database plan subscription."
                 }
               },
+              "unverifiedEmail": {
+                "summary": "Email address not verified",
+                "value": {
+                  "message": "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+                }
+              },
               "lockedAccount": {
-                "summary": "Account locked or disabled",
+                "summary": "Account locked",
                 "value": {
                   "message": "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 }
@@ -601,7 +633,7 @@
               "expiredTrial": {
                 "summary": "Subscription trial expired",
                 "value": {
-                  "message": "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
+                  "message": "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
                 }
               },
               "freePlanPaidFeature": {
@@ -614,6 +646,12 @@
                 "summary": "Bulk endpoint called with free subscription key",
                 "value": {
                   "message": "Bulk User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
+                }
+              },
+              "requestOriginBulk": {
+                "summary": "Bulk endpoint called with Request Origin authentication",
+                "value": {
+                  "message": "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
                 }
               }
             }
@@ -676,7 +714,7 @@
         }
       },
       "TooManyRequests": {
-        "description": "Too Many Requests. Returned for one of the following reasons:\n- The API credit allowance has been reached for a free subscription.\n- The API credit allowance has been reached for an active trial subscription (capped at 100,000 requests).\n- The API credit allowance has been reached for a paid subscription with surcharge usage disabled.\n- The API credit allowance has been reached for a paid subscription with status 'past due' or 'deleted'.\n- The surcharge API usage limit has been reached.\n",
+        "description": "Too Many Requests. Returned for one of the following reasons:\n- The API credit allowance has been reached for a free subscription.\n- The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).\n- The API credit allowance has been reached for a paid subscription with surcharge usage disabled.\n- The API credit allowance has been reached for a paid subscription with status 'past due' or 'deleted'.\n- The surcharge (overage) credit limit has been reached.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -686,13 +724,19 @@
               "usageLimitReached": {
                 "summary": "API credit limit reached",
                 "value": {
-                  "message": "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
+                  "message": "You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+                }
+              },
+              "trialLimitReached": {
+                "summary": "Trial credit cap (100,000) reached",
+                "value": {
+                  "message": "You have exceeded the limit of 100000 requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
                 }
               },
               "surchargeLimitReached": {
                 "summary": "Surcharge usage limit reached",
                 "value": {
-                  "message": "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
+                  "message": "You have reached the surcharge amount limit of $SURCHARGE_AMOUNT_LIMIT on your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
                 }
               }
             }
@@ -700,17 +744,7 @@
         }
       },
       "ClientClosedRequest": {
-        "description": "Client Closed Request. Returned when the client sets a very short timeout,\ncausing the connection to close before the server responds.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "Client closed the request before the server could respond."
-            }
-          }
-        }
+        "description": "Client Closed Request. Returned when the client sets a very short timeout,\ncausing the connection to close before the server responds (logged by the\nedge proxy; the client receives no response). Increase the timeout on the\nclient side.\n"
       },
       "InternalServerError": {
         "description": "Internal Server Error. The server encountered an unexpected condition\nthat prevented it from fulfilling the request. If the issue persists,\ncontact support@ipgeolocation.io.\n",
@@ -720,65 +754,35 @@
               "$ref": "#/components/schemas/ErrorResponse"
             },
             "example": {
-              "message": "Something went wrong on the server side."
+              "message": "Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io"
             }
           }
         }
       },
       "BadGateway": {
-        "description": "Bad Gateway. The API server received an invalid response from an upstream\nserver while processing the request. This is usually temporary.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "Upstream service error. Please try again later."
-            }
-          }
-        }
+        "description": "Bad Gateway. Returned by the edge proxy in front of the API, not by the API\napplication, when it gets an invalid response from the API server. The\nresponse body is set by the proxy. This is usually temporary; retry the\nrequest.\n"
       },
       "ServiceUnavailable": {
-        "description": "Service Unavailable. The API is temporarily unavailable due to maintenance\nor overload. Please try again later.\n",
+        "description": "Service Unavailable. Returned when the API cannot verify your API key (or request\norigin) because of a temporary internal error, for example when the billing service\nis unreachable and the key has not been verified recently. Keys that were verified\nrecently keep working. Retry later; if it persists, contact support@ipgeolocation.io.\n",
         "content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ErrorResponse"
             },
             "example": {
-              "message": "Service temporarily unavailable. Please try again later."
+              "message": "We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io"
             }
           }
         }
       },
       "GatewayTimeout": {
-        "description": "Gateway Timeout. The API server did not receive a timely response from\nan upstream server.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "The server timed out while processing the request."
-            }
-          }
-        }
+        "description": "Gateway Timeout. Returned by the edge proxy in front of the API, not by the\nAPI application, when the API server does not respond in time. The response\nbody is set by the proxy. Retry the request.\n"
       },
       "HttpVersionNotSupported": {
-        "description": "HTTP Version Not Supported. The server does not support the HTTP protocol\nversion used in the request.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "HTTP version not supported."
-            }
-          }
-        }
+        "description": "HTTP Version Not Supported. Returned by the edge proxy in front of the API,\nnot by the API application, when the request uses an HTTP protocol version\nit does not support. The response body is set by the proxy.\n"
       },
       "PaymentRequired": {
-        "description": "Payment Required. Returned when the subscription is not on a Free plan and its\nactive-until date has passed, before any usage quota is checked. Renewing or\nupgrading the plan is required to continue using IPGeolocation API.\n",
+        "description": "Payment Required. Returned for a paid (non-Free) subscription whose active-until\ndate has passed: one day after the active-until date for active or trialing\nsubscriptions, and from the active-until date for past-due or deleted\nsubscriptions. It is checked before any usage quota. Paused subscriptions and\nexpired trials get HTTP 401 instead, and Free plan keys never get 402. Renew or\nupgrade the plan to continue using IPGeolocation API.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -788,9 +792,22 @@
               "expiredSubscription": {
                 "summary": "Subscription expired",
                 "value": {
-                  "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                  "message": "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 }
               }
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden. The API key has an IP allow-list and the request comes from an IP address that is not on it.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "message": "Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io"
             }
           }
         }
@@ -807,7 +824,7 @@
           "message": {
             "type": "string",
             "description": "Human-readable explanation of what went wrong. Use HTTP status for control flow.",
-            "example": "User agent string is empty or null."
+            "example": "User-Agent string must not be blank"
           }
         }
       },

@@ -19,7 +19,7 @@ info:
     - **User Agent**: Parse browser, device, and OS from User-Agent strings
     - **Astronomy**: Sunrise/sunset, moon phase, and astronomical data
     
-    All endpoints are available at `https://api.ipgeolocation.io` and require an API key passed as the `apiKey` query parameter.
+    All endpoints are available at `https://api.ipgeolocation.io`. Every endpoint except `/v3/getip` requires authentication: an API key passed as the `apiKey` query parameter, or, for single lookups on paid plans, a registered Request Origin. Bulk endpoints always require an API key.
     
     Full documentation: https://ipgeolocation.io/documentation
     ## Billing & Credits
@@ -170,9 +170,11 @@ paths:
           in: query
           required: false
           description: |
-            Language code for translated location names. Defaults to `en`. Non-English
-            responses require a paid plan. Free plans always receive English regardless
-            of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
+            Language code for translated location names. Defaults to `en`. Supported values:
+            `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`; any
+            other value returns HTTP 400. Non-English values need a paid plan; on the Free
+            plan they return HTTP 401. On `/v3/ipgeo-bulk` an unsupported value is returned for each
+            entry as a `message` object inside the HTTP 200 array.
 
           schema:
             type: string
@@ -197,11 +199,17 @@ paths:
 
             For additional query parameters (`include`, `fields`, `excludes`, `output`),
             unknown values are ignored. The API still returns HTTP 200 and applies only
-            recognized values.
+            recognized values. Names are case-sensitive.
 
-            Free plan behavior for `include=*`: the API returns HTTP 200 and ignores the
-            include request, returning only base response fields. In contrast, specific
-            include values such as `include=security` return HTTP 401 on free plans.
+            `*` (or `all`, `any`) adds `geo_accuracy`, `dma_code`, `user_agent`, `security`,
+            `abuse`, and `hostname` (local database). Live hostname lookups (`liveHostname`,
+            `hostnameFallbackLive`) must be named separately.
+
+            Free plan behavior: `include=*` (or `all`, `any`) is ignored and the default
+            response is returned with HTTP 200. Any named module (`security`, `abuse`,
+            `user_agent`, `geo_accuracy`, `dma_code`, `hostname`, `liveHostname`,
+            `hostnameFallbackLive`) returns HTTP 401, even if the same module is also listed
+            in `excludes`.
           schema:
             type: string
             example: "*"
@@ -209,8 +217,14 @@ paths:
           in: query
           required: false
           description: |
-            Comma-separated list of fields or objects to return. Everything else is omitted.
-            The `ip` field is always returned regardless of this filter.
+            Comma-separated list of fields or objects to return. Fields and objects not listed
+            are omitted, except add-ons requested with `include`: they are still returned when
+            `fields` doesn't list them (e.g. `include=security&fields=location.city` returns
+            `location.city` and `security`). To narrow an add-on, list a path inside it (e.g.
+            `security.threat_score`). `dma_code` and `geo_accuracy` likewise add their own
+            `location` fields.
+            The `ip` field, and `domain` on domain lookups, are always returned; `fields` and
+            `excludes` cannot remove them.
 
             Supports dot-notation for nested fields: `location.city`, `asn.organization`.
             To return an entire object, use the object key: `location`, `security`.
@@ -219,36 +233,57 @@ paths:
             must also pass the corresponding `include` value.
             If you omit `include`, the request still succeeds, but fields from optional
             modules are not returned.
+            A path into an object that is empty for this IP (for example
+            `time_zone.dst_start.utc_time` for a zone without DST) is still valid; the object
+            comes back empty (`{}`).
 
-            If the same field or object is specified in both `fields` and `excludes`, the
-            object is still returned, but it will be empty.
-            If the same field or object is specified in `include`, `fields`, and `excludes`,
-            `include` takes priority over both `fields` and `excludes`.
+            If the same field or object is listed in both `fields` and `excludes`,
+            `excludes` wins and it is left out of the response. An object left with no
+            fields after `excludes` is removed.
+            `excludes` also wins over `include`: an add-on that is excluded is not looked up
+            or returned, and its extra credits are not charged. This covers `security`,
+            `abuse`, `user_agent`, `hostname` (for all three hostname options), `dma_code` and
+            `geo_accuracy`: `excludes=dma_code` removes `location.dma_code`,
+            `excludes=geo_accuracy` removes `location.locality`, `location.accuracy_radius`
+            and `location.confidence`, and `excludes=location` removes both.
+            `object.*` removes the whole object; `*` is recognized only as the last part of a
+            path (`location.*.city` is ignored).
 
             If you list both an object key and one of its nested fields separated by comma
             (e.g. `security,security.threat_score`), the full object is returned.
 
-            Unknown field paths are ignored. The API still returns HTTP 200.
+            Unknown names are ignored and the API still returns HTTP 200. Names are
+            case-sensitive. If none of the names in `fields` is valid, `fields` is ignored
+            and the full response is returned (and charged). `*` anywhere in `fields`
+            returns everything.
 
             Available on all plans including Free.
           schema:
             type: string
-            example: "location.city,security.threat_score,security.is_vpn"
+            example: "location.city,asn.organization"
 
         - name: excludes
           in: query
           required: false
           description: |
             Comma-separated list of fields or objects to remove from the response. The `ip`
-            field cannot be excluded.
+            field, and `domain` on domain lookups, are always returned; `fields` and
+            `excludes` cannot remove them.
 
             Supports dot-notation for nested fields: `location.continent_code`.
             To exclude an entire object, use the object key: `currency`, `time_zone`.
 
-            If the same field or object is specified in both `fields` and `excludes`, the
-            object is still returned, but it will be empty.
-            If the same field or object is specified in `include`, `fields`, and `excludes`,
-            `include` takes priority over both `fields` and `excludes`.
+            If the same field or object is listed in both `fields` and `excludes`,
+            `excludes` wins and it is left out of the response. An object left with no
+            fields after `excludes` is removed.
+            `excludes` also wins over `include`: an add-on that is excluded is not looked up
+            or returned, and its extra credits are not charged. This covers `security`,
+            `abuse`, `user_agent`, `hostname` (for all three hostname options), `dma_code` and
+            `geo_accuracy`: `excludes=dma_code` removes `location.dma_code`,
+            `excludes=geo_accuracy` removes `location.locality`, `location.accuracy_radius`
+            and `location.confidence`, and `excludes=location` removes both.
+            `object.*` removes the whole object; `*` is recognized only as the last part of a
+            path (`location.*.city` is ignored).
 
             Unknown fields or object keys in `excludes` are ignored. The API still returns
             HTTP 200.
@@ -263,11 +298,15 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
-            to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
+            to JSON (`application/json`) with HTTP 200.
           schema:
             type: string
             default: json
@@ -510,12 +549,12 @@ paths:
             Bad request. Returned for one of the following reasons:
 
             - The provided IPv4 address, IPv6 address, or domain name is invalid.
-            - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
+            - Special characters such as [ ] { } | ^ ` are present in the API URL,
               either in a parameter name or its value (especially in the API key).
             - For the `ipgeo-bulk` endpoint:
               - The request payload is empty or missing.
               - The JSON body is malformed.
-              - The `ips` field is missing or the `ips` array is empty.
+              - The `ips` field is missing, is not a JSON array of strings, or the `ips` array is empty.
               - More than 50,000 IP addresses are provided in the request.
             - An invalid or unsupported `lang` parameter is provided.
           content:
@@ -539,6 +578,10 @@ paths:
                   summary: Bulk body missing ips field
                   value:
                     message: "IP addresses for bulk lookup are missing"
+                ipsNotArray:
+                  summary: Bulk ips field is not a JSON array
+                  value:
+                    message: "'ips' must be a JSON array of strings, e.g. {\"ips\": [\"value1\", \"value2\"]}"
                 emptyBulkIps:
                   summary: Bulk ips array is empty
                   value:
@@ -555,16 +598,17 @@ paths:
           description: |
             Unauthorized. Returned for one of the following reasons:
 
-            - The `apiKey` URL parameter is missing.
-            - An invalid (random or incorrect) API key is provided.
-            - The account has been disabled or locked due to abuse or illegal activity.
+            - An API key is required for this request, but the `apiKey` query parameter is
+              missing and the request doesn't come from a domain added under Request Origin.
+            - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+            - The account's email address has not been verified.
+            - The account has been locked due to abuse or illegal activity.
             - The API request is made using an API key for a database subscription.
             - The subscription is in a 'paused' state.
             - The subscription trial has expired.
             - Any of the following `include` values are used with a Free/Developer plan API key:
               `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
               `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
-            - The bulk IP geolocation endpoint is called using a Free subscription API key.
             - The bulk IP geolocation endpoint is called using Request Origin (CORS)
               authentication. Bulk requests require an `apiKey` and cannot be authenticated
               using Request Origin alone.
@@ -584,30 +628,30 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
-                  summary: Account locked or disabled
+                  summary: Account locked
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 databaseSubscriptionKey:
                   summary: Database subscription API key used for REST API
                   value:
-                    message: "You cannot query IPGeolocation API on a database plan subscription. "
+                    message: "You cannot query IPGeolocation API on a database plan subscription."
                 pausedSubscription:
                   summary: Subscription is paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                freePlanBulk:
-                  summary: Free plan used for bulk endpoint
-                  value:
-                    message: "Bulk IP to geolocation lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
                 requestOriginBulk:
                   summary: Bulk endpoint called using Request Origin authentication
                   value:
                     message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
                 freePlanInclude:
-                  summary: Free plan used with restricted include parameter
+                  summary: Free plan used with include=security
                   value:
-                    message: "This feature is not supported on your subscription. This feature is available on Paid subscriptions only."
+                    message: "IP-security lookup is not supported on your subscription. This feature is available on Paid subscriptions only."
                 freePlanDomain:
                   summary: Free plan used with domain lookup
                   value:
@@ -618,11 +662,15 @@ paths:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: |
             Not found. Returned for one of the following reasons:
 
-            - A syntactically valid IPv4 or IPv6 address does not exist in the IPGeolocation database.
+            - A syntactically valid IPv4 or IPv6 address, or the IP a domain resolves to,
+              does not exist in the IPGeolocation database (for a domain: "Provided domain
+              or service name 'example.com' doesn't exist in our database.").
             - An IPv4 address, IPv6 address, or domain name is passed as a path variable
               instead of as a URL query parameter (e.g., using `/v3/ipgeo/8.8.8.8`
               instead of `/v3/ipgeo?ip=8.8.8.8`).
@@ -637,7 +685,7 @@ paths:
                 ipNotInDatabase:
                   summary: IPv4/IPv6 not found in database
                   value:
-                    message: "Provided IP Address '8.8.8.8' doesn't exist in our database."
+                    message: "Provided IP Address 'IP_ADDRESS' doesn't exist in our database."
                 ipAsPathVariable:
                   summary: IP passed as path variable instead of query parameter
                   value:
@@ -676,13 +724,12 @@ paths:
         addresses, or domain names in a single request. The request body must be a JSON
         object with an `ips` array.
 
-        This endpoint requires a paid plan. Calling it with a free
-        plan API key returns HTTP 401.
+        This endpoint requires a paid plan.
 
         The response is a JSON array with one element per IP in the request. Each element
-        is either a full geolocation response object or an error object with only a
-        `message` field. Invalid, bogon, and unresolvable entries appear as error
-        objects. Invalid, private, and bogon IPs are not billed.
+        is either a lookup result or an object with only a `message` field. An entry gets
+        a `message` object when it is invalid, empty or `null`, not in the database, a
+        bogon or private IP, or when `lang` is unsupported. These entries are not charged.
 
         This endpoint supports the same query parameters as the single lookup endpoint,
         including `lang`, `include`, `fields`, `excludes`, and `output`.
@@ -700,9 +747,10 @@ paths:
           in: query
           required: false
           description: |
-            Language code for translated location names. Defaults to `en`. Non-English
-            responses require a paid plan. Free plans always receive English regardless
-            of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
+            Language code for translated location names. Defaults to `en`. Supported values:
+            `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. On
+            `/v3/ipgeo-bulk`, an unsupported value does not fail the request: each entry is
+            returned as a `message` object inside the HTTP 200 array.
           schema:
             type: string
             default: "en"
@@ -726,11 +774,11 @@ paths:
 
             For additional query parameters (`include`, `fields`, `excludes`, `output`),
             unknown values are ignored. The API still returns HTTP 200 and applies only
-            recognized values.
+            recognized values. Names are case-sensitive.
 
-            Free plan behavior for `include=*`: the API returns HTTP 200 and ignores the
-            include request, returning only base response fields. In contrast, specific
-            include values such as `include=security` return HTTP 401 on free plans.
+            `*` (or `all`, `any`) adds `geo_accuracy`, `dma_code`, `user_agent`, `security`,
+            `abuse`, and `hostname` (local database). Live hostname lookups (`liveHostname`,
+            `hostnameFallbackLive`) must be named separately.
           schema:
             type: string
             example: "*"
@@ -738,8 +786,14 @@ paths:
           in: query
           required: false
           description: |
-            Comma-separated list of fields or objects to return. Everything else is omitted.
-            The `ip` field is always returned regardless of this filter.
+            Comma-separated list of fields or objects to return. Fields and objects not listed
+            are omitted, except add-ons requested with `include`: they are still returned when
+            `fields` doesn't list them (e.g. `include=security&fields=location.city` returns
+            `location.city` and `security`). To narrow an add-on, list a path inside it (e.g.
+            `security.threat_score`). `dma_code` and `geo_accuracy` likewise add their own
+            `location` fields.
+            The `ip` field, and `domain` on domain lookups, are always returned; `fields` and
+            `excludes` cannot remove them.
 
             Supports dot-notation for nested fields: `location.city`, `asn.organization`.
             To return an entire object, use the object key: `location`, `security`.
@@ -748,41 +802,58 @@ paths:
             must also pass the corresponding `include` value.
             If you omit `include`, the request still succeeds, but fields from optional
             modules are not returned.
+            A path into an object that is empty for this IP (for example
+            `time_zone.dst_start.utc_time` for a zone without DST) is still valid; the object
+            comes back empty (`{}`).
 
-            If the same field or object is specified in both `fields` and `excludes`, the
-            object is still returned, but it will be empty.
-            If the same field or object is specified in `include`, `fields`, and `excludes`,
-            `include` takes priority over both `fields` and `excludes`.
+            If the same field or object is listed in both `fields` and `excludes`,
+            `excludes` wins and it is left out of the response. An object left with no
+            fields after `excludes` is removed.
+            `excludes` also wins over `include`: an add-on that is excluded is not looked up
+            or returned, and its extra credits are not charged. This covers `security`,
+            `abuse`, `user_agent`, `hostname` (for all three hostname options), `dma_code` and
+            `geo_accuracy`: `excludes=dma_code` removes `location.dma_code`,
+            `excludes=geo_accuracy` removes `location.locality`, `location.accuracy_radius`
+            and `location.confidence`, and `excludes=location` removes both.
+            `object.*` removes the whole object; `*` is recognized only as the last part of a
+            path (`location.*.city` is ignored).
 
             If you list both an object key and one of its nested fields separated by comma
             (e.g. `security,security.threat_score`), the full object is returned.
 
-            Unknown field paths are ignored. The API still returns HTTP 200.
-
-            Available on all plans including Free.
+            Unknown names are ignored and the API still returns HTTP 200. Names are
+            case-sensitive. If none of the names in `fields` is valid, `fields` is ignored
+            and the full response is returned (and charged). `*` anywhere in `fields`
+            returns everything.
           schema:
             type: string
-            example: "location.city,security.threat_score,security.is_vpn"
+            example: "location.city,asn.organization"
 
         - name: excludes
           in: query
           required: false
           description: |
             Comma-separated list of fields or objects to remove from the response. The `ip`
-            field cannot be excluded.
+            field, and `domain` on domain lookups, are always returned; `fields` and
+            `excludes` cannot remove them.
 
             Supports dot-notation for nested fields: `location.continent_code`.
             To exclude an entire object, use the object key: `currency`, `time_zone`.
 
-            If the same field or object is specified in both `fields` and `excludes`, the
-            object is still returned, but it will be empty.
-            If the same field or object is specified in `include`, `fields`, and `excludes`,
-            `include` takes priority over both `fields` and `excludes`.
+            If the same field or object is listed in both `fields` and `excludes`,
+            `excludes` wins and it is left out of the response. An object left with no
+            fields after `excludes` is removed.
+            `excludes` also wins over `include`: an add-on that is excluded is not looked up
+            or returned, and its extra credits are not charged. This covers `security`,
+            `abuse`, `user_agent`, `hostname` (for all three hostname options), `dma_code` and
+            `geo_accuracy`: `excludes=dma_code` removes `location.dma_code`,
+            `excludes=geo_accuracy` removes `location.locality`, `location.accuracy_radius`
+            and `location.confidence`, and `excludes=location` removes both.
+            `object.*` removes the whole object; `*` is recognized only as the last part of a
+            path (`location.*.city` is ignored).
 
             Unknown fields or object keys in `excludes` are ignored. The API still returns
             HTTP 200.
-
-            Available on all plans including Free.
           schema:
             type: string
             example: "location.continent_code,currency,company.type"
@@ -792,11 +863,15 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
-            to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
+            to JSON (`application/json`) with HTTP 200.
           schema:
             type: string
             default: json
@@ -830,9 +905,10 @@ paths:
       responses:
         "200":
           description: |
-            An array of results, one per input entry. Valid entries return full
-            geolocation objects. Invalid, bogon, and unresolvable entries return
-            objects with only a `message` field.
+            An array of results, one per input entry. Each element is either a lookup
+            result or an object with only a `message` field. An entry gets a `message`
+            object when it is invalid, empty or `null`, not in the database, a bogon or
+            private IP, or when `lang` is unsupported. These entries are not charged.
             `X-Successful-Record` is returned only when at least one submitted entry
             fails and the number of successful lookups is lower than the number of
             submitted entries.
@@ -843,7 +919,7 @@ paths:
                 multiplied by the count of valid IPs.
               schema:
                 type: number
-                example: 3
+                example: 1
             X-Successful-Record:
               description: |
                 Number of valid IP addresses or domains that were successfully resolved in
@@ -853,7 +929,7 @@ paths:
                 entries.
               schema:
                 type: number
-                example: 4
+                example: 1
           content:
             application/json:
               schema:
@@ -946,26 +1022,17 @@ paths:
                     - message: "'10.0.0.1' is a bogon IP address."
         "400":
           description: |
-            Bad request. Returned for one of the following reasons:
-
-            - The provided IPv4 address, IPv6 address, or domain name is invalid.
-            - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
-              either in a parameter name or its value (especially in the API key).
-            - For the `ipgeo-bulk` endpoint:
-              - The request payload is empty or missing.
-              - The JSON body is malformed.
-              - The `ips` field is missing or the `ips` array is empty.
-              - More than 50,000 IP addresses are provided in the request.
-            - An invalid or unsupported `lang` parameter is provided.
+            Bad request. Returned for the whole request only when the body is missing or not
+            valid JSON, `ips` is missing, is not a JSON array, or is empty, or `ips` has more
+            than 50,000 entries, or when special characters such as [ ] { } | ^ ` are
+            present in the API URL, either in a parameter name or its value (especially in
+            the API key). An invalid IP or domain or an unsupported `lang` does not fail the
+            request: that entry is returned as a `message` object inside the HTTP 200 array.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
               examples:
-                invalidIp:
-                  summary: Invalid IPv4/IPv6/domain input
-                  value:
-                    message: "Provided name, service or IP address '999.999.999.999' is not valid."
                 specialCharacters:
                   summary: Special characters in API URL or key
                   value:
@@ -978,6 +1045,10 @@ paths:
                   summary: Bulk body missing ips field
                   value:
                     message: "IP addresses for bulk lookup are missing"
+                ipsNotArray:
+                  summary: Bulk ips field is not a JSON array
+                  value:
+                    message: "'ips' must be a JSON array of strings, e.g. {\"ips\": [\"value1\", \"value2\"]}"
                 emptyBulkIps:
                   summary: Bulk ips array is empty
                   value:
@@ -986,30 +1057,20 @@ paths:
                   summary: Bulk body exceeds 50,000 entries
                   value:
                     message: "No. of lookup queries cannot be more than 50000"
-                invalidLang:
-                  summary: Unsupported lang parameter value
-                  value:
-                    message: "This 'zz' lang is not valid. Please use 'en' as the default language"
         "401":
           description: |
             Unauthorized. Returned for one of the following reasons:
 
             - The `apiKey` URL parameter is missing.
             - An invalid (random or incorrect) API key is provided.
-            - The account has been disabled or locked due to abuse or illegal activity.
+            - The account's email address has not been verified.
+            - The account has been locked due to abuse or illegal activity.
             - The API request is made using an API key for a database subscription.
             - The subscription is in a 'paused' state.
             - The subscription trial has expired.
-            - Any of the following `include` values are used with a Free/Developer plan API key:
-              `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
-              `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
-            - The bulk IP geolocation endpoint is called using a Free subscription API key.
             - The bulk IP geolocation endpoint is called using Request Origin (CORS)
               authentication. Bulk requests require an `apiKey` and cannot be authenticated
               using Request Origin alone.
-            - A domain name lookup is performed using a Free subscription API key.
-            - A language other than English is specified in the `lang` parameter
-              while using a Free/Developer plan API key.
           content:
             application/json:
               schema:
@@ -1023,40 +1084,30 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
-                  summary: Account locked or disabled
+                  summary: Account locked
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 databaseSubscriptionKey:
                   summary: Database subscription API key used for REST API
                   value:
-                    message: "You cannot query IPGeolocation API on a database plan subscription. "
+                    message: "You cannot query IPGeolocation API on a database plan subscription."
                 pausedSubscription:
                   summary: Subscription is paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                freePlanBulk:
-                  summary: Free plan used for bulk endpoint
-                  value:
-                    message: "Bulk IP to geolocation lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
                 requestOriginBulk:
                   summary: Bulk endpoint called using Request Origin authentication
                   value:
                     message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
-                freePlanInclude:
-                  summary: Free plan used with restricted include parameter
-                  value:
-                    message: "This feature is not supported on your subscription. This feature is available on Paid subscriptions only."
-                freePlanDomain:
-                  summary: Free plan used with domain lookup
-                  value:
-                    message: "IP to geolocation lookup for domain or service name is not supported on your current subscription. This feature is available to all paid subscriptions only."
-                freePlanLang:
-                  summary: Free plan used with non-English lang value
-                  value:
-                    message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "413":
@@ -1153,8 +1204,6 @@ paths:
           $ref: "#/components/responses/InternalServerError"
         "502":
           $ref: "#/components/responses/BadGateway"
-        "503":
-          $ref: "#/components/responses/ServiceUnavailable"
         "504":
           $ref: "#/components/responses/GatewayTimeout"
         "505":
@@ -1207,16 +1256,16 @@ paths:
 
             Supports dot-notation for nested fields: `security.is_tor`, `security.threat_score`.
 
-            If the same nested field path is specified in both `fields` and `excludes`
-            (e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned
-            as an empty value. Specifying the same top-level object name in both (e.g.
-            `fields=security&excludes=security`) has no emptying effect — the full object
-            is returned.
+            If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and it
+            is left out of the response (e.g. `fields=security.is_vpn&excludes=security.is_vpn` drops
+            `is_vpn`). An object left with no fields is removed, so `fields=security&excludes=security`
+            returns only `ip`.
 
             If you list both an object key and one of its nested fields separated by comma
             (e.g. `security,security.is_vpn`), the full object is returned.
 
-            Unknown field paths are ignored. The API still returns HTTP 200.
+            Unknown names are ignored and the API still returns HTTP 200; if no name in
+            `fields` is a real field, the full response is returned.
 
             This parameter only has an effect once a request is authorized; the IP Security
             API as a whole requires a paid plan.
@@ -1233,11 +1282,10 @@ paths:
 
             Supports dot-notation for nested fields: `security.is_relay`.
 
-            If the same nested field path is specified in both `fields` and `excludes`
-            (e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned
-            as an empty value. Specifying the same top-level object name in both (e.g.
-            `fields=security&excludes=security`) has no emptying effect — the full object
-            is returned.
+            If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and it
+            is left out of the response (e.g. `fields=security.is_vpn&excludes=security.is_vpn` drops
+            `is_vpn`). An object left with no fields is removed, so `fields=security&excludes=security`
+            returns only `ip`.
 
             Unknown fields or object keys in `excludes` are ignored. The API still returns
             HTTP 200.
@@ -1254,8 +1302,12 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
             to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
@@ -1264,13 +1316,17 @@ paths:
             default: json
       responses:
         "200":
-          description: Security intelligence for the requested IP.
+          description: |
+            Security intelligence for the requested IP.
+
+            If the IP is not in the security database, the response is still 200 with every
+            flag false, scores and counts 0, and empty names, lists and dates.
           headers:
             X-Credits-Charged:
               description: Number of API credits consumed by this request.
               schema:
                 type: number
-                example: 1
+                example: 2
           content:
             application/json:
               schema:
@@ -1319,12 +1375,12 @@ paths:
             - The provided IPv4 or IPv6 address is invalid. This API does not accept domain
               names in the `ip` parameter — a domain name is rejected the same way as any
               other non-IP string.
-            - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
+            - Special characters such as [ ] { } | ^ ` are present in the API URL,
               either in a parameter name or its value (especially in the API key).
             - For the `security-bulk` endpoint:
               - The request payload is empty or missing.
               - The JSON body is malformed.
-              - The `ips` field is missing or the `ips` array is empty.
+              - The `ips` field is missing, is not a JSON array of strings, or the `ips` array is empty.
               - More than 50,000 IP addresses are provided in the request.
           content:
             application/json:
@@ -1347,6 +1403,10 @@ paths:
                   summary: Bulk body missing ips field
                   value:
                     message: "IP addresses for bulk lookup are missing"
+                ipsNotArray:
+                  summary: Bulk ips field is not a JSON array
+                  value:
+                    message: "'ips' must be a JSON array of strings, e.g. {\"ips\": [\"value1\", \"value2\"]}"
                 emptyBulkIps:
                   summary: Bulk ips array is empty
                   value:
@@ -1359,9 +1419,11 @@ paths:
           description: |
             Unauthorized. Returned for one of the following reasons:
 
-            - The `apiKey` URL parameter is missing.
-            - An invalid (random or incorrect) API key is provided.
-            - The account has been disabled or locked due to abuse or illegal activity.
+            - An API key is required for this request, but the `apiKey` query parameter is
+              missing and the request doesn't come from a domain added under Request Origin.
+            - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+            - The account's email address has not been verified.
+            - The account has been locked due to abuse or illegal activity.
             - The API request is made using an API key for a database subscription.
             - The API request is made using a free subscription API key.
             - The subscription is in a 'paused' state.
@@ -1385,8 +1447,12 @@ paths:
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
 
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
-                  summary: Account locked or disabled
+                  summary: Account locked
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
 
@@ -1422,30 +1488,29 @@ paths:
                     message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: |
             Not found. Returned for one of the following reasons:
 
-            - A syntactically valid IPv4 or IPv6 address does not exist in the IPGeolocation database.
             - An IPv4 address, IPv6 address, or domain name is passed as a path variable
-              instead of as a URL query parameter (e.g., using `/v3/ipgeo/8.8.8.8`
-              instead of `/v3/ipgeo?ip=8.8.8.8`).
+              instead of as a URL query parameter (e.g., using `/v3/security/8.8.8.8`
+              instead of `/v3/security?ip=8.8.8.8`).
             - A non-existent or incorrect API endpoint is called.
 
-            Invalid or malformed IPv4, IPv6, or domain input returns HTTP 400 instead.
+            An IP address that is not in the security database does not return 404; it
+            returns HTTP 200 with the default security object. Invalid or malformed IPv4,
+            IPv6, or domain input returns HTTP 400 instead.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
               examples:
-                ipNotInDatabase:
-                  summary: IPv4/IPv6 not found in database
-                  value:
-                    message: "Provided IPv4 or IPv6 address does not exist in our database."
                 ipAsPathVariable:
                   summary: IP passed as path variable instead of query parameter
                   value:
-                    message: "No endpoint GET /v3/ipgeo/8.8.8.8."
+                    message: "No endpoint GET /v3/security/8.8.8.8."
                 wrongEndpoint:
                   summary: Incorrect or non-existent endpoint
                   value:
@@ -1481,8 +1546,9 @@ paths:
 
         The request body must contain an `ips` array.
 
-        Each IP is processed independently. Invalid, bogon, or private
-        IP addresses return an object containing only a `message` field.
+        Each IP is processed independently, and surrounding spaces are trimmed. Invalid,
+        empty, null, bogon, or private entries return an object containing only a
+        `message` field; the rest of the request still succeeds.
 
         Credits are charged **per valid IP address** using the same
         pricing rules as the single lookup endpoint.
@@ -1504,16 +1570,16 @@ paths:
 
             Supports dot-notation for nested fields: `security.is_tor`, `security.threat_score`.
 
-            If the same nested field path is specified in both `fields` and `excludes`
-            (e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned
-            as an empty value. Specifying the same top-level object name in both (e.g.
-            `fields=security&excludes=security`) has no emptying effect — the full object
-            is returned.
+            If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and it
+            is left out of the response (e.g. `fields=security.is_vpn&excludes=security.is_vpn` drops
+            `is_vpn`). An object left with no fields is removed, so `fields=security&excludes=security`
+            returns only `ip`.
 
             If you list both an object key and one of its nested fields separated by comma
             (e.g. `security,security.is_vpn`), the full object is returned.
 
-            Unknown field paths are ignored. The API still returns HTTP 200.
+            Unknown names are ignored and the API still returns HTTP 200; if no name in
+            `fields` is a real field, the full response is returned.
 
             This parameter only has an effect once a request is authorized; the IP Security
             API as a whole requires a paid plan.
@@ -1530,11 +1596,10 @@ paths:
 
             Supports dot-notation for nested fields: `security.is_relay`.
 
-            If the same nested field path is specified in both `fields` and `excludes`
-            (e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned
-            as an empty value. Specifying the same top-level object name in both (e.g.
-            `fields=security&excludes=security`) has no emptying effect — the full object
-            is returned.
+            If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and it
+            is left out of the response (e.g. `fields=security.is_vpn&excludes=security.is_vpn` drops
+            `is_vpn`). An object left with no fields is removed, so `fields=security&excludes=security`
+            returns only `ip`.
 
             Unknown fields or object keys in `excludes` are ignored. The API still returns
             HTTP 200.
@@ -1551,8 +1616,12 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
             to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
@@ -1592,8 +1661,8 @@ paths:
             Valid entries return a security lookup object containing the IP address
             and its associated security intelligence.
 
-            Invalid, private, or bogon IP addresses return an object containing only
-            a `message` field.
+            Invalid, empty, null, private, or bogon entries return an object containing
+            only a `message` field; the rest of the request still succeeds.
 
             The `X-Successful-Record` response header is returned only when the request
             contains one or more invalid entries and indicates the number of successful
@@ -1605,7 +1674,7 @@ paths:
                 multiplied by the count of valid IPs.
               schema:
                 type: number
-                example: 3
+                example: 2
             X-Successful-Record:
               description: |
                 Number of valid IP addresses that were successfully resolved in
@@ -1615,7 +1684,7 @@ paths:
                 entries.
               schema:
                 type: number
-                example: 4
+                example: 1
           content:
             application/json:
               schema:
@@ -1667,12 +1736,12 @@ paths:
             - The provided IPv4 or IPv6 address is invalid. This API does not accept domain
               names in the `ip` parameter — a domain name is rejected the same way as any
               other non-IP string.
-            - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
+            - Special characters such as [ ] { } | ^ ` are present in the API URL,
               either in a parameter name or its value (especially in the API key).
             - For the `security-bulk` endpoint:
               - The request payload is empty or missing.
               - The JSON body is malformed.
-              - The `ips` field is missing or the `ips` array is empty.
+              - The `ips` field is missing, is not a JSON array of strings, or the `ips` array is empty.
               - More than 50,000 IP addresses are provided in the request.
           content:
             application/json:
@@ -1695,6 +1764,10 @@ paths:
                   summary: Bulk body missing ips field
                   value:
                     message: "IP addresses for bulk lookup are missing"
+                ipsNotArray:
+                  summary: Bulk ips field is not a JSON array
+                  value:
+                    message: "'ips' must be a JSON array of strings, e.g. {\"ips\": [\"value1\", \"value2\"]}"
                 emptyBulkIps:
                   summary: Bulk ips array is empty
                   value:
@@ -1709,7 +1782,8 @@ paths:
 
             - The `apiKey` URL parameter is missing.
             - An invalid (random or incorrect) API key is provided.
-            - The account has been disabled or locked due to abuse or illegal activity.
+            - The account's email address has not been verified.
+            - The account has been locked due to abuse or illegal activity.
             - The API request is made using an API key for a database subscription.
             - The API request is made using a free subscription API key.
             - The subscription is in a 'paused' state.
@@ -1733,8 +1807,12 @@ paths:
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
 
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
-                  summary: Account locked or disabled
+                  summary: Account locked
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
 
@@ -1770,6 +1848,8 @@ paths:
                     message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "413":
@@ -1827,8 +1907,8 @@ paths:
             An IPv4 address or IPv6 address to look up. When omitted, the API
             resolves the public IP of the requesting client.
 
-            If the `asn` parameter is provided, the `ip` parameter must not be used,
-            because the lookup will be performed directly using the specified ASN.
+            If both `ip` and a non-empty `asn` are sent, the lookup uses `asn` and ignores `ip`
+            (no error, and the response has no `ip` field).
 
             Empty or whitespace-only values are treated the same as omission and resolve
             the caller IP.
@@ -1847,8 +1927,9 @@ paths:
           description: |
             An Autonomous System Number (ASN) to look up.
 
-            When provided, the lookup is performed directly using the specified ASN,
-            and the `ip` parameter must not be included in the request.
+            When provided, the lookup is performed directly using the specified ASN.
+            If both `ip` and a non-empty `asn` are sent, the lookup uses `asn` and ignores `ip`
+            (no error, and the response has no `ip` field).
 
             The API returns detailed information about the ASN including the
             organization name, country of registration, ASN type, routing statistics,
@@ -1881,6 +1962,8 @@ paths:
             - `routes`
             - `whois_response`
 
+            Use `*` (or `all`, `any`) to add all five modules. Values are case-sensitive; unknown values are ignored.
+
             If multiple values are provided, they must be comma-separated.
 
             For additional query parameters (`include`, `fields`, `excludes`, `output`),
@@ -1898,17 +1981,25 @@ paths:
             Comma-separated list of fields or objects to return. Everything else is omitted.
             The `ip` field is always returned when the lookup is performed using an IP address.
 
+            Modules added with `include` are always kept, even when `fields` lists only some
+            `asn` fields (e.g. `include=peers&fields=asn.as_number` returns `as_number` and
+            `peers`). `fields` cannot add a module on its own. `*` anywhere in `fields` returns
+            the full response. Fields inside `peers`, `upstreams`, `downstreams` and `routes`
+            entries cannot be selected individually. Names are case-sensitive.
+
             Supports dot-notation for nested fields: `asn.organization`, `asn.domain`.
 
-            If the same nested field path is specified in both `fields` and `excludes`
-            (e.g. `asn.organization` in both), the object is still returned, but it will
-            be empty. Duplicating a bare top-level object name (e.g. `asn` in both
-            `fields` and `excludes`) has no emptying effect; the full object is returned.
+            If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and
+            it is left out of the response (e.g. `fields=asn.organization&excludes=asn.organization`
+            drops `organization`). An object left with no fields is removed, so
+            `fields=asn&excludes=asn` returns an empty object for an `asn` lookup, or only `ip` for an
+            `ip` lookup.
 
             If you list both an object key and one of its nested fields separated by comma
             (e.g. `asn,asn.organization`), the full object is returned.
 
-            Unknown field paths are ignored. The API still returns HTTP 200.
+            Unknown names are ignored and the API still returns HTTP 200; if no name in
+            `fields` is a real field, the full response is returned.
 
             The ASN lookup endpoint itself requires a paid plan; this parameter only
             applies once a request is authorized.
@@ -1924,12 +2015,16 @@ paths:
             Comma-separated list of fields or objects to remove from the response.
             The `ip` field cannot be excluded.
 
+            `excludes` also wins over `include`: `include=*&excludes=peers` (or
+            `excludes=asn.peers`) returns every module except `peers`.
+
             Supports dot-notation for nested fields: `asn.domain`.
 
-            If the same nested field path is specified in both `fields` and `excludes`
-            (e.g. `asn.organization` in both), the object is still returned, but it will
-            be empty. Duplicating a bare top-level object name (e.g. `asn` in both
-            `fields` and `excludes`) has no emptying effect; the full object is returned.
+            If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and
+            it is left out of the response (e.g. `fields=asn.organization&excludes=asn.organization`
+            drops `organization`). An object left with no fields is removed, so
+            `fields=asn&excludes=asn` returns an empty object for an `asn` lookup, or only `ip` for an
+            `ip` lookup.
 
             Unknown fields or object keys in `excludes` are ignored. The API still returns
             HTTP 200.
@@ -1947,8 +2042,12 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
             to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
@@ -2020,9 +2119,8 @@ paths:
           description: |
             Not found. Returned for one of the following reasons:
 
-            - A syntactically valid IPv4, IPv6, or ASN does not exist in the IPGeolocation database.
-            - A syntactically valid IP address resolves successfully but has no ASN
-              associated with it in the database.
+            - An IPv4 or IPv6 address has no ASN in the IPGeolocation database ("Provided IP Address '...' doesn't have an associated ASN in our database.").
+            - A valid ASN does not exist in the database ("Provided ASN or IP Address '...' doesn't exist in our database.").
             - An IPv4, IPv6, or ASN is passed as a path variable
               instead of as a URL query parameter (e.g., using `/v3/asn/8.8.8.8`
               instead of `/v3/asn?ip=8.8.8.8`).
@@ -2035,13 +2133,13 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
               examples:
                 ipNotInDatabase:
-                  summary: IPv4/IPv6/ASN not found in database
+                  summary: ASN not found in database
                   value:
-                    message: "Provided ASN or IP Address '24940' doesn't exist in our database."
+                    message: "Provided ASN or IP Address 'AS4200000000' doesn't exist in our database."
                 asnForIpNotFound:
-                  summary: IP resolves but has no associated ASN in the database
+                  summary: IP address has no associated ASN in the database
                   value:
-                    message: "Provided IP Address '8.8.8.8' doesn't have an associated ASN in our database."
+                    message: "Provided IP Address 'IP_ADDRESS' doesn't have an associated ASN in our database."
                 ipAsPathVariable:
                   summary: IP passed as path variable instead of query parameter
                   value:
@@ -2060,7 +2158,7 @@ paths:
             - The provided IPv4 address or IPv6 address is invalid.
             - The provided `asn` value is non-numeric (once any `AS` prefix is stripped)
               or outside the accepted range of 1-4294967295.
-            - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
+            - Special characters such as [ ] { } | ^ ` are present in the API URL,
               either in a parameter name or its value (especially in the API key).
           content:
             application/json:
@@ -2083,9 +2181,11 @@ paths:
           description: |
             Unauthorized. Returned for one of the following reasons:
 
-            - The `apiKey` URL parameter is missing.
-            - An invalid (random or incorrect) API key is provided.
-            - The account has been disabled or locked due to abuse or illegal activity.
+            - An API key is required for this request, but the `apiKey` query parameter is
+              missing and the request doesn't come from a domain added under Request Origin.
+            - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+            - The account's email address has not been verified.
+            - The account has been locked due to abuse or illegal activity.
             - The API request is made using an API key for a database subscription.
             - The API request is made using a free subscription API key.
             - The subscription is in a 'paused' state.
@@ -2103,24 +2203,30 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
-                  summary: Account locked or disabled
+                  summary: Account locked
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 databaseSubscriptionKey:
                   summary: Database subscription API key used for REST API
                   value:
-                    message: "You cannot query IPGeolocation API on a database plan subscription. "
+                    message: "You cannot query IPGeolocation API on a database plan subscription."
                 freePlanAccess:
                   summary: Free subscription used for ASN lookup API
                   value:
-                    message: "ASN Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
+                    message: "ASN API Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
                 pausedSubscription:
                   summary: Subscription is paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "423":
@@ -2152,7 +2258,7 @@ paths:
 
         The response includes the organization responsible for handling abuse
         complaints related to the queried IP address. This typically contains
-        the abuse contact role, organization name, contact emails, phone
+        the abuse contact name and kind, organization name, contact emails, phone
         numbers, and the registered address.
 
         This endpoint is intended for reporting malicious activities such as
@@ -2193,18 +2299,19 @@ paths:
 
             Supports dot-notation for nested fields: `abuse.route`, `abuse.organization`.
 
-            If the same **nested** field path is specified in both `fields` and `excludes`
-            (e.g. `fields=abuse.name&excludes=abuse.name`), the parent object is still
-            returned, but that field will be empty. Duplicating a **bare top-level**
-            object name in both parameters (e.g. `fields=abuse&excludes=abuse`) has no
-            emptying effect: the full, unfiltered object is returned.
+            If the same field or object is listed in both `fields` and `excludes`, `excludes` wins
+            and it is left out of the response (e.g. `fields=abuse.name&excludes=abuse.name` drops
+            `name`). An object left with no fields is removed, so `fields=abuse&excludes=abuse`
+            returns only `ip`.
 
             If you list both an object key and one of its nested fields separated by comma
             (e.g. `abuse,abuse.name`), the full object is returned.
 
-            Unknown field paths are ignored. The API still returns HTTP 200.
+            Unknown names are ignored and the API still returns HTTP 200; if no name in
+            `fields` is a real field, the full response is returned.
 
-            Available on all plans including Free.
+            This parameter only has an effect once a request is authorized; the Abuse Contact
+            API as a whole requires a paid plan.
           schema:
             type: string
             example: "abuse.name,abuse.organization"
@@ -2218,16 +2325,16 @@ paths:
 
             Supports dot-notation for nested fields: `abuse.name`.
 
-            If the same **nested** field path is specified in both `fields` and `excludes`
-            (e.g. `fields=abuse.name&excludes=abuse.name`), the parent object is still
-            returned, but that field will be empty. Duplicating a **bare top-level**
-            object name in both parameters (e.g. `fields=abuse&excludes=abuse`) has no
-            emptying effect: the full, unfiltered object is returned.
+            If the same field or object is listed in both `fields` and `excludes`, `excludes` wins
+            and it is left out of the response (e.g. `fields=abuse.name&excludes=abuse.name` drops
+            `name`). An object left with no fields is removed, so `fields=abuse&excludes=abuse`
+            returns only `ip`.
 
             Unknown fields or object keys in `excludes` are ignored. The API still returns
             HTTP 200.
 
-            Available on all plans including Free.
+            This parameter only has an effect once a request is authorized; the Abuse Contact
+            API as a whole requires a paid plan.
           schema:
             type: string
             example: "abuse.address,abuse.emails"
@@ -2238,9 +2345,12 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `Accept` header
-            takes precedence; `output` is used only as a fallback when the `Accept`
-            header is absent or set to `*/*`.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
             to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
@@ -2281,8 +2391,8 @@ paths:
 
             - A syntactically valid IPv4 or IPv6 address does not exist in the IPGeolocation database.
             - An IPv4 address or IPv6 address is passed as a path variable
-              instead of as a URL query parameter (e.g., using `/v3/ipgeo/8.8.8.8`
-              instead of `/v3/ipgeo?ip=8.8.8.8`).
+              instead of as a URL query parameter (e.g., using `/v3/abuse/8.8.8.8`
+              instead of `/v3/abuse?ip=8.8.8.8`).
             - A non-existent or incorrect API endpoint is called.
 
             Invalid or malformed IPv4, IPv6, or domain input returns HTTP 400 instead.
@@ -2294,11 +2404,11 @@ paths:
                 ipNotInDatabase:
                   summary: IPv4/IPv6 not found in database
                   value:
-                    message: "Provided IP Address '203.0.113.5' doesn't exist in our database."
+                    message: "Provided IP Address 'IP_ADDRESS' doesn't exist in our database."
                 ipAsPathVariable:
                   summary: IP passed as path variable instead of query parameter
                   value:
-                    message: "No endpoint GET /v3/ipgeo/8.8.8.8."
+                    message: "No endpoint GET /v3/abuse/8.8.8.8."
                 wrongEndpoint:
                   summary: Incorrect or non-existent endpoint
                   value:
@@ -2307,7 +2417,7 @@ paths:
           description: |
             Bad request. Returned for one of the following reasons:
             - The provided IPv4 address or IPv6 address is invalid.
-            - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
+            - Special characters such as [ ] { } | ^ ` are present in the API URL,
               either in a parameter name or its value (especially in the API key).
           content:
             application/json:
@@ -2326,9 +2436,11 @@ paths:
           description: |
             Unauthorized. Returned for one of the following reasons:
 
-            - The `apiKey` URL parameter is missing.
-            - An invalid (random or incorrect) API key is provided.
-            - The account has been disabled or locked due to abuse or illegal activity.
+            - An API key is required for this request, but the `apiKey` query parameter is
+              missing and the request doesn't come from a domain added under Request Origin.
+            - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+            - The account's email address has not been verified.
+            - The account has been locked due to abuse or illegal activity.
             - The API request is made using an API key for a database subscription.
             - The API request is made using a free subscription API key.
             - The subscription is in a 'paused' state.
@@ -2346,14 +2458,18 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
-                  summary: Account locked or disabled
+                  summary: Account locked
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 databaseSubscriptionKey:
                   summary: Database subscription API key used for REST API
                   value:
-                    message: "You cannot query IPGeolocation API on a database plan subscription. "
+                    message: "You cannot query IPGeolocation API on a database plan subscription."
                 freePlanAccess:
                   summary: Free subscription used for Abuse Contact API
                   value:
@@ -2364,6 +2480,8 @@ paths:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "423":
@@ -2417,6 +2535,10 @@ paths:
         6. `icao_code`
         7. `lo_code`
 
+        The `ip` parameter is always validated, even when a higher-priority parameter is
+        present. An invalid `ip` returns HTTP 400, and a bogon or private `ip` returns
+        HTTP 423.
+
         If none of the lookup parameters are provided, the API resolves
         the timezone using the public IP address of the requesting client.
 
@@ -2443,9 +2565,10 @@ paths:
           in: query
           required: false
           description: |
-            Language code for translated location names. Defaults to `en`. Non-English
-            responses require a paid plan. Free plans always receive English regardless
-            of this parameter. Unsupported `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
+            Language code for translated location names. Defaults to `en`. Supported values:
+            `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. An
+            unsupported value returns HTTP 400. On a Free plan, any value other than `en`
+            returns HTTP 401.
           schema:
             type: string
             default: "en"
@@ -2457,8 +2580,12 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
             to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
@@ -2485,8 +2612,9 @@ paths:
           in: query
           required: false
           description: |
-            Four-letter ICAO airport code used to determine the timezone
-            of the airport location.
+            Four-letter ICAO airport code in uppercase (e.g. `KATL`), used to determine the
+            timezone of the airport location. Lowercase ICAO codes are rejected with HTTP 400.
+            (IATA codes and UN/LOCODEs are case-insensitive.)
 
             When used, the response includes an `airport_details` object
             containing airport metadata alongside the `time_zone` object.
@@ -2513,6 +2641,8 @@ paths:
           description: |
             Longitude coordinate of the location used to determine the
             timezone. Must be provided together with the `lat` parameter.
+            If only one of `lat` or `long` is sent, both are ignored and the lookup falls
+            back to the next parameter, or to the caller's IP.
 
             Valid longitude values range from **-180 to 180**.
           schema:
@@ -2526,6 +2656,8 @@ paths:
           description: |
             Latitude coordinate of the location used to determine the
             timezone. Must be provided together with the `long` parameter.
+            If only one of `lat` or `long` is sent, both are ignored and the lookup falls
+            back to the next parameter, or to the caller's IP.
 
             Valid latitude values range from **-90 to 90**.
           schema:
@@ -2553,7 +2685,9 @@ paths:
           in: query
           required: false
           description: |
-            IANA timezone identifier to retrieve timezone information.
+            IANA timezone identifier, e.g. `Europe/London`. The value is case-sensitive on
+            this endpoint. (On `/v3/timezone/convert`, `tz_from` and `tz_to` are
+            case-insensitive.)
 
             When provided, the API returns the current date, time, and timezone
             metadata for the specified timezone.
@@ -2697,7 +2831,7 @@ paths:
             Bad Request – Possible reasons include:
               - If the provided IPv4 or IPv6 address is invalid.
 
-              - If special character(s) ( ) [ ] { } | ^ ` is passed in the API URL either as parameter or its value. Specially in case of API key.
+              - If special character(s) [ ] { } | ^ ` is passed in the API URL either as parameter or its value. Specially in case of API key.
             
               - If the provided IATA code to the request parameter `iata_code` is not in the format as three letter code AAA.
             
@@ -2705,11 +2839,13 @@ paths:
 
               - If the provided UN/LOCODE to the request parameter `lo_code` is not in format as first two characters of country code, followed by the three alphanumeric characters of the city/region.
             
-              - If the provided values to the request parameters `lat` and `long` are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180.
-            
+              - If the provided values to the request parameters `lat` and `long` are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180. Non-numeric values, and values written with an exponent larger than 50 (for example `1e51`), return `Invalid value '1e51' for parameter 'lat'.`
+
               - If the provided time zone name to the query parameter `tz` is wrong or not registered in the IANA time zone database.
 
               - An invalid or unsupported `lang` parameter is provided.
+
+              - If the IPv4 or IPv6 address is not in our database and no other lookup parameter resolves a time zone (message: `Couldn't find time zone detail for the provided parameters.`), or the IP is found but has no time zone (message: `Couldn't find time zone detail for the IP address (IP)`).
           content:
             application/json:
               schema:
@@ -2739,6 +2875,10 @@ paths:
                   summary: Coordinates out of range
                   value:
                     message: "'latitude' (40.7128) or 'longitude' (-700.0060) is not valid. 'latitude' must be between -90.0 and +90.0 and 'longitude' must be between -180.0 and +180.0."
+                invalidNumber:
+                  summary: Non-numeric coordinate value
+                  value:
+                    message: "Invalid value 'abc' for parameter 'lat'."
                 invalidTimezone:
                   summary: Invalid timezone identifier
                   value:
@@ -2747,12 +2887,18 @@ paths:
                   summary: Unsupported language parameter
                   value:
                     message: "This 'xx' lang is not valid. Please use 'en' as the default language"
+                timezoneNotFound:
+                  summary: No time zone found for the provided parameters
+                  value:
+                    message: "Couldn't find time zone detail for the provided parameters."
 
         "401":
           description: |
             Unauthorized – Possible reasons include:
-              - Missing or invalid API key
-              - If your account has been disabled or locked to use by the admin due to abuse or illegal activity.
+              - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
+              - An invalid API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+              - The account's email address has not been verified.
+              - The account has been locked due to abuse or illegal activity.
               - When the request to Timezone API is made using API key for a database subscription
               - When the request to Timezone API is made on the 'paused' subscription.
               - If you’re making API requests after your subscription trial has been expired.
@@ -2771,6 +2917,10 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
                   summary: Account locked
                   value:
@@ -2789,11 +2939,11 @@ paths:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: |
             Not found. Returned for one of the following reasons:
-            - If the IPv4, IPv6 address does not exist in our database.
-
             - If the IPv4, IPv6 address passed as a path variable, instead of url parameter as ip=.
 
             - If the location address provided to the `location` parameter is invalid. A city-level or state-level address must be provided.
@@ -2806,10 +2956,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
               examples:
-                ipNotInDatabase:
-                  summary: IPv4/IPv6 not found in database
-                  value:
-                    message: "Provided IPv4 or IPv6 address does not exist in our database."
                 ipAsPathVariable:
                   summary: IP passed as path variable instead of query parameter
                   value:
@@ -2821,11 +2967,11 @@ paths:
                 invalidAirportCode:
                   summary: Invalid IATA or ICAO airport code
                   value:
-                    message: "'Data not found for the provided airport code: ATL123 Please contact at support@ipgeolocation.io if provided airport code exists.'"
+                    message: "'Data not found for the provided airport code: ZZZ Please contact at support@ipgeolocation.io if provided airport code exists.'"
                 invalidLoCode:
                   summary: Invalid UN/LOCODE
                   value:
-                    message: "'Data not found for the provided LO code: USATL1 Please contact at support@ipgeolocation.io if provided LO code exists.'"
+                    message: "'Data not found for the provided LO code: USZZZ Please contact at support@ipgeolocation.io if provided LO code exists.'"
                 wrongEndpoint:
                   summary: Incorrect or non-existent endpoint
                   value:
@@ -2872,13 +3018,10 @@ paths:
 
         The optional `time` parameter specifies the time to convert.
 
-        Supported formats:
-
-        - `yyyy-MM-dd HH:mm`
-        - `yyyy-MM-dd HH:mm:ss`
-
-        If the `time` parameter is omitted, the current time is used
-        for conversion.
+        Supported formats: `yyyy-MM-dd`, `yyyy-MM-dd HH`, `yyyy-MM-dd HH:mm`,
+        `yyyy-MM-dd HH:mm:ss`. Missing hour, minute or second parts default to `00`.
+        The time is read as local time in the source time zone. If omitted, the
+        current time in the source time zone is used.
 
         Each successful conversion request consumes **1 credit**.
 
@@ -2909,12 +3052,10 @@ paths:
           description: |
             Date and time to convert.
 
-            Supported formats:
-
-            - `yyyy-MM-dd HH:mm`
-            - `yyyy-MM-dd HH:mm:ss`
-
-            If omitted, the current time is used.
+            Supported formats: `yyyy-MM-dd`, `yyyy-MM-dd HH`, `yyyy-MM-dd HH:mm`,
+            `yyyy-MM-dd HH:mm:ss`. Missing hour, minute or second parts default to `00`.
+            The time is read as local time in the source time zone. If omitted, the
+            current time in the source time zone is used.
           schema:
             type: string
             example: "2025-01-30 09:00"
@@ -2986,6 +3127,10 @@ paths:
         - name: icao_from
           in: query
           required: false
+          description: |
+            Four-letter ICAO airport code in uppercase (e.g. `YSSY`) for the source
+            airport. Lowercase ICAO codes are rejected with HTTP 400. (IATA codes and
+            UN/LOCODEs are case-insensitive.)
           schema:
             type: string
             example: "YSSY"
@@ -2993,6 +3138,10 @@ paths:
         - name: icao_to
           in: query
           required: false
+          description: |
+            Four-letter ICAO airport code in uppercase (e.g. `ZBAA`) for the destination
+            airport. Lowercase ICAO codes are rejected with HTTP 400. (IATA codes and
+            UN/LOCODEs are case-insensitive.)
           schema:
             type: string
             example: "ZBAA"
@@ -3017,8 +3166,12 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
             to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
@@ -3052,8 +3205,10 @@ paths:
             
               - If one of the query parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is provided and other(s) is/are missing, for time conversion.
             
-              - If the geographic coordinates provided to one of the parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is/are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180.
-            
+              - If the geographic coordinates provided to one of the parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is/are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180. Non-numeric values, and values written with an exponent larger than 50 (for example `1e51`), return `Invalid value '1e51' for parameter 'lat_from'.`
+
+              - If the value of `time` is not in one of the supported formats (`yyyy-MM-dd`, `yyyy-MM-dd HH`, `yyyy-MM-dd HH:mm`, `yyyy-MM-dd HH:mm:ss`). Example message: `Check whether your input values are correct; source_time_zone = America/New_York, destined_time_zone = Asia/Kabul, date_time = 30-01-2025`
+
               - If the time zone names provided to one of the parameters `tz_from` and `tz_to` is/are wrong or not registered in the IANA time zone database.
 
               - If one of the query parameters `iata_from` and `iata_to`, `icao_from` and `icao_to`, or `locode_from` and `locode_to` is provided and the other is missing, for time conversion.
@@ -3083,6 +3238,14 @@ paths:
                   summary: Coordinates out of range
                   value:
                     message: "Provided  lat_to (450) or long_to (45) is not valid. Latitude must be between -90.0 and +90.0 and longitude must be between -180.0 and +180.0."
+                invalidNumber:
+                  summary: Non-numeric coordinate value
+                  value:
+                    message: "Invalid value 'abc' for parameter 'lat_from'."
+                invalidTime:
+                  summary: Unsupported time format
+                  value:
+                    message: "Check whether your input values are correct; source_time_zone = America/New_York, destined_time_zone = Asia/Kabul, date_time = 30-01-2025"
                 invalidTimezone:
                   summary: Invalid timezone identifier
                   value:
@@ -3095,8 +3258,10 @@ paths:
         "401":
           description: |
             Unauthorized – Possible reasons include:
-              - Missing or invalid API key
-              - If your account has been disabled or locked to use by the admin due to abuse or illegal activity.
+              - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
+              - An invalid API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+              - The account's email address has not been verified.
+              - The account has been locked due to abuse or illegal activity.
               - When the request to Timezone API is made using API key for a database subscription
               - When the request to Timezone API is made on the 'paused' subscription.
               - If you’re making API requests after your subscription trial has been expired.
@@ -3113,6 +3278,10 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
                   summary: Account locked
                   value:
@@ -3123,6 +3292,8 @@ paths:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: |
             Not found. Returned for one of the following reasons:
@@ -3143,11 +3314,11 @@ paths:
                 invalidAirportCode:
                   summary: Invalid IATA or ICAO airport code
                   value:
-                    message: "'Data not found for the provided airport code: ATL123 Please contact at support@ipgeolocation.io if provided airport code exists.'"
+                    message: "'Data not found for the provided airport code: ZZZ Please contact at support@ipgeolocation.io if provided airport code exists.'"
                 invalidLoCode:
                   summary: Invalid UN/LOCODE
                   value:
-                    message: "'Data not found for the provided LO code: USATL1 Please contact at support@ipgeolocation.io if provided LO code exists.'"
+                    message: "'Data not found for the provided LO code: USZZZ Please contact at support@ipgeolocation.io if provided LO code exists.'"
                 invalidLocationFrom:
                   summary: Source location not found
                   value:
@@ -3162,8 +3333,6 @@ paths:
                     message: "No endpoint GET /v3/timezone/convert-invalid."
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
-        "423":
-          $ref: "#/components/responses/Locked"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "499":
@@ -3191,9 +3360,10 @@ paths:
 
         This endpoint supports two usage modes:
 
-        **Mode 1 — Auto-detect caller's user agent:**
-        Omit the `User-Agent` header entirely. The API will parse the user agent string
-        of the calling client automatically. This is the default browser behavior — when
+        **Mode 1 — Caller's own user agent:**
+        Don't set a custom `User-Agent` header. Browsers and most HTTP clients send one
+        automatically, and the API parses it. If the request carries no `User-Agent`
+        header at all, the API returns HTTP 400. This is the default browser behavior — when
         executed in browser JavaScript, the header is appended automatically and no
         additional configuration is needed.
 
@@ -3212,9 +3382,10 @@ paths:
           in: header
           required: false
           description: |
-            The user agent string to parse. When omitted, the API automatically parses
-            the user agent of the calling client. When provided, the supplied string is
-            parsed instead.
+            The user agent string to parse. Browsers and most HTTP clients send their own
+            `User-Agent` header automatically, and the API parses it; set the header to parse
+            a different string. If the request carries no `User-Agent` header at all, the API
+            returns HTTP 400.
           schema:
             type: string
           example: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
@@ -3225,8 +3396,12 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
             to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
@@ -3272,11 +3447,20 @@ paths:
         "400":
           description: |
             Bad Request. Returned for one of the following reasons:
-            - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
+            - Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
             - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
-            - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
-              field when calling `/v3/user-agent-bulk`.
+            - The JSON body has no `uaStrings` field (or it is `null`) when calling
+              `/v3/user-agent-bulk`. An empty array is not an error: it returns HTTP 200
+              with `[]` and 0 credits.
+            - A `uaStrings` entry is `null` or blank. This fails the whole bulk request
+              (`'userAgentString' must not be empty or null`) and nothing is charged.
+            - The request body is not valid JSON (`Malformed JSON request or invalid field`)
+              or `uaStrings` is not a JSON array of strings.
             - More than 50,000 user agent strings are provided in a single bulk request.
+
+            Checks on the request body itself (missing or invalid JSON, a missing `uaStrings`
+            field, a blank `uaString`, more than 50,000 entries) run before the API key is
+            checked.
             - No `User-Agent` header is present when calling `GET /v3/user-agent`. Unlike the
               POST body, there is no alternative way to supply the string for this call, so a
               missing/blank header always fails validation.
@@ -3298,9 +3482,21 @@ paths:
                   value:
                     message: "'userAgentString' must not be empty or null"
                 emptyBulkList:
-                  summary: Empty uaStrings array or missing field
+                  summary: Missing uaStrings field
                   value:
                     message: "User-Agent strings for bulk lookup are missing"
+                blankBulkEntry:
+                  summary: Null or blank entry in uaStrings
+                  value:
+                    message: "'userAgentString' must not be empty or null"
+                malformedJson:
+                  summary: Malformed JSON body
+                  value:
+                    message: "Malformed JSON request or invalid field"
+                uaStringsNotArray:
+                  summary: uaStrings is not a JSON array
+                  value:
+                    message: "'uaStrings' must be a JSON array of strings, e.g. {\"uaStrings\": [\"value1\", \"value2\"]}"
                 bulkLimitExceeded:
                   summary: More than 50,000 strings in bulk request
                   value:
@@ -3308,10 +3504,12 @@ paths:
         "401":
           description: |
             Unauthorized. Returned for one of the following reasons:
-            - The `apiKey` URL parameter is missing from the request.
-            - The provided API key is not valid.
+            - An API key is required for this request, but the `apiKey` query parameter is
+              missing and the request doesn't come from a domain added under Request Origin.
+            - The provided API key is not valid, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
             - The request is made using an API key of a database subscription.
-            - The account has been disabled or locked due to illegal activity.
+            - The account's email address has not been verified.
+            - The account has been locked due to abuse or illegal activity.
             - Requests are made after the subscription trial has expired.
             - The subscription is paused.
             - A paid feature is accessed using a free subscription.
@@ -3333,8 +3531,12 @@ paths:
                   summary: Database subscription API key used
                   value:
                     message: "You cannot query IPGeolocation API on a database plan subscription."
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
-                  summary: Account locked or disabled
+                  summary: Account locked
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 pausedSubscription:
@@ -3344,7 +3546,7 @@ paths:
                 expiredTrial:
                   summary: Subscription trial expired
                   value:
-                    message: "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
+                    message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
                 freePlanPaidFeature:
                   summary: Paid feature accessed on free plan
                   value:
@@ -3355,6 +3557,8 @@ paths:
                     message: "Bulk User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: |
             Not Found. Returned when an invalid or non-existent endpoint is called.
@@ -3409,8 +3613,12 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
             to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
@@ -3471,11 +3679,20 @@ paths:
         "400":
           description: |
             Bad Request. Returned for one of the following reasons:
-            - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
+            - Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
             - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
-            - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
-              field when calling `/v3/user-agent-bulk`.
+            - The JSON body has no `uaStrings` field (or it is `null`) when calling
+              `/v3/user-agent-bulk`. An empty array is not an error: it returns HTTP 200
+              with `[]` and 0 credits.
+            - A `uaStrings` entry is `null` or blank. This fails the whole bulk request
+              (`'userAgentString' must not be empty or null`) and nothing is charged.
+            - The request body is not valid JSON (`Malformed JSON request or invalid field`)
+              or `uaStrings` is not a JSON array of strings.
             - More than 50,000 user agent strings are provided in a single bulk request.
+
+            Checks on the request body itself (missing or invalid JSON, a missing `uaStrings`
+            field, a blank `uaString`, more than 50,000 entries) run before the API key is
+            checked.
           content:
             application/json:
               schema:
@@ -3490,9 +3707,21 @@ paths:
                   value:
                     message: "User-Agent string must not be blank"
                 emptyBulkList:
-                  summary: Empty uaStrings array or missing field
+                  summary: Missing uaStrings field
                   value:
                     message: "User-Agent strings for bulk lookup are missing"
+                blankBulkEntry:
+                  summary: Null or blank entry in uaStrings
+                  value:
+                    message: "'userAgentString' must not be empty or null"
+                malformedJson:
+                  summary: Malformed JSON body
+                  value:
+                    message: "Malformed JSON request or invalid field"
+                uaStringsNotArray:
+                  summary: uaStrings is not a JSON array
+                  value:
+                    message: "'uaStrings' must be a JSON array of strings, e.g. {\"uaStrings\": [\"value1\", \"value2\"]}"
                 bulkLimitExceeded:
                   summary: More than 50,000 strings in bulk request
                   value:
@@ -3500,10 +3729,12 @@ paths:
         "401":
           description: |
             Unauthorized. Returned for one of the following reasons:
-            - The `apiKey` URL parameter is missing from the request.
-            - The provided API key is not valid.
+            - An API key is required for this request, but the `apiKey` query parameter is
+              missing and the request doesn't come from a domain added under Request Origin.
+            - The provided API key is not valid, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
             - The request is made using an API key of a database subscription.
-            - The account has been disabled or locked due to illegal activity.
+            - The account's email address has not been verified.
+            - The account has been locked due to abuse or illegal activity.
             - Requests are made after the subscription trial has expired.
             - The subscription is paused.
             - A paid feature is accessed using a free subscription.
@@ -3525,8 +3756,12 @@ paths:
                   summary: Database subscription API key used
                   value:
                     message: "You cannot query IPGeolocation API on a database plan subscription."
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
-                  summary: Account locked or disabled
+                  summary: Account locked
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 pausedSubscription:
@@ -3536,7 +3771,7 @@ paths:
                 expiredTrial:
                   summary: Subscription trial expired
                   value:
-                    message: "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
+                    message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
                 freePlanPaidFeature:
                   summary: Paid feature accessed on free plan
                   value:
@@ -3547,6 +3782,8 @@ paths:
                     message: "Bulk User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: |
             Not Found. Returned when an invalid or non-existent endpoint is called.
@@ -3587,9 +3824,10 @@ paths:
       description: |
         Parses up to **50,000 user agent strings** in a single request.
 
-        Pass a JSON body containing the `uaStrings` array. Each entry in the array
-        is parsed independently. The total credits charged equals the number of strings
-        in the array.
+        Pass a JSON body containing the `uaStrings` array. Each entry is parsed as sent.
+        A `null` or blank entry fails the whole request with HTTP 400
+        (`'userAgentString' must not be empty or null`) and nothing is charged. The total
+        credits charged equals the number of strings in the array.
 
         This endpoint is available on **paid plans only**.
 
@@ -3603,8 +3841,12 @@ paths:
           description: |
             Desired response format. Defaults to `json` if not specified. You can also
             control the format using the `Accept` header (`application/json`,
-            `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-            takes precedence.
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
 
             If `output` is unknown or unsupported, it is ignored and the response defaults
             to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
@@ -3627,7 +3869,6 @@ paths:
                   description: |
                     Array of user agent strings to parse. Maximum 50,000 entries per request.
                   maxItems: 50000
-                  minItems: 1
                   items:
                     type: string
                   example:
@@ -3721,11 +3962,20 @@ paths:
         "400":
           description: |
             Bad Request. Returned for one of the following reasons:
-            - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
+            - Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
             - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
-            - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
-              field when calling `/v3/user-agent-bulk`.
+            - The JSON body has no `uaStrings` field (or it is `null`) when calling
+              `/v3/user-agent-bulk`. An empty array is not an error: it returns HTTP 200
+              with `[]` and 0 credits.
+            - A `uaStrings` entry is `null` or blank. This fails the whole bulk request
+              (`'userAgentString' must not be empty or null`) and nothing is charged.
+            - The request body is not valid JSON (`Malformed JSON request or invalid field`)
+              or `uaStrings` is not a JSON array of strings.
             - More than 50,000 user agent strings are provided in a single bulk request.
+
+            Checks on the request body itself (missing or invalid JSON, a missing `uaStrings`
+            field, a blank `uaString`, more than 50,000 entries) run before the API key is
+            checked.
           content:
             application/json:
               schema:
@@ -3740,9 +3990,21 @@ paths:
                   value:
                     message: "User-Agent string must not be blank"
                 emptyBulkList:
-                  summary: Empty uaStrings array or missing field
+                  summary: Missing uaStrings field
                   value:
                     message: "User-Agent strings for bulk lookup are missing"
+                blankBulkEntry:
+                  summary: Null or blank entry in uaStrings
+                  value:
+                    message: "'userAgentString' must not be empty or null"
+                malformedJson:
+                  summary: Malformed JSON body
+                  value:
+                    message: "Malformed JSON request or invalid field"
+                uaStringsNotArray:
+                  summary: uaStrings is not a JSON array
+                  value:
+                    message: "'uaStrings' must be a JSON array of strings, e.g. {\"uaStrings\": [\"value1\", \"value2\"]}"
                 bulkLimitExceeded:
                   summary: More than 50,000 strings in bulk request
                   value:
@@ -3753,11 +4015,13 @@ paths:
             - The `apiKey` URL parameter is missing from the request.
             - The provided API key is not valid.
             - The request is made using an API key of a database subscription.
-            - The account has been disabled or locked due to illegal activity.
+            - The account's email address has not been verified.
+            - The account has been locked due to abuse or illegal activity.
             - Requests are made after the subscription trial has expired.
             - The subscription is paused.
             - A paid feature is accessed using a free subscription.
             - The bulk user agent parsing endpoint is called using a free subscription API key.
+            - The bulk user agent parsing endpoint is called using Request Origin (CORS) authentication. Bulk requests require an `apiKey`.
           content:
             application/json:
               schema:
@@ -3775,8 +4039,12 @@ paths:
                   summary: Database subscription API key used
                   value:
                     message: "You cannot query IPGeolocation API on a database plan subscription."
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
-                  summary: Account locked or disabled
+                  summary: Account locked
                   value:
                     message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 pausedSubscription:
@@ -3786,7 +4054,7 @@ paths:
                 expiredTrial:
                   summary: Subscription trial expired
                   value:
-                    message: "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
+                    message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
                 freePlanPaidFeature:
                   summary: Paid feature accessed on free plan
                   value:
@@ -3795,8 +4063,14 @@ paths:
                   summary: Bulk endpoint called with free subscription key
                   value:
                     message: "Bulk User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
+                requestOriginBulk:
+                  summary: Bulk endpoint called using Request Origin authentication
+                  value:
+                    message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: |
             Not Found. Returned when an invalid or non-existent endpoint is called.
@@ -3844,7 +4118,7 @@ paths:
         - Solar noon, day length, and astronomical midnight
         - Sun position: altitude, azimuth, distance from Earth
         - Moon position: altitude, azimuth, distance from Earth, parallactic angle
-        - Moon phase, illumination percentage, and angular diameter
+        - Moon phase, illumination percentage, and moon phase angle (`moon_angle`)
 
         The location can be resolved using geographic coordinates (`lat` and
         `long`), a location address (`location`), or an IP address (`ip`).
@@ -3855,6 +4129,10 @@ paths:
         1. `lat` and `long`
         2. `location`
         3. `ip`
+
+        The `ip` parameter is always validated, even when a higher-priority parameter is
+        present. An invalid `ip` returns HTTP 400, and a bogon or private `ip` returns
+        HTTP 423.
 
         If none of the lookup parameters are provided, the API resolves the
         location using the public IP address of the requesting client.
@@ -3930,7 +4208,9 @@ paths:
 
             Must be in `yyyy-MM-dd` format. Defaults to the current date if
             not provided. All astronomical information is calculated at the
-            current time of day at the resolved location.
+            current time of day in the location's time zone, or in `time_zone` when
+            that parameter is given. Without `date`, the current date is also taken in
+            that time zone.
           schema:
             type: string
             format: date
@@ -3947,13 +4227,11 @@ paths:
             resolved coordinates is used automatically; it falls back to `0`
             only when no elevation data is available for that location.
             Maximum allowed value is **10,000 meters**; only this upper bound
-            is enforced (HTTP 400 if exceeded) — negative values are not
-            clamped and are passed through as provided.
+            is enforced (HTTP 400 if exceeded). Negative values are accepted
+            without an error.
           schema:
             type: number
             format: double
-            default: 0
-            minimum: 0
             maximum: 10000
             example: 1500
 
@@ -3992,6 +4270,25 @@ paths:
           schema:
             type: string
             default: "en"
+        - name: output
+          in: query
+          required: false
+          description: |
+            Desired response format. Defaults to `json` if not specified. You can also
+            control the format using the `Accept` header (`application/json`,
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
+
+            If `output` is unknown or unsupported, it is ignored and the response defaults
+            to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
+          schema:
+            type: string
+            default: json
+
 
       responses:
         "200":
@@ -4065,7 +4362,7 @@ paths:
           description: |
             Bad Request – Possible reasons include:
               - If the provided IPv4 or IPv6 address is invalid.
-              - If special character(s) `( ) [ ] { } | ^ \`` is passed in the
+              - If special character(s) `[ ] { } | ^ \`` is passed in the
                 API URL either as a parameter or its value, especially in the
                 case of an API key.
               - If the provided `date` is not in the format `yyyy-MM-dd`.
@@ -4075,6 +4372,9 @@ paths:
               - If the provided values for `lat` and `long` are not numbers,
                 or fall outside the acceptable ranges. Valid latitude range is
                 **-90 to 90**; valid longitude range is **-180 to 180**.
+                Non-numeric values, and values written with an exponent larger
+                than 50 (for example `1e51`), return `Invalid value '1e51' for
+                parameter 'lat'.` This also applies to a non-numeric `elevation`.
               - If the provided `elevation` value exceeds the maximum allowed
                 value of **10,000 meters**.
               - If the provided `time_zone` is invalid or unrecognized.
@@ -4113,6 +4413,10 @@ paths:
                   summary: Longitude out of range
                   value:
                     message: "Longitude must be between -180 and 180."
+                invalidNumber:
+                  summary: Non-numeric coordinate value
+                  value:
+                    message: "Invalid value 'abc' for parameter 'lat'."
                 invalidElevation:
                   summary: Elevation exceeds maximum
                   value:
@@ -4120,7 +4424,7 @@ paths:
                 invalidTimezone:
                   summary: Invalid timezone identifier
                   value:
-                    message: "Check whether your input values are correct; time_zone_name = Europe/InvalidCity"
+                    message: "Check whether your input value is correct; time_zone_name = Europe/InvalidCity"
                 invalidLang:
                   summary: Unsupported language parameter
                   value:
@@ -4128,14 +4432,17 @@ paths:
                 ipNotInDatabase:
                   summary: IP not found in database
                   value:
-                    message: "Couldn't find astronomy detail for the IP address (8.8.8.8)"
+                    message: "Couldn't find astronomy detail for the IP address (IP_ADDRESS)"
 
         "401":
           description: |
             Unauthorized – Possible reasons include:
-              - Missing or invalid API key.
-              - If your account has been disabled or locked by the admin due
-                to abuse or illegal activity.
+              - An API key is required for this request, but the `apiKey` query
+                parameter is missing and the request doesn't come from a domain
+                added under Request Origin.
+              - An invalid API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+              - The account's email address has not been verified.
+              - The account has been locked due to abuse or illegal activity.
               - When the request is made using an API key for a database
                 subscription.
               - When the request is made on a paused subscription.
@@ -4156,6 +4463,10 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
                   summary: Account locked
                   value:
@@ -4174,6 +4485,8 @@ paths:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: |
             Not Found. Returned for one of the following reasons:
@@ -4181,9 +4494,6 @@ paths:
                 of a URL parameter (`ip=`).
               - If the location address provided to the `location` parameter is
                 invalid. A city-level or state-level address must be provided.
-                (This applies to this single-date endpoint only; the
-                `/v3/astronomy/timeSeries` endpoint returns HTTP 400 for this
-                case instead.)
               - If the wrong endpoint is called that does not exist in the API.
           content:
             application/json:
@@ -4193,7 +4503,7 @@ paths:
                 invalidLocation:
                   summary: Invalid location address
                   value:
-                    message: "We couldn't find the location 'InvalidCity, XX'. Try a city or state level address only."
+                    message: "We couldn't find the location (InvalidCity, XX). Try a city or state level location address only."
                 wrongEndpoint:
                   summary: Incorrect or non-existent endpoint
                   value:
@@ -4239,8 +4549,9 @@ paths:
 
         **Date range constraints:**
         - Both `dateStart` and `dateEnd` are required.
-        - The maximum allowed span between `dateStart` and `dateEnd` is
-          **90 days**.
+        - The range can cover at most **90 days**, counting both `dateStart` and
+          `dateEnd` (so `dateEnd` can be at most 89 days after `dateStart`). `dateEnd`
+          must not be before `dateStart`.
         - Both past and future dates are supported within the 90-day window.
 
         Each successful lookup consumes **1 credit** per request.
@@ -4309,8 +4620,9 @@ paths:
           description: |
             Start date of the time series range.
 
-            Must be in `yyyy-MM-dd` format. The maximum allowed span between
-            `dateStart` and `dateEnd` is **90 days**.
+            Must be in `yyyy-MM-dd` format. The range can cover at most **90 days**,
+            counting both `dateStart` and `dateEnd` (so `dateEnd` can be at most 89 days
+            after `dateStart`).
           schema:
             type: string
             format: date
@@ -4322,8 +4634,9 @@ paths:
           description: |
             End date of the time series range.
 
-            Must be in `yyyy-MM-dd` format. The maximum allowed span between
-            `dateStart` and `dateEnd` is **90 days**.
+            Must be in `yyyy-MM-dd` format. The range can cover at most **90 days**,
+            counting both `dateStart` and `dateEnd` (so `dateEnd` can be at most 89 days
+            after `dateStart`). `dateEnd` must not be before `dateStart`.
           schema:
             type: string
             format: date
@@ -4340,13 +4653,11 @@ paths:
             resolved coordinates is used automatically; it falls back to `0`
             only when no elevation data is available for that location.
             Maximum allowed value is **10,000 meters**; only this upper bound
-            is enforced (HTTP 400 if exceeded) — negative values are not
-            clamped and are passed through as provided.
+            is enforced (HTTP 400 if exceeded). Negative values are accepted
+            without an error.
           schema:
             type: number
             format: double
-            default: 0
-            minimum: 0
             maximum: 10000
             example: 1500
 
@@ -4381,10 +4692,32 @@ paths:
             Requesting a non-English `lang` value on a Free/Developer plan
             returns HTTP 401 (see the `freePlanLang` example under the 401
             response) rather than silently falling back to English. Unsupported
-            `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
+            `lang` values return HTTP 400 on `/v3/astronomy`. On
+            `/v3/astronomy/timeSeries` the value is not validated: on paid plans an
+            unsupported value returns English names, and on a Free plan any value other
+            than `en` returns HTTP 401. Use lowercase codes. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
           schema:
             type: string
             default: "en"
+        - name: output
+          in: query
+          required: false
+          description: |
+            Desired response format. Defaults to `json` if not specified. You can also
+            control the format using the `Accept` header (`application/json`,
+            `application/xml`, or `text/xml`). For successful responses and authentication
+            errors, the `Accept` header takes precedence if both are provided: `output` is
+            used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+            value other than `application/xml` or `text/xml` (for example a browser's
+            default) returns JSON even with `output=xml`. Values are matched exactly (use
+            lowercase `xml`).
+
+            If `output` is unknown or unsupported, it is ignored and the response defaults
+            to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.
+          schema:
+            type: string
+            default: json
+
 
       responses:
         "200":
@@ -4483,21 +4816,21 @@ paths:
           description: |
             Bad Request – Possible reasons include:
               - If the provided IPv4 or IPv6 address is invalid.
-              - If special character(s) `( ) [ ] { } | ^ \`` is passed in the
+              - If special character(s) `[ ] { } | ^ \`` is passed in the
                 API URL either as a parameter or its value.
               - If `dateStart` or `dateEnd` is not in the format `yyyy-MM-dd`.
-              - If the span between `dateStart` and `dateEnd` is greater than
-                **90 days**.
+              - If `dateEnd` is before `dateStart` (`End date must be on or after start date.`)
+              - If `dateStart` or `dateEnd` is missing (`Required request parameter 'dateStart' is missing`) or empty.
+              - If the range covers more than **90 days**, counting both
+                `dateStart` and `dateEnd`.
               - If only one of `lat` or `long` is provided; both must be
                 provided together.
               - If the provided values for `lat` and `long` are not numbers,
-                or fall outside the acceptable ranges.
+                or fall outside the acceptable ranges. Non-numeric values, and
+                values written with an exponent larger than 50 (for example
+                `1e51`), return `Invalid value '1e51' for parameter 'lat'.`
               - If the provided `elevation` value exceeds **10,000 meters**.
               - If the provided `time_zone` is invalid or unrecognized.
-              - If an invalid or unsupported `lang` parameter is provided.
-              - If the location address provided to the `location` parameter
-                is invalid. A city-level or state-level address must be
-                provided.
               - If the provided IPv4 or IPv6 address does not exist in our
                 database.
           content:
@@ -4516,7 +4849,15 @@ paths:
                 invalidDateFormat:
                   summary: Invalid date format
                   value:
-                    message: "You must provide date in the 'yyyy-MM-dd' format"
+                    message: "`dateStart` must be in 'yyyy-MM-dd' format"
+                endBeforeStart:
+                  summary: dateEnd is before dateStart
+                  value:
+                    message: "End date must be on or after start date."
+                missingDateStart:
+                  summary: dateStart is missing
+                  value:
+                    message: "Required request parameter 'dateStart' is missing"
                 dateRangeExceeded:
                   summary: Date range exceeds 90 days
                   value:
@@ -4544,25 +4885,21 @@ paths:
                 invalidTimezone:
                   summary: Invalid timezone identifier
                   value:
-                    message: "Check whether your input values are correct; time_zone_name = Europe/InvalidCity"
-                invalidLang:
-                  summary: Unsupported language parameter
-                  value:
-                    message: "This 'xx' lang is not valid. Please use 'en' as the default language"
-                invalidLocation:
-                  summary: Invalid location address
-                  value:
-                    message: "We couldn't find the location 'InvalidCity, XX'. Try a city or state level address only."
+                    message: "Check whether your input value is correct; time_zone_name = Europe/InvalidCity"
                 ipNotInDatabase:
                   summary: IP not found in database
                   value:
-                    message: "Couldn't find astronomy detail for the IP address (8.8.8.8)"
+                    message: "Couldn't find astronomy detail for the IP address (IP_ADDRESS)"
 
         "401":
           description: |
             Unauthorized – Possible reasons include:
-              - Missing or invalid API key.
-              - If your account has been disabled or locked by the admin.
+              - An API key is required for this request, but the `apiKey` query
+                parameter is missing and the request doesn't come from a domain
+                added under Request Origin.
+              - An invalid API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+              - The account's email address has not been verified.
+              - The account has been locked due to abuse or illegal activity.
               - When the request is made using an API key for a database
                 subscription.
               - When the request is made on a paused subscription.
@@ -4582,6 +4919,10 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
                   summary: Account locked
                   value:
@@ -4600,21 +4941,25 @@ paths:
                     message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           description: |
             Not Found. Returned for one of the following reasons:
               - If the IPv4 or IPv6 address is passed as a path variable instead
                 of a URL parameter (`ip=`).
+              - If the location address provided to the `location` parameter is
+                invalid. A city-level or state-level address must be provided.
               - If the wrong endpoint is called that does not exist in the API.
-
-            Note: unlike the single-date `/v3/astronomy` endpoint, an invalid or
-            unresolvable `location` address on this endpoint returns HTTP 400,
-            not 404 (see the `invalidLocation` example under the 400 response).
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
               examples:
+                invalidLocation:
+                  summary: Invalid location address
+                  value:
+                    message: "We couldn't find the location (InvalidCity, XX). Try a city or state level location address only."
                 wrongEndpoint:
                   summary: Incorrect or non-existent endpoint
                   value:
@@ -4642,16 +4987,13 @@ components:
   responses:
     MethodNotAllowed:
       description: |
-        Method Not Allowed. Returned when an unsupported HTTP method is used
-        to call an endpoint.
+        Method Not Allowed. Returned when the HTTP method is not supported by the
+        endpoint; see each endpoint for allowed methods. For example, `GET` is allowed
+        for `ipgeo` and `POST` for `ipgeo-bulk`; `GET` is allowed for `asn`; `GET` and
+        `POST` are allowed for `user-agent`, and `POST` for `user-agent-bulk`.
 
-        Only GET and POST methods are supported:
-
-        - `GET` is allowed for the `ipgeo` endpoint.
-        - `POST` is allowed for the `ipgeo-bulk` endpoint.
-
-        Any other HTTP method, or using the correct method on the wrong endpoint,
-        results in HTTP 405.
+        Calling an endpoint with an HTTP method it doesn't support (for example `PUT` or
+        `DELETE`) results in HTTP 405.
       content:
         application/json:
           schema:
@@ -4668,7 +5010,7 @@ components:
             unsupportedMethod:
               summary: Unsupported HTTP method
               value:
-                message: "Request method is not supported"
+                message: "Request method 'PUT' is not supported"
 
     PayloadTooLarge:
       description: |
@@ -4717,9 +5059,12 @@ components:
 
     PaymentRequired:
       description: |
-        Payment Required. Returned when the subscription is not on a Free plan and its
-        active-until date has passed, before any usage quota is checked. Renewing or
-        upgrading the plan is required to continue using IPGeolocation API.
+        Payment Required. Returned for a paid (non-Free) subscription whose active-until
+        date has passed: one day after the active-until date for active or trialing
+        subscriptions, and from the active-until date for past-due or deleted
+        subscriptions. It is checked before any usage quota. Paused subscriptions and
+        expired trials get HTTP 401 instead, and Free plan keys never get 402. Renew or
+        upgrade the plan to continue using IPGeolocation API.
       content:
         application/json:
           schema:
@@ -4728,14 +5073,24 @@ components:
             expiredSubscription:
               summary: Subscription expired
               value:
-                message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+
+    Forbidden:
+      description: |
+        Forbidden. The API key has an IP allow-list and the request comes from an IP address that is not on it.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io"
 
     TooManyRequests:
       description: |
         Too Many Requests. Returned for one of the following reasons:
 
         - The API credit allowance has been reached for a Free subscription.
-        - The API credit allowance has been reached for an active trial subscription (capped at 100,000 requests).
+        - The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).
         - The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.
         - The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.
         - The surcharge (overage) credit limit has been reached for the subscribed plan.
@@ -4747,23 +5102,22 @@ components:
             usageLimitReached:
               summary: API credit limit reached
               value:
-                message: "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+            trialLimitReached:
+              summary: Trial credit cap (100,000) reached
+              value:
+                message: "You have exceeded the limit of 100000 requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
             surchargeLimitReached:
               summary: Surcharge usage limit reached
               value:
-                message: "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have reached the surcharge amount limit of $SURCHARGE_AMOUNT_LIMIT on your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
 
     ClientClosedRequest:
       description: |
         The client closed the connection before the server finished processing the
-        request. This usually happens when the client sets a very short request or
-        connection timeout. Increase the timeout on the client side.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Client closed the request before the server could respond."
+        request (logged by the edge proxy; the client receives no response). This
+        usually happens when the client sets a very short request or connection
+        timeout. Increase the client-side timeout.
 
     InternalServerError:
       description: |
@@ -4775,47 +5129,47 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Something went wrong on the server side."
+            message: "Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io"
     BadGateway:
       description: |
-        Bad Gateway. The API server received an invalid response from an upstream
-        server while processing the request. This is usually temporary.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Upstream service error. Please try again later."
+        Bad Gateway. Returned by the edge proxy in front of the API, not by the API
+        application, when it gets an invalid response from the API server. The
+        response body is set by the proxy. This is usually temporary; retry the
+        request.
     ServiceUnavailable:
       description: |
-        Service Unavailable. The API is temporarily unavailable due to maintenance
-        or overload. Please try again later.
+        Service Unavailable. Returned when the API cannot verify your API key (or request
+        origin) because of a temporary internal error, for example when the billing
+        service is unreachable and the key has not been verified recently. Keys that
+        were verified recently keep working. Retry later; if it persists, contact
+        support@ipgeolocation.io.
+
+        Also returned when a `location` (or `location_from`/`location_to`) value cannot
+        be geocoded because the geocoding service is temporarily unavailable. Retry, or
+        use coordinates.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Service temporarily unavailable. Please try again later."
+          examples:
+            apiKeyVerificationUnavailable:
+              summary: API key could not be verified
+              value:
+                message: "We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io"
+            geocoderUnavailable:
+              summary: Location could not be geocoded right now
+              value:
+                message: "We couldn't look up the location (London, UK) right now. Please try again shortly, or use the 'lat' and 'long' parameters instead."
     GatewayTimeout:
       description: |
-        Gateway Timeout. The API server did not receive a timely response from
-        an upstream server.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "The server timed out while processing the request."
+        Gateway Timeout. Returned by the edge proxy in front of the API, not by the
+        API application, when the API server does not respond in time. The response
+        body is set by the proxy. Retry the request.
     HttpVersionNotSupported:
       description: |
-        HTTP Version Not Supported. The server does not support the HTTP protocol
-        version used in the request.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "HTTP version not supported."
+        HTTP Version Not Supported. Returned by the edge proxy in front of the API,
+        not by the API application, when the request uses an HTTP protocol version
+        it does not support. The response body is set by the proxy.
 
   securitySchemes:
     ApiKeyAuth:
@@ -4913,7 +5267,7 @@ components:
           type: string
           description: |
             Present only when the submitted `ips` entry was a domain name.
-            Contains the original domain input exactly as submitted.
+            The submitted domain, trimmed and without a leading `scheme://` (e.g. `https://`).
           example: "ipgeolocation.io"
         hostname:
           type: string
@@ -4964,7 +5318,8 @@ components:
       description: |
         The top-level response object for a single IP lookup. Where fields and nested
         objects appear depends on your plan (free vs. paid) and the `include`, `fields`,
-        and `excludes` parameters. The `ip` field is always present.
+        and `excludes` parameters. The `ip` field, and `domain` on domain lookups, are
+        always returned; `fields` and `excludes` cannot remove them.
       required:
         - ip
       properties:
@@ -4977,8 +5332,8 @@ components:
         domain:
           type: string
           description: |
-            Present only when the `ip` query parameter contained a domain name. Mirrors
-            the domain value from the request.
+            Present only when the `ip` query parameter contained a domain name. The
+            submitted domain, trimmed and without a leading `scheme://` (e.g. `https://`).
           example: "ipgeolocation.io"
         hostname:
           type: string
@@ -4986,7 +5341,8 @@ components:
             Reverse-DNS hostname for the IP. Returned only when one of the hostname
             `include` options is used (`hostname`, `liveHostname`, or
             `hostnameFallbackLive`). If no hostname can be resolved, this field contains
-            the IP address itself.
+            the IP address itself. The local hostname database (`include=hostname`) covers
+            IPv4 only, so IPv6 lookups with `include=hostname` return the IP address.
           example: "host197.lightwavenetworks.com"
         location:
           $ref: "#/components/schemas/IPGeoLocation"
@@ -5498,8 +5854,8 @@ components:
         current_time:
           type: string
           description: |
-            Current local time at the IP's location. Observed formats include
-            `YYYY-MM-DDTHH:mm:ss±ZZZZ` and `YYYY-MM-DD HH:mm:ss.SSS±ZZZZ`.
+            Current local date and time at the IP's location, in `yyyy-MM-dd HH:mm:ss.SSSZ`
+            format, e.g. `2026-02-13 09:19:24.410+0100`.
           example: "2026-02-13 09:19:24.410+0100"
         current_time_unix:
           type: number
@@ -5571,6 +5927,8 @@ components:
         Details about a DST transition (start or end). Only present when `dst_exists`
         is `true`. When `dst_exists` is `false`, `dst_start` and `dst_end` are
         returned as empty objects with no properties.
+        `dst_start` and `dst_end` describe the current DST period while DST is
+        in effect, otherwise the next one.
       properties:
         utc_time:
           type: string
@@ -6248,7 +6606,7 @@ components:
             The original timestamp before conversion. If the `time`
             parameter is omitted, this value represents the current
             time at the source location.
-          example: "2024-12-08 11:00"
+          example: "2024-12-08 11:00:00"
 
         converted_time:
           type: string
@@ -6260,15 +6618,16 @@ components:
           type: number
           format: float
           description: |
-            Time difference between the source and destination
-            timezones expressed in hours.
+            Absolute time difference between the source and destination timezones, in
+            hours (always zero or positive). Compare `converted_time` with
+            `original_time` to see which zone is ahead.
           example: 7.5
 
         diff_min:
           type: number
           description: |
-            Time difference between the source and destination
-            timezones expressed in minutes.
+            Absolute time difference between the source and destination timezones, in
+            minutes (always zero or positive).
           example: 450
 
 
@@ -6325,8 +6684,8 @@ components:
         current_time:
           type: string
           description: |
-            Current local time at the IP's location. Observed formats include
-            `YYYY-MM-DDTHH:mm:ss±ZZZZ` and `YYYY-MM-DD HH:mm:ss.SSS±ZZZZ`.
+            Current local date and time in `yyyy-MM-dd HH:mm:ss.SSSZ` format, e.g.
+            `2026-03-07 10:37:39.744+0100`.
           example: "2026-02-13 09:19:24.410+0100"
 
         current_time_unix:
@@ -6392,7 +6751,10 @@ components:
         dst_savings:
           type: number
           format: float
-          description: Number of hours added during daylight saving time.
+          description: |
+            Daylight saving offset currently in effect, in hours (for example `1` or
+            `0.5`). It is `0` when DST is not active right now, even if the zone observes
+            DST.
 
         dst_exists:
           type: boolean
@@ -6418,8 +6780,10 @@ components:
     TimezoneDSTTransition:
       type: object
       description: |
-        A daylight saving time transition. `dst_start` and `dst_end` describe
-        the current DST period while DST is in effect, otherwise the next one.
+        A daylight saving time transition. While DST is in effect, `dst_start` and
+        `dst_end` describe the current DST period; otherwise they describe the next DST
+        period. For time zones that do not observe DST, both are returned as empty
+        objects (`{}`).
       properties:
         utc_time:
           type: string
@@ -6972,7 +7336,9 @@ components:
 
         elevation:
           type: string
-          description: Elevation above sea level at the location, in meters.
+          description: |
+            Elevation in meters of the nearest known city, as a string. Empty string when
+            not available. It does not echo the `elevation` request parameter.
           example: "9"
 
     TwilightPhase:
@@ -6991,8 +7357,10 @@ components:
         astronomical_twilight_begin:
           type: string
           description: |
-            Start of astronomical twilight. In the morning, this marks the
-            end of night; in the evening, this marks the start of night sky.
+            Start of astronomical twilight. In the morning, this is the end of night
+            (same as `night_end`). In the evening, it is the end of nautical twilight;
+            night starts at the evening `astronomical_twilight_end` (same as
+            `night_begin`).
           example: "04:49"
 
         astronomical_twilight_end:
@@ -7078,9 +7446,10 @@ components:
         current_time:
           type: string
           description: |
-            Current local time at the resolved location in `HH:mm:ss.SSS` format.
-            Used as the reference time for real-time positional calculations
-            (altitude, azimuth, distance).
+            Current time in `HH:mm:ss.SSS` format, in the location's time zone, or in
+            `time_zone` when that parameter is given. Positional values are calculated
+            for this time. Without `date`, the current date is also taken in that time
+            zone.
           example: "10:15:00.000"
 
         mid_night:

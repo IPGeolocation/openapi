@@ -104,6 +104,10 @@ info:
     6. `icao_code`
     7. `lo_code`
 
+    The `ip` parameter is always validated, even when a higher-priority parameter is
+    present. An invalid `ip` returns HTTP 400, and a bogon or private `ip` returns
+    HTTP 423.
+
     ## Parameter Name Casing
 
     Query parameter names are case-sensitive. Use exact names such as
@@ -224,6 +228,10 @@ paths:
         5. `iata_code`
         6. `icao_code`
         7. `lo_code`
+
+        The `ip` parameter is always validated, even when a higher-priority parameter is
+        present. An invalid `ip` returns HTTP 400, and a bogon or private `ip` returns
+        HTTP 423.
 
         If none of the lookup parameters are provided, the API resolves
         the timezone using the public IP address of the requesting client.
@@ -439,7 +447,7 @@ paths:
             Bad Request – Possible reasons include:
               - If the provided IPv4 or IPv6 address is invalid.
 
-              - If special character(s) ( ) [ ] { } | ^ ` is passed in the API URL either as parameter or its value. Specially in case of API key.
+              - If special character(s) [ ] { } | ^ ` is passed in the API URL either as parameter or its value. Specially in case of API key.
               
               - If the provided IATA code to the request parameter `iata_code` is not in the format as three letter code AAA.
               
@@ -447,11 +455,13 @@ paths:
 
               - If the provided UN/LOCODE to the request parameter `lo_code` is not in format as first two characters of country code, followed by the three alphanumeric characters of the city/region.
               
-              - If the provided values to the request parameters `lat` and `long` are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180.
-                            
+              - If the provided values to the request parameters `lat` and `long` are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180. Non-numeric values, and values written with an exponent larger than 50 (for example `1e51`), return `Invalid value '1e51' for parameter 'lat'.`
+
               - If the provided time zone name to the query parameter `tz` is wrong or not registered in the IANA time zone database.
 
               - An invalid or unsupported `lang` parameter is provided.
+
+              - If the IPv4 or IPv6 address is not in our database and no other lookup parameter resolves a time zone (message: `Couldn't find time zone detail for the provided parameters.`), or the IP is found but has no time zone (message: `Couldn't find time zone detail for the IP address (IP)`).
           content:
             application/json: 
               schema: 
@@ -481,6 +491,14 @@ paths:
                   summary: Coordinates out of range
                   value:
                     message: "'latitude' (40.7128) or 'longitude' (-700.0060) is not valid. 'latitude' must be between -90.0 and +90.0 and 'longitude' must be between -180.0 and +180.0."
+                invalidNumber:
+                  summary: Non-numeric coordinate value
+                  value:
+                    message: "Invalid value 'abc' for parameter 'lat'."
+                timezoneNotFound:
+                  summary: No time zone found for the given parameters
+                  value:
+                    message: "Couldn't find time zone detail for the provided parameters."
                 invalidTimezone:
                   summary: Invalid timezone identifier
                   value:
@@ -493,8 +511,10 @@ paths:
         "401":
           description: |
             Unauthorized – Possible reasons include:
-              - Missing or invalid API key
-              - If your account has been disabled or locked to use by the admin due to abuse or illegal activity.
+              - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
+              - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+              - The account's email address has not been verified.
+              - The account has been locked due to abuse or illegal activity.
               - When the request to Timezone API is made using API key for a database subscription
               - When the request to Timezone API is made on the 'paused' subscription.
               - If you’re making API requests after your subscription trial has been expired.
@@ -513,6 +533,10 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
                   summary: Account locked
                   value:
@@ -532,6 +556,8 @@ paths:
 
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFoundTimezone"
         "405":
@@ -573,13 +599,10 @@ paths:
 
         The optional `time` parameter specifies the time to convert.
 
-        Supported formats:
-
-        - `yyyy-MM-dd HH:mm`
-        - `yyyy-MM-dd HH:mm:ss`
-
-        If the `time` parameter is omitted, the current time is used
-        for conversion.
+        Supported formats: `yyyy-MM-dd`, `yyyy-MM-dd HH`, `yyyy-MM-dd HH:mm`,
+        `yyyy-MM-dd HH:mm:ss`. Missing hour, minute or second parts default to `00`.
+        The time is read as local time in the source time zone. If omitted, the
+        current time in the source time zone is used.
 
         Each successful conversion request consumes **1 credit**.
 
@@ -639,9 +662,11 @@ paths:
               
               - If one of the query parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is provided and other(s) is/are missing, for time conversion.
                             
-              - If the geographic coordinates provided to one of the parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is/are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180.
-              
+              - If the geographic coordinates provided to one of the parameters `lat_from`, `long_from`, `lat_to`, and `long_to` is/are not numbers, or the values fall outside the acceptable latitude and longitude ranges. The valid range for latitude is between -90 and 90, and for longitude, it is between -180 and 180. Non-numeric values, and values written with an exponent larger than 50 (for example `1e51`), return `Invalid value '1e51' for parameter 'lat_from'.`
+
               - If the time zone names provided to one of the parameters `tz_from` and `tz_to` is/are wrong or not registered in the IANA time zone database.
+
+              - If the value of `time` is not in one of the supported formats (`yyyy-MM-dd`, `yyyy-MM-dd HH`, `yyyy-MM-dd HH:mm`, `yyyy-MM-dd HH:mm:ss`). Example message: `Check whether your input values are correct; source_time_zone = America/New_York, destined_time_zone = Asia/Kabul, date_time = 30-01-2025`
 
               - If one of the query parameters `iata_from` and `iata_to`, `icao_from` and `icao_to`, or `locode_from` and `locode_to` is provided and the other is missing, for time conversion.
 
@@ -670,6 +695,14 @@ paths:
                   summary: Coordinates out of range
                   value:
                     message: "Provided  lat_to (450) or long_to (45) is not valid. Latitude must be between -90.0 and +90.0 and longitude must be between -180.0 and +180.0."
+                invalidNumber:
+                  summary: Non-numeric coordinate value
+                  value:
+                    message: "Invalid value 'abc' for parameter 'lat_from'."
+                invalidTime:
+                  summary: Unsupported time format
+                  value:
+                    message: "Check whether your input values are correct; source_time_zone = America/New_York, destined_time_zone = Asia/Kabul, date_time = 30-01-2025"
                 invalidTimezone:
                   summary: Invalid timezone identifier
                   value:
@@ -682,8 +715,10 @@ paths:
         "401":
           description: |
             Unauthorized – Possible reasons include:
-              - Missing or invalid API key
-              - If your account has been disabled or locked to use by the admin due to abuse or illegal activity.
+              - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
+              - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+              - The account's email address has not been verified.
+              - The account has been locked due to abuse or illegal activity.
               - When the request to Timezone API is made using API key for a database subscription
               - When the request to Timezone API is made on the 'paused' subscription.
               - If you’re making API requests after your subscription trial has been expired.
@@ -700,6 +735,10 @@ paths:
                   summary: Invalid API key
                   value:
                     message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                unverifiedEmail:
+                  summary: Email address not verified
+                  value:
+                    message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 lockedAccount:
                   summary: Account locked
                   value:
@@ -710,12 +749,12 @@ paths:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
         "402":
           $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFoundConvert"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
-        "423":
-          $ref: "#/components/responses/Locked"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "499":
@@ -735,9 +774,12 @@ components:
   responses:
     PaymentRequired:
       description: |
-        Payment Required. Returned when the subscription is not on a Free plan and its
-        active-until date has passed, before any usage quota is checked. Renewing or
-        upgrading the plan is required to continue using IPGeolocation API.
+        Payment Required. Returned for a paid (non-Free) subscription whose active-until
+        date has passed: one day after the active-until date for active or trialing
+        subscriptions, and from the active-until date for past-due or deleted
+        subscriptions. It is checked before any usage quota. Paused subscriptions and
+        expired trials get HTTP 401 instead, and Free plan keys never get 402. Renew or
+        upgrade the plan to continue using IPGeolocation API.
       content:
         application/json:
           schema:
@@ -746,13 +788,21 @@ components:
             expiredSubscription:
               summary: Subscription expired
               value:
-                message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+
+    Forbidden:
+      description: |
+        Forbidden. The API key has an IP allow-list and the request comes from an IP address that is not on it.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io"
 
     NotFoundTimezone:
       description: |
         Not found. Returned for one of the following reasons:
-        - If the IPv4, IPv6 address does not exist in our database.
-
         - If the IPv4, IPv6 address passed as a path variable, instead of url parameter as ip=.
 
         - If the location address provided to the `location` parameter is invalid. A city-level or state-level address must be provided.
@@ -765,10 +815,6 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           examples:
-            ipNotInDatabase:
-              summary: IPv4/IPv6 not found in database
-              value:
-                message: "Provided IPv4 or IPv6 address does not exist in our database."
             ipAsPathVariable:
               summary: IP passed as path variable instead of query parameter
               value:
@@ -780,11 +826,11 @@ components:
             invalidAirportCode:
               summary: Invalid IATA or ICAO airport code
               value:
-                message: "'Data not found for the provided airport code: ATL123 Please contact at support@ipgeolocation.io if provided airport code exists.'"
+                message: "'Data not found for the provided airport code: ZZZ Please contact at support@ipgeolocation.io if provided airport code exists.'"
             invalidLoCode:
               summary: Invalid UN/LOCODE
               value:
-                message: "'Data not found for the provided LO code: USATL1 Please contact at support@ipgeolocation.io if provided LO code exists.'"
+                message: "'Data not found for the provided LO code: USZZZ Please contact at support@ipgeolocation.io if provided LO code exists.'"
             wrongEndpoint:
               summary: Incorrect or non-existent endpoint
               value:
@@ -806,11 +852,11 @@ components:
             invalidAirportCode:
               summary: Invalid IATA or ICAO airport code
               value:
-                message: "'Data not found for the provided airport code: ATL123 Please contact at support@ipgeolocation.io if provided airport code exists.'"
+                message: "'Data not found for the provided airport code: ZZZ Please contact at support@ipgeolocation.io if provided airport code exists.'"
             invalidLoCode:
               summary: Invalid UN/LOCODE
               value:
-                message: "'Data not found for the provided LO code: USATL1 Please contact at support@ipgeolocation.io if provided LO code exists.'"
+                message: "'Data not found for the provided LO code: USZZZ Please contact at support@ipgeolocation.io if provided LO code exists.'"
             invalidLocationFrom:
               summary: Source location not found
               value:
@@ -831,7 +877,7 @@ components:
 
         Only the **GET** method is supported for the Timezone API endpoint.
 
-        Any other HTTP method results in HTTP 405.
+        Calling an endpoint with an HTTP method it doesn't support (for example `PUT` or `DELETE`) results in HTTP 405.
       content:
         application/json:
           schema:
@@ -844,7 +890,7 @@ components:
             unsupportedMethod:
               summary: Unsupported HTTP method
               value:
-                message: "Request method is not supported"
+                message: "Request method 'PUT' is not supported"
 
     Locked:
       description: |
@@ -861,7 +907,7 @@ components:
       description: |
         Too Many Requests. Returned for one of the following reasons:
         - The API credit allowance has been reached for a Free subscription.
-        - The API credit allowance has been reached for an active trial subscription (capped at 100,000 requests).
+        - The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).
         - The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.
         - The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.
         - The surcharge (overage) credit limit has been reached for the subscribed plan.
@@ -873,23 +919,22 @@ components:
             usageLimitReached:
               summary: API credit limit reached
               value:
-                message: "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+            trialLimitReached:
+              summary: Trial credit cap (100,000) reached
+              value:
+                message: "You have exceeded the limit of 100000 requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
             surchargeLimitReached:
               summary: Surcharge usage limit reached
               value:
-                message: "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have reached the surcharge amount limit of $SURCHARGE_AMOUNT_LIMIT on your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
 
     ClientClosedRequest:
       description: |
         The client closed the connection before the server finished processing the
-        request. This usually happens when the client sets a very short request or
-        connection timeout. Increase the timeout on the client side.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Client closed the request before the server could respond."
+        request (logged by the edge proxy; the client receives no response). This
+        usually happens when the client sets a very short request or connection
+        timeout. Increase the timeout on the client side.
 
     InternalServerError:
       description: |
@@ -901,47 +946,46 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Something went wrong on the server side."
+            message: "Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io"
     BadGateway:
       description: |
-        Bad Gateway. The API server received an invalid response from an upstream
-        server while processing the request. This is usually temporary.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Upstream service error. Please try again later."
+        Bad Gateway. Returned by the edge proxy in front of the API, not by the API
+        application, when it gets an invalid response from the API server. The
+        response body is set by the proxy. This is usually temporary; retry the
+        request.
     ServiceUnavailable:
       description: |
-        Service Unavailable. The API is temporarily unavailable due to maintenance
-        or overload. Please try again later.
+        Service Unavailable. Returned when the API cannot verify your API key (or request
+        origin) because of a temporary internal error, for example when the billing service
+        is unreachable and the key has not been verified recently. Keys that were verified
+        recently keep working. Retry later; if it persists, contact support@ipgeolocation.io.
+
+        Also returned when a `location` (or `location_from`/`location_to`) value cannot be
+        geocoded because the geocoding service is temporarily unavailable. Retry, or use
+        coordinates.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Service temporarily unavailable. Please try again later."
+          examples:
+            apiKeyVerificationFailed:
+              summary: API key could not be verified
+              value:
+                message: "We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io"
+            geocoderUnavailable:
+              summary: Geocoding service temporarily unavailable
+              value:
+                message: "We couldn't look up the location (London, UK) right now. Please try again shortly, or use the 'lat' and 'long' parameters instead."
     GatewayTimeout:
       description: |
-        Gateway Timeout. The API server did not receive a timely response from
-        an upstream server.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "The server timed out while processing the request."
+        Gateway Timeout. Returned by the edge proxy in front of the API, not by the
+        API application, when the API server does not respond in time. The response
+        body is set by the proxy. Retry the request.
     HttpVersionNotSupported:
       description: |
-        HTTP Version Not Supported. The server does not support the HTTP protocol
-        version used in the request.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "HTTP version not supported."
+        HTTP Version Not Supported. Returned by the edge proxy in front of the API,
+        not by the API application, when the request uses an HTTP protocol version
+        it does not support. The response body is set by the proxy.
 
   parameters:
     Ip:
@@ -973,9 +1017,10 @@ components:
       in: query
       required: false
       description: |
-        Language code for translated location names. Defaults to `en`. Non-English
-        responses require a paid plan. Free plans always receive English regardless
-        of this parameter. Unsupported `lang` values return HTTP 400.
+        Language code for translated location names. Defaults to `en`. Supported values:
+        `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. An
+        unsupported value returns HTTP 400. On a Free plan, any value other than `en`
+        returns HTTP 401.
       schema:
         type: string
         default: "en"
@@ -1001,8 +1046,12 @@ components:
       description: |
         Desired response format. Defaults to `json` if not specified. You can also
         control the format using the `Accept` header (`application/json`,
-        `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-        takes precedence.
+        `application/xml`, or `text/xml`). For successful responses and authentication
+        errors, the `Accept` header takes precedence if both are provided: `output` is
+        used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+        value other than `application/xml` or `text/xml` (for example a browser's
+        default) returns JSON even with `output=xml`. Values are matched exactly (use
+        lowercase `xml`).
 
         If `output` is unknown or unsupported, it is ignored and the response defaults
         to JSON (`application/json`) with HTTP 200.
@@ -1036,8 +1085,9 @@ components:
       in: query
       required: false
       description: |
-        Four-letter ICAO airport code used to determine the timezone
-        of the airport location.
+        Four-letter ICAO airport code in uppercase (e.g. `KATL`), used to determine the
+        timezone of the airport location. Lowercase ICAO codes are rejected with HTTP 400.
+        (IATA codes and UN/LOCODEs are case-insensitive.)
 
         When used, the response includes an `airport_details` object
         containing airport metadata alongside the `time_zone` object.
@@ -1075,7 +1125,9 @@ components:
       required: false
       description: |
         Longitude coordinate of the location used to determine the
-        timezone. Must be provided together with the `lat` parameter.
+        timezone. Must be provided together with the `lat` parameter. If only one of
+        `lat` or `long` is sent, both are ignored and the lookup falls back to the next
+        parameter, or to the caller's IP.
 
         Valid longitude values range from **-180 to 180**.
 
@@ -1094,7 +1146,9 @@ components:
       required: false
       description: |
         Latitude coordinate of the location used to determine the
-        timezone. Must be provided together with the `long` parameter.
+        timezone. Must be provided together with the `long` parameter. If only one of
+        `lat` or `long` is sent, both are ignored and the lookup falls back to the next
+        parameter, or to the caller's IP.
 
         Valid latitude values range from **-90 to 90**.
 
@@ -1137,7 +1191,9 @@ components:
       in: query
       required: false
       description: |
-        IANA timezone identifier to retrieve timezone information.
+        IANA timezone identifier, e.g. `Europe/London`. The value is case-sensitive on
+        this endpoint. (On `/v3/timezone/convert`, `tz_from` and `tz_to` are
+        case-insensitive.)
 
         When provided, the API returns the current date, time, and timezone
         metadata for the specified timezone.
@@ -1165,6 +1221,7 @@ components:
       required: false
       description: |
         Source timezone identifier (IANA format) used for time conversion.
+        Case-insensitive.
       schema:
         type: string
       examples:
@@ -1180,6 +1237,7 @@ components:
       required: false
       description: |
         Destination timezone identifier (IANA format) used for time conversion.
+        Case-insensitive.
       schema:
         type: string
       examples:
@@ -1196,12 +1254,10 @@ components:
       description: |
         Date and time to convert.
 
-        Supported formats:
-
-        - `yyyy-MM-dd HH:mm`
-        - `yyyy-MM-dd HH:mm:ss`
-
-        If omitted, the current time is used.
+        Supported formats: `yyyy-MM-dd`, `yyyy-MM-dd HH`, `yyyy-MM-dd HH:mm`,
+        `yyyy-MM-dd HH:mm:ss`. Missing hour, minute or second parts default to `00`.
+        The time is read as local time in the source time zone. If omitted, the
+        current time in the source time zone is used.
       schema:
         type: string
       examples:
@@ -1332,6 +1388,10 @@ components:
       name: icao_from
       in: query
       required: false
+      description: |
+        Four-letter ICAO airport code in uppercase (e.g. `YSSY`) for the source location.
+        Lowercase ICAO codes are rejected with HTTP 400. (IATA codes and UN/LOCODEs are
+        case-insensitive.)
       schema:
         type: string
       examples:
@@ -1346,6 +1406,10 @@ components:
       name: icao_to
       in: query
       required: false
+      description: |
+        Four-letter ICAO airport code in uppercase (e.g. `ZBAA`) for the destination
+        location. Lowercase ICAO codes are rejected with HTTP 400. (IATA codes and
+        UN/LOCODEs are case-insensitive.)
       schema:
         type: string
       examples:
@@ -1475,7 +1539,7 @@ components:
             The original timestamp before conversion. If the `time`
             parameter is omitted, this value represents the current
             time at the source location.
-          example: "2024-12-08 11:00"
+          example: "2024-12-08 11:00:00"
 
         converted_time:
           type: string
@@ -1487,15 +1551,17 @@ components:
           type: number
           format: float
           description: |
-            Time difference between the source and destination
-            timezones expressed in hours.
+            Absolute time difference between the source and destination timezones,
+            in hours (always zero or positive). Compare `converted_time` with
+            `original_time` to see which zone is ahead.
           example: 7.5
 
         diff_min:
           type: number
           description: |
-            Time difference between the source and destination
-            timezones expressed in minutes.
+            Absolute time difference between the source and destination timezones,
+            in minutes (always zero or positive). Compare `converted_time` with
+            `original_time` to see which zone is ahead.
           example: 450
 
 
@@ -1551,8 +1617,8 @@ components:
 
         current_time:
           type: string
-          description: Current local time at the queried location. Observed formats
-            include `YYYY-MM-DDTHH:mm:ss±ZZZZ` and `YYYY-MM-DD HH:mm:ss.SSS±ZZZZ`.
+          description: Current local date and time in `yyyy-MM-dd HH:mm:ss.SSSZ` format,
+            e.g. `2026-03-07 10:37:39.744+0100`.
           example: "2025-04-24 11:30:12.353-0700"
 
         current_time_unix:
@@ -1618,7 +1684,9 @@ components:
         dst_savings:
           type: number
           format: float
-          description: Number of hours added during daylight saving time.
+          description: Daylight saving offset currently in effect, in hours (for example
+            `1` or `0.5`). It is `0` when DST is not active right now, even if the zone
+            observes DST.
 
         dst_exists:
           type: boolean
@@ -1644,8 +1712,10 @@ components:
     DSTTransition:
       type: object
       description: |
-        A daylight saving time transition. `dst_start` and `dst_end` describe
-        the current DST period while DST is in effect, otherwise the next one.
+        A daylight saving time transition. While DST is in effect, `dst_start` and
+        `dst_end` describe the current DST period; otherwise they describe the next
+        DST period. For time zones that do not observe DST, both are returned as empty
+        objects (`{}`).
       properties:
         utc_time:
           type: string

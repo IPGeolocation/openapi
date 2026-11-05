@@ -3,7 +3,7 @@
   "info": {
     "title": "IPGeolocation.io: Astronomy API",
     "version": "3.0",
-    "description": "Retrieve astronomical information including rise and set times for the\nSun and Moon, current position, distance from Earth, and azimuth for\na specific location and date.\n\nThe Astronomy API provides accurate-enough results (within approximately\none minute) suitable for applications like sunrise/sunset timers, though\nnot intended for precision astronomical purposes.\n\nAstronomical information can be retrieved using multiple lookup inputs:\n\n- Location address (preferably city-level)\n- Geographic coordinates (latitude and longitude)\n- IPv4 or IPv6 address\n\nIf no lookup parameter is provided, the API resolves the location using\nthe public IP address of the requesting client.\n\nTwo endpoints are available:\n\n- **Single-date lookup** (`GET /v3/astronomy`) returns astronomical\n  information for a specific location and date, including sunrise,\n  sunset, moonrise, moonset, twilight phases, golden hour, blue hour,\n  sun and moon position data, and moon phase.\n\n- **Time series lookup** (`GET /v3/astronomy/timeSeries`) returns\n  astronomical information across a date range (up to 90 days) for a\n  specific location.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Credit Usage\n\nCredits are charged only for successful **HTTP 200** responses. The\nexact number of credits consumed by a request is returned in the\n`X-Credits-Charged` response header.\n\n- Each successful **Astronomy lookup** consumes **1 credit** per request.\n\n## Lookup Parameter Priority\n\nIf multiple lookup parameters are provided in a request, the API resolves\nthe location using the following priority order:\n\n1. Geographic coordinates (`lat` and `long`)\n2. `location`\n3. `ip`\n\nIf none of the lookup parameters are provided, the API resolves the\nlocation using the public IP address of the requesting client.\n\n## Time Zone Behavior\n\nBy default, all astronomical event timestamps (sunrise, sunset, moonrise,\nmoonset, twilight phases, solar noon, etc.) are returned in the local\ntime of the resolved geographic location.\n\nIf the optional `time_zone` parameter is provided, all timestamps are\nconverted to the specified IANA timezone. In this case, timestamps are\nreturned as full date-time values (`yyyy-MM-dd HH:mm`) rather than\ntime-only values (`HH:mm`), and a `time_zone` field is included in\nthe `astronomy` response object.\n\nDue to timezone differences, some events may appear on a different\ncalendar date after conversion.\n",
+    "description": "Retrieve astronomical information including rise and set times for the\nSun and Moon, current position, distance from Earth, and azimuth for\na specific location and date.\n\nThe Astronomy API provides accurate-enough results (within approximately\none minute) suitable for applications like sunrise/sunset timers, though\nnot intended for precision astronomical purposes.\n\nAstronomical information can be retrieved using multiple lookup inputs:\n\n- Location address (preferably city-level)\n- Geographic coordinates (latitude and longitude)\n- IPv4 or IPv6 address\n\nIf no lookup parameter is provided, the API resolves the location using\nthe public IP address of the requesting client.\n\nTwo endpoints are available:\n\n- **Single-date lookup** (`GET /v3/astronomy`) returns astronomical\n  information for a specific location and date, including sunrise,\n  sunset, moonrise, moonset, twilight phases, golden hour, blue hour,\n  sun and moon position data, and moon phase.\n\n- **Time series lookup** (`GET /v3/astronomy/timeSeries`) returns\n  astronomical information across a date range (up to 90 days) for a\n  specific location.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Credit Usage\n\nCredits are charged only for successful **HTTP 200** responses. The\nexact number of credits consumed by a request is returned in the\n`X-Credits-Charged` response header.\n\n- Each successful **Astronomy lookup** consumes **1 credit** per request.\n\n## Lookup Parameter Priority\n\nIf multiple lookup parameters are provided in a request, the API resolves\nthe location using the following priority order:\n\n1. Geographic coordinates (`lat` and `long`)\n2. `location`\n3. `ip`\n\nThe `ip` parameter is always validated, even when a higher-priority parameter is\npresent. An invalid `ip` returns HTTP 400, and a bogon or private `ip` returns\nHTTP 423.\n\nIf none of the lookup parameters are provided, the API resolves the\nlocation using the public IP address of the requesting client.\n\n## Time Zone Behavior\n\nBy default, all astronomical event timestamps (sunrise, sunset, moonrise,\nmoonset, twilight phases, solar noon, etc.) are returned in the local\ntime of the resolved geographic location.\n\nIf the optional `time_zone` parameter is provided, all timestamps are\nconverted to the specified IANA timezone. In this case, timestamps are\nreturned as full date-time values (`yyyy-MM-dd HH:mm`) rather than\ntime-only values (`HH:mm`), and a `time_zone` field is included in\nthe `astronomy` response object.\n\nDue to timezone differences, some events may appear on a different\ncalendar date after conversion.\n",
     "contact": {
       "name": "IPGeolocation Support",
       "url": "https://ipgeolocation.io/contact.html",
@@ -47,7 +47,7 @@
       "get": {
         "operationId": "lookupAstronomy",
         "summary": "Astronomy lookup",
-        "description": "Returns astronomical information for a specific location and date,\nincluding:\n\n- Sunrise and sunset times\n- Moonrise and moonset times\n- Morning and evening twilight phases (astronomical, nautical, civil)\n- Golden hour and blue hour windows (morning and evening)\n- Solar noon, day length, and astronomical midnight\n- Sun position: altitude, azimuth, distance from Earth\n- Moon position: altitude, azimuth, distance from Earth, parallactic angle\n- Moon phase, illumination percentage, and angular diameter\n\nThe location can be resolved using geographic coordinates (`lat` and\n`long`), a location address (`location`), or an IP address (`ip`).\n\nIf multiple lookup parameters are provided, the API resolves the\nlocation using the following priority order:\n\n1. `lat` and `long`\n2. `location`\n3. `ip`\n\nIf none of the lookup parameters are provided, the API resolves the\nlocation using the public IP address of the requesting client.\n\nBy default, results are calculated for the current date. Pass the\n`date` parameter to retrieve data for a specific date.\n\nEach successful lookup consumes **1 credit**.\n",
+        "description": "Returns astronomical information for a specific location and date,\nincluding:\n\n- Sunrise and sunset times\n- Moonrise and moonset times\n- Morning and evening twilight phases (astronomical, nautical, civil)\n- Golden hour and blue hour windows (morning and evening)\n- Solar noon, day length, and astronomical midnight\n- Sun position: altitude, azimuth, distance from Earth\n- Moon position: altitude, azimuth, distance from Earth, parallactic angle\n- Moon phase, illumination percentage, and moon phase angle (`moon_angle`)\n\nThe location can be resolved using geographic coordinates (`lat` and\n`long`), a location address (`location`), or an IP address (`ip`).\n\nIf multiple lookup parameters are provided, the API resolves the\nlocation using the following priority order:\n\n1. `lat` and `long`\n2. `location`\n3. `ip`\n\nThe `ip` parameter is always validated, even when a higher-priority parameter is\npresent. An invalid `ip` returns HTTP 400, and a bogon or private `ip` returns\nHTTP 423.\n\nIf none of the lookup parameters are provided, the API resolves the\nlocation using the public IP address of the requesting client.\n\nBy default, results are calculated for the current date. Pass the\n`date` parameter to retrieve data for a specific date.\n\nEach successful lookup consumes **1 credit**.\n",
         "tags": [
           "Astronomy"
         ],
@@ -75,6 +75,9 @@
           },
           {
             "$ref": "#/components/parameters/Lang"
+          },
+          {
+            "$ref": "#/components/parameters/Output"
           }
         ],
         "responses": {
@@ -164,7 +167,7 @@
             }
           },
           "400": {
-            "description": "Bad Request – Possible reasons include:\n  - If the provided IPv4 or IPv6 address is invalid.\n  - If special character(s) `( ) [ ] { } | ^ \\`` is passed in the\n    API URL either as a parameter or its value, especially in the\n    case of an API key.\n  - If the provided `date` is not in the format `yyyy-MM-dd`.\n  - If an invalid or unsupported `lang` parameter is provided.\n  - If only one of `lat` or `long` is provided; both must be\n    provided together.\n  - If the provided values for `lat` and `long` are not numbers,\n    or fall outside the acceptable ranges. Valid latitude range is\n    **-90 to 90**; valid longitude range is **-180 to 180**.\n  - If the provided `elevation` value exceeds the maximum allowed\n    value of **10,000 meters**.\n  - If the provided `time_zone` is invalid or unrecognized.\n  - If the provided IPv4 or IPv6 address does not exist in our\n    database.\n",
+            "description": "Bad Request – Possible reasons include:\n  - If the provided IPv4 or IPv6 address is invalid.\n  - If special character(s) `[ ] { } | ^ \\`` is passed in the\n    API URL either as a parameter or its value, especially in the\n    case of an API key.\n  - If the provided `date` is not in the format `yyyy-MM-dd`.\n  - If an invalid or unsupported `lang` parameter is provided.\n  - If only one of `lat` or `long` is provided; both must be\n    provided together.\n  - If the provided values for `lat` and `long` are not numbers,\n    or fall outside the acceptable ranges. Valid latitude range is\n    **-90 to 90**; valid longitude range is **-180 to 180**.\n    Non-numeric values, and values written with an exponent larger\n    than 50 (for example `1e51`), return\n    `Invalid value '1e51' for parameter 'lat'.` A non-numeric\n    `elevation` returns the same message for `elevation`.\n  - If the provided `elevation` value exceeds the maximum allowed\n    value of **10,000 meters**.\n  - If the provided `time_zone` is invalid or unrecognized.\n  - If the provided IPv4 or IPv6 address does not exist in our\n    database.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -213,6 +216,12 @@
                       "message": "Longitude must be between -180 and 180."
                     }
                   },
+                  "invalidNumber": {
+                    "summary": "Non-numeric coordinate value",
+                    "value": {
+                      "message": "Invalid value 'abc' for parameter 'lat'."
+                    }
+                  },
                   "invalidElevation": {
                     "summary": "Elevation exceeds maximum",
                     "value": {
@@ -222,7 +231,7 @@
                   "invalidTimezone": {
                     "summary": "Invalid timezone identifier",
                     "value": {
-                      "message": "Check whether your input values are correct; time_zone_name = Europe/InvalidCity"
+                      "message": "Check whether your input value is correct; time_zone_name = Europe/InvalidCity"
                     }
                   },
                   "invalidLang": {
@@ -234,7 +243,7 @@
                   "ipNotInDatabase": {
                     "summary": "IP not found in database",
                     "value": {
-                      "message": "Couldn't find astronomy detail for the IP address (8.8.8.8)"
+                      "message": "Couldn't find astronomy detail for the IP address (IP_ADDRESS)"
                     }
                   }
                 }
@@ -242,7 +251,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key.\n  - If your account has been disabled or locked by the admin due\n    to abuse or illegal activity.\n  - When the request is made using an API key for a database\n    subscription.\n  - When the request is made on a paused subscription.\n  - If you are making API requests after your subscription trial\n    has expired.\n  - A language other than English is specified in the `lang`\n    parameter while using a Free/Developer plan API key.\n",
+            "description": "Unauthorized – Possible reasons include:\n  - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.\n  - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.\n  - The account's email address has not been verified.\n  - The account has been locked due to abuse or illegal activity.\n  - When the request is made using an API key for a database\n    subscription.\n  - When the request is made on a paused subscription.\n  - If you are making API requests after your subscription trial\n    has expired.\n  - A language other than English is specified in the `lang`\n    parameter while using a Free/Developer plan API key.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -259,6 +268,12 @@
                     "summary": "Invalid API key",
                     "value": {
                       "message": "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                    }
+                  },
+                  "unverifiedEmail": {
+                    "summary": "Email address not verified",
+                    "value": {
+                      "message": "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                     }
                   },
                   "lockedAccount": {
@@ -291,6 +306,9 @@
           },
           "402": {
             "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -329,7 +347,7 @@
       "get": {
         "operationId": "lookupAstronomyTimeSeries",
         "summary": "Astronomy time series lookup",
-        "description": "Returns daily astronomical information for a specific location across\na date range.\n\nThe response contains an array of daily astronomy records, each\nincluding sunrise, sunset, moonrise, moonset, twilight phases,\nsolar noon, day length, and moon phase. Real-time positional data\n(altitude, azimuth, distance) is not included in time series\nresponses.\n\nThe location can be resolved using geographic coordinates (`lat` and\n`long`), a location address (`location`), or an IP address (`ip`).\n\n**Date range constraints:**\n- Both `dateStart` and `dateEnd` are required.\n- The maximum allowed span between `dateStart` and `dateEnd` is\n  **90 days**.\n- Both past and future dates are supported within the 90-day window.\n\nEach successful lookup consumes **1 credit** per request.\n",
+        "description": "Returns daily astronomical information for a specific location across\na date range.\n\nThe response contains an array of daily astronomy records, each\nincluding sunrise, sunset, moonrise, moonset, twilight phases,\nsolar noon, day length, and moon phase. Real-time positional data\n(altitude, azimuth, distance) is not included in time series\nresponses.\n\nThe location can be resolved using geographic coordinates (`lat` and\n`long`), a location address (`location`), or an IP address (`ip`).\n\n**Date range constraints:**\n- Both `dateStart` and `dateEnd` are required.\n- The range can cover at most **90 days**, counting both `dateStart` and\n  `dateEnd` (so `dateEnd` can be at most 89 days after `dateStart`).\n  `dateEnd` must not be before `dateStart`.\n- Both past and future dates are supported within the 90-day window.\n\nEach successful lookup consumes **1 credit** per request.\n",
         "tags": [
           "Astronomy"
         ],
@@ -360,6 +378,9 @@
           },
           {
             "$ref": "#/components/parameters/Lang"
+          },
+          {
+            "$ref": "#/components/parameters/Output"
           }
         ],
         "responses": {
@@ -480,7 +501,7 @@
             }
           },
           "400": {
-            "description": "Bad Request – Possible reasons include:\n  - If the provided IPv4 or IPv6 address is invalid.\n  - If special character(s) `( ) [ ] { } | ^ \\`` is passed in the\n    API URL either as a parameter or its value.\n  - If `dateStart` or `dateEnd` is not in the format `yyyy-MM-dd`.\n  - If the span between `dateStart` and `dateEnd` is greater than\n    **90 days**.\n  - If only one of `lat` or `long` is provided; both must be\n    provided together.\n  - If the provided values for `lat` and `long` are not numbers,\n    or fall outside the acceptable ranges.\n  - If the provided `elevation` value exceeds **10,000 meters**.\n  - If the provided `time_zone` is invalid or unrecognized.\n  - If an invalid or unsupported `lang` parameter is provided.\n  - If the location address provided to the `location` parameter\n    is invalid. A city-level or state-level address must be\n    provided.\n  - If the provided IPv4 or IPv6 address does not exist in our\n    database.\n",
+            "description": "Bad Request – Possible reasons include:\n  - If the provided IPv4 or IPv6 address is invalid.\n  - If special character(s) `[ ] { } | ^ \\`` is passed in the\n    API URL either as a parameter or its value.\n  - If `dateStart` or `dateEnd` is not in the format `yyyy-MM-dd`\n    (`` `dateStart` must be in 'yyyy-MM-dd' format `` or\n    `` `dateEnd` must be in 'yyyy-MM-dd' format ``).\n  - If the range covers more than **90 days**, counting both\n    `dateStart` and `dateEnd` (`Date range cannot exceed 90 days.`).\n  - If `dateEnd` is before `dateStart`\n    (`End date must be on or after start date.`).\n  - If `dateStart` or `dateEnd` is missing\n    (`Required request parameter 'dateStart' is missing`) or empty.\n  - If only one of `lat` or `long` is provided; both must be\n    provided together.\n  - If the provided values for `lat` and `long` are not numbers,\n    or fall outside the acceptable ranges. Non-numeric values, and\n    values written with an exponent larger than 50 (for example\n    `1e51`), return `Invalid value '1e51' for parameter 'lat'.` A\n    non-numeric `elevation` returns the same message for\n    `elevation`.\n  - If the provided `elevation` value exceeds **10,000 meters**.\n  - If the provided `time_zone` is invalid or unrecognized.\n  - If the provided IPv4 or IPv6 address does not exist in our\n    database.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -502,13 +523,25 @@
                   "invalidDateFormat": {
                     "summary": "Invalid date format",
                     "value": {
-                      "message": "You must provide date in the 'yyyy-MM-dd' format"
+                      "message": "`dateStart` must be in 'yyyy-MM-dd' format"
                     }
                   },
                   "dateRangeExceeded": {
                     "summary": "Date range exceeds 90 days",
                     "value": {
                       "message": "Date range cannot exceed 90 days."
+                    }
+                  },
+                  "dateEndBeforeStart": {
+                    "summary": "dateEnd is before dateStart",
+                    "value": {
+                      "message": "End date must be on or after start date."
+                    }
+                  },
+                  "missingDateStart": {
+                    "summary": "dateStart parameter missing",
+                    "value": {
+                      "message": "Required request parameter 'dateStart' is missing"
                     }
                   },
                   "missingLat": {
@@ -535,6 +568,12 @@
                       "message": "Longitude must be between -180 and 180."
                     }
                   },
+                  "invalidNumber": {
+                    "summary": "Non-numeric coordinate value",
+                    "value": {
+                      "message": "Invalid value 'abc' for parameter 'lat'."
+                    }
+                  },
                   "invalidElevation": {
                     "summary": "Elevation exceeds maximum",
                     "value": {
@@ -544,25 +583,13 @@
                   "invalidTimezone": {
                     "summary": "Invalid timezone identifier",
                     "value": {
-                      "message": "Check whether your input values are correct; time_zone_name = Europe/InvalidCity"
-                    }
-                  },
-                  "invalidLang": {
-                    "summary": "Unsupported language parameter",
-                    "value": {
-                      "message": "This 'xx' lang is not valid. Please use 'en' as the default language"
-                    }
-                  },
-                  "invalidLocation": {
-                    "summary": "Invalid location address",
-                    "value": {
-                      "message": "We couldn't find the location 'InvalidCity, XX'. Try a city or state level address only."
+                      "message": "Check whether your input value is correct; time_zone_name = Europe/InvalidCity"
                     }
                   },
                   "ipNotInDatabase": {
                     "summary": "IP not found in database",
                     "value": {
-                      "message": "Couldn't find astronomy detail for the IP address (8.8.8.8)"
+                      "message": "Couldn't find astronomy detail for the IP address (IP_ADDRESS)"
                     }
                   }
                 }
@@ -570,7 +597,7 @@
             }
           },
           "401": {
-            "description": "Unauthorized – Possible reasons include:\n  - Missing or invalid API key.\n  - If your account has been disabled or locked by the admin.\n  - When the request is made using an API key for a database\n    subscription.\n  - When the request is made on a paused subscription.\n  - If your subscription trial has expired.\n  - A language other than English is specified in the `lang`\n    parameter while using a Free/Developer plan API key.\n",
+            "description": "Unauthorized – Possible reasons include:\n  - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.\n  - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.\n  - The account's email address has not been verified.\n  - The account has been locked due to abuse or illegal activity.\n  - When the request is made using an API key for a database\n    subscription.\n  - When the request is made on a paused subscription.\n  - If your subscription trial has expired.\n  - A language other than English is specified in the `lang`\n    parameter while using a Free/Developer plan API key.\n",
             "content": {
               "application/json": {
                 "schema": {
@@ -587,6 +614,12 @@
                     "summary": "Invalid API key",
                     "value": {
                       "message": "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                    }
+                  },
+                  "unverifiedEmail": {
+                    "summary": "Email address not verified",
+                    "value": {
+                      "message": "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                     }
                   },
                   "lockedAccount": {
@@ -619,6 +652,9 @@
           },
           "402": {
             "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFoundTimeSeries"
@@ -746,7 +782,7 @@
         "name": "date",
         "in": "query",
         "required": false,
-        "description": "Date for which to retrieve astronomical information.\n\nMust be in `yyyy-MM-dd` format. Defaults to the current date if\nnot provided. All astronomical information is calculated at the\ncurrent time of day at the resolved location.\n",
+        "description": "Date for which to retrieve astronomical information.\n\nMust be in `yyyy-MM-dd` format. Defaults to the current date if\nnot provided (taken in `time_zone` when that parameter is given). All\nastronomical information is calculated at the current time of day at the\nresolved location, or in `time_zone` when that parameter is given.\n",
         "schema": {
           "type": "string",
           "format": "date"
@@ -766,7 +802,7 @@
         "name": "dateStart",
         "in": "query",
         "required": true,
-        "description": "Start date of the time series range.\n\nMust be in `yyyy-MM-dd` format. The maximum allowed span between\n`dateStart` and `dateEnd` is **90 days**.\n",
+        "description": "Start date of the time series range.\n\nMust be in `yyyy-MM-dd` format. The range can cover at most **90 days**,\ncounting both `dateStart` and `dateEnd` (so `dateEnd` can be at most 89 days\nafter `dateStart`). `dateEnd` must not be before `dateStart`.\n",
         "schema": {
           "type": "string",
           "format": "date"
@@ -782,7 +818,7 @@
         "name": "dateEnd",
         "in": "query",
         "required": true,
-        "description": "End date of the time series range.\n\nMust be in `yyyy-MM-dd` format. The maximum allowed span between\n`dateStart` and `dateEnd` is **90 days**.\n",
+        "description": "End date of the time series range.\n\nMust be in `yyyy-MM-dd` format. The range can cover at most **90 days**,\ncounting both `dateStart` and `dateEnd` (so `dateEnd` can be at most 89 days\nafter `dateStart`). `dateEnd` must not be before `dateStart`.\n",
         "schema": {
           "type": "string",
           "format": "date"
@@ -798,17 +834,15 @@
         "name": "elevation",
         "in": "query",
         "required": false,
-        "description": "Elevation of the location above sea level in meters. Used to\nrefine astronomical calculations.\n\nWhen not provided, the elevation of the nearest known city to the\nresolved coordinates is used automatically; it falls back to `0`\nonly when no elevation data is available for that location.\nMaximum allowed value is **10,000 meters**; only this upper bound\nis enforced (HTTP 400 if exceeded) — negative values are not\nclamped and are passed through as provided.\n",
+        "description": "Elevation of the location above sea level in meters. Used to\nrefine astronomical calculations.\n\nWhen not provided, the elevation of the nearest known city to the\nresolved coordinates is used automatically; it falls back to `0`\nonly when no elevation data is available for that location.\nMaximum allowed value is **10,000 meters**; only this upper bound\nis enforced (HTTP 400 if exceeded). Negative values are accepted\nwithout an error.\n",
         "schema": {
           "type": "number",
           "format": "double",
-          "default": 0,
-          "minimum": 0,
           "maximum": 10000
         },
         "examples": {
-          "none": {
-            "summary": "Use default elevation (sea level)",
+          "seaLevel": {
+            "summary": "Force sea level",
             "value": 0
           },
           "elevated": {
@@ -844,7 +878,7 @@
         "name": "lang",
         "in": "query",
         "required": false,
-        "description": "Language code for translated location names in the `location` object.\nOnly applies when the lookup is performed via an IP address.\n\nDefaults to `en`. Non-English responses require a paid plan.\nRequesting a non-English `lang` value on a Free/Developer plan\nreturns HTTP 401 (see the `freePlanLang` example under the 401\nresponse) rather than silently falling back to English. Unsupported\n`lang` values return HTTP 400.\n",
+        "description": "Language code for translated location names in the `location` object.\nOnly applies when the lookup is performed via an IP address.\n\nDefaults to `en`. Non-English responses require a paid plan.\nRequesting a non-English `lang` value on a Free/Developer plan\nreturns HTTP 401 (see the `freePlanLang` example under the 401\nresponse) rather than silently falling back to English. Unsupported\n`lang` values return HTTP 400 on `/v3/astronomy`. On\n`/v3/astronomy/timeSeries` the value is not validated: on paid plans an\nunsupported value returns English names, and on a Free plan any value\nother than `en` returns HTTP 401. Use lowercase codes.\n",
         "schema": {
           "type": "string",
           "default": "en",
@@ -864,11 +898,25 @@
             "ar"
           ]
         }
+      },
+      "Output": {
+        "name": "output",
+        "in": "query",
+        "required": false,
+        "description": "Desired response format. Defaults to `json` if not specified. You can also\ncontrol the format using the `Accept` header (`application/json`,\n`application/xml`, or `text/xml`). For successful responses and authentication\nerrors, the `Accept` header takes precedence if both are provided: `output` is\nused only when the `Accept` header is absent or set to `*/*`, and an `Accept`\nvalue other than `application/xml` or `text/xml` (for example a browser's\ndefault) returns JSON even with `output=xml`. Values are matched exactly (use\nlowercase `xml`).\n\nIf `output` is unknown or unsupported, it is ignored and the response defaults\nto JSON (`application/json`) with HTTP 200.\n",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "json",
+            "xml"
+          ],
+          "default": "json"
+        }
       }
     },
     "responses": {
       "NotFound": {
-        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of a URL parameter (`ip=`).\n  - If the location address provided to the `location` parameter is\n    invalid. A city-level or state-level address must be provided.\n    (This applies to the single-date `/v3/astronomy` endpoint only;\n    the `/v3/astronomy/timeSeries` endpoint returns HTTP 400 for\n    this case instead.)\n  - If the wrong endpoint is called that does not exist in the API.\n",
+        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of a URL parameter (`ip=`).\n  - If the location address provided to the `location` parameter is\n    invalid. A city-level or state-level address must be provided.\n  - If the wrong endpoint is called that does not exist in the API.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -878,7 +926,7 @@
               "invalidLocation": {
                 "summary": "Invalid location address",
                 "value": {
-                  "message": "We couldn't find the location 'InvalidCity, XX'. Try a city or state level address only."
+                  "message": "We couldn't find the location (InvalidCity, XX). Try a city or state level location address only."
                 }
               },
               "wrongEndpoint": {
@@ -892,13 +940,19 @@
         }
       },
       "NotFoundTimeSeries": {
-        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of a URL parameter (`ip=`).\n  - If the wrong endpoint is called that does not exist in the API.\n\nNote: unlike the single-date `/v3/astronomy` endpoint, an invalid or\nunresolvable `location` address on this endpoint returns HTTP 400,\nnot 404 (see the `invalidLocation` example under the 400 response).\n",
+        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of a URL parameter (`ip=`).\n  - If the location address provided to the `location` parameter is\n    invalid. A city-level or state-level address must be provided.\n  - If the wrong endpoint is called that does not exist in the API.\n",
         "content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ErrorResponse"
             },
             "examples": {
+              "invalidLocation": {
+                "summary": "Invalid location address",
+                "value": {
+                  "message": "We couldn't find the location (InvalidCity, XX). Try a city or state level location address only."
+                }
+              },
               "wrongEndpoint": {
                 "summary": "Incorrect or non-existent endpoint",
                 "value": {
@@ -910,7 +964,7 @@
         }
       },
       "MethodNotAllowed": {
-        "description": "Method Not Allowed. Only the **GET** method is supported for\nAstronomy API endpoints. Any other HTTP method results in HTTP 405.\n",
+        "description": "Method Not Allowed. Only the **GET** method is supported for\nAstronomy API endpoints. Calling an endpoint with an HTTP method it doesn't support\n(for example `PUT` or `DELETE`) results in HTTP 405.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -936,7 +990,7 @@
         }
       },
       "TooManyRequests": {
-        "description": "Too Many Requests. Returned for one of the following reasons:\n  - The API credit allowance has been reached for a free subscription.\n  - The API credit allowance has been reached for an active trial\n    subscription (capped at 100,000 requests).\n  - The API credit allowance has been reached for a paid subscription with\n    surcharge usage disabled.\n  - The API credit allowance has been reached for a paid subscription with\n    status `past due` or `deleted`.\n  - The surcharge API usage limit has been reached for the subscribed\n    plan.\n",
+        "description": "Too Many Requests. Returned for one of the following reasons:\n  - The API credit allowance has been reached for a free subscription.\n  - The API credit allowance has been reached for an active trial\n    subscription (capped at 100,000 API credits).\n  - The API credit allowance has been reached for a paid subscription with\n    surcharge usage disabled.\n  - The API credit allowance has been reached for a paid subscription with\n    status `past due` or `deleted`.\n  - The surcharge (overage) credit limit has been reached for the subscribed\n    plan.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -946,13 +1000,19 @@
               "usageLimitReached": {
                 "summary": "API credit limit reached",
                 "value": {
-                  "message": "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
+                  "message": "You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+                }
+              },
+              "trialLimitReached": {
+                "summary": "Trial credit cap (100,000) reached",
+                "value": {
+                  "message": "You have exceeded the limit of 100000 requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
                 }
               },
               "surchargeLimitReached": {
                 "summary": "Surcharge usage limit reached",
                 "value": {
-                  "message": "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
+                  "message": "You have reached the surcharge amount limit of $SURCHARGE_AMOUNT_LIMIT on your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
                 }
               }
             }
@@ -960,17 +1020,7 @@
         }
       },
       "ClientClosedRequest": {
-        "description": "The client closed the connection before the server finished processing\nthe request. This usually happens when the client sets a very short\nrequest or connection timeout. Increase the timeout on the client side.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "Client closed the request before the server could respond."
-            }
-          }
-        }
+        "description": "The client closed the connection before the server finished processing\nthe request (logged by the edge proxy; the client receives no response).\nThis usually happens when the client sets a very short request or\nconnection timeout. Increase the timeout on the client side.\n"
       },
       "InternalServerError": {
         "description": "Internal Server Error. The server encountered an unexpected condition\nthat prevented it from fulfilling the request. If the issue persists,\ncontact support@ipgeolocation.io.\n",
@@ -980,65 +1030,46 @@
               "$ref": "#/components/schemas/ErrorResponse"
             },
             "example": {
-              "message": "Something went wrong on the server side."
+              "message": "Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io"
             }
           }
         }
       },
       "BadGateway": {
-        "description": "Bad Gateway. The API server received an invalid response from an\nupstream server. This is usually temporary.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "Upstream service error. Please try again later."
-            }
-          }
-        }
+        "description": "Bad Gateway. Returned by the edge proxy in front of the API, not by the API\napplication, when it gets an invalid response from the API server. The\nresponse body is set by the proxy. This is usually temporary; retry the\nrequest.\n"
       },
       "ServiceUnavailable": {
-        "description": "Service Unavailable. The API is temporarily unavailable due to\nmaintenance or overload. Please try again later.\n",
+        "description": "Service Unavailable. Returned when the API cannot verify your API key (or request\norigin) because of a temporary internal error, for example when the billing service\nis unreachable and the key has not been verified recently. Keys that were verified\nrecently keep working. Retry later; if it persists, contact support@ipgeolocation.io.\n\nAlso returned when a `location` value cannot be geocoded because the geocoding\nservice is temporarily unavailable. Retry, or use coordinates.\n",
         "content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ErrorResponse"
             },
-            "example": {
-              "message": "Service temporarily unavailable. Please try again later."
+            "examples": {
+              "apiKeyVerificationFailed": {
+                "summary": "API key could not be verified",
+                "value": {
+                  "message": "We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io"
+                }
+              },
+              "geocoderUnavailable": {
+                "summary": "Geocoding service temporarily unavailable",
+                "value": {
+                  "message": "We couldn't look up the location (London, UK) right now. Please try again shortly, or use the 'lat' and 'long' parameters instead."
+                }
+              }
             }
           }
         }
       },
       "GatewayTimeout": {
-        "description": "Gateway Timeout. The API server did not receive a timely response\nfrom an upstream server.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "The server timed out while processing the request."
-            }
-          }
-        }
+        "description": "Gateway Timeout. Returned by the edge proxy in front of the API, not by the\nAPI application, when the API server does not respond in time. The response\nbody is set by the proxy. Retry the request.\n"
       },
       "HttpVersionNotSupported": {
-        "description": "HTTP Version Not Supported. The server does not support the HTTP\nprotocol version used in the request.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "HTTP version not supported."
-            }
-          }
-        }
+        "description": "HTTP Version Not Supported. Returned by the edge proxy in front of the API,\nnot by the API application, when the request uses an HTTP protocol version\nit does not support. The response body is set by the proxy.\n"
       },
       "PaymentRequired": {
-        "description": "Payment Required. Returned when the subscription is not on a Free plan and its\nactive-until date has passed, before any usage quota is checked. Renewing or\nupgrading the plan is required to continue using IPGeolocation API.\n",
+        "description": "Payment Required. Returned for a paid (non-Free) subscription whose active-until\ndate has passed: one day after the active-until date for active or trialing\nsubscriptions, and from the active-until date for past-due or deleted\nsubscriptions. It is checked before any usage quota. Paused subscriptions and\nexpired trials get HTTP 401 instead, and Free plan keys never get 402. Renew or\nupgrade the plan to continue using IPGeolocation API.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -1048,9 +1079,22 @@
               "expiredSubscription": {
                 "summary": "Subscription expired",
                 "value": {
-                  "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                  "message": "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
                 }
               }
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Forbidden. The API key has an IP allow-list and the request comes from an IP address that is not on it.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "message": "Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io"
             }
           }
         }
@@ -1196,7 +1240,7 @@
           },
           "elevation": {
             "type": "string",
-            "description": "Elevation above sea level at the location, in meters.",
+            "description": "Elevation in meters of the nearest known city, as a string. Empty string when not available. It does not echo the `elevation` request parameter.",
             "example": "9"
           }
         }
@@ -1207,7 +1251,7 @@
         "properties": {
           "astronomical_twilight_begin": {
             "type": "string",
-            "description": "Start of astronomical twilight. In the morning, this marks the\nend of night; in the evening, this marks the start of night sky.\n",
+            "description": "Start of astronomical twilight. In the morning, this is the end of\nnight (same as `night_end`). In the evening, it is the end of nautical\ntwilight; night starts at the evening `astronomical_twilight_end`\n(same as `night_begin`).\n",
             "example": "04:49"
           },
           "astronomical_twilight_end": {
@@ -1273,7 +1317,7 @@
           },
           "current_time": {
             "type": "string",
-            "description": "Current local time at the resolved location in `HH:mm:ss.SSS` format.\nUsed as the reference time for real-time positional calculations\n(altitude, azimuth, distance).\n",
+            "description": "Current time in `HH:mm:ss.SSS` format, in the location's time zone, or in\n`time_zone` when that parameter is given. Positional values (altitude,\nazimuth, distance) are calculated for this time. Without `date`, the\ncurrent date is also taken in that time zone.\n",
             "example": "10:15:00.000"
           },
           "mid_night": {
@@ -1505,7 +1549,7 @@
         "type": "apiKey",
         "in": "query",
         "name": "apiKey",
-        "description": "API key passed as the `apiKey` query parameter. Get yours from the\n[IPGeolocation dashboard](https://app.ipgeolocation.io/). For\nclient-side usage on paid plans, consider using Request Origin (CORS)\nauthentication to avoid exposing your key."
+        "description": "API key passed as the `apiKey` query parameter. Get yours from the\n[IPGeolocation dashboard](https://app.ipgeolocation.io/). For\nclient-side usage on paid plans, consider using Request Origin (CORS)\nauthentication to avoid exposing your key.\n"
       }
     }
   }
