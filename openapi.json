@@ -4070,7 +4070,7 @@
                 {
                   "key": "lang",
                   "value": "en",
-                  "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. On this endpoint the value is not validated: on paid plans an unsupported value returns English names, and on a Free plan any value other than `en` returns HTTP 401. Use lowercase codes.",
+                  "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. On this endpoint the value is not validated: on paid plans an unsupported value returns English names, and on a Free plan any value other than `en` returns HTTP 401.",
                   "disabled": true
                 },
                 {
@@ -4159,7 +4159,7 @@
                     {
                       "key": "lang",
                       "value": "en",
-                      "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. On this endpoint the value is not validated: on paid plans an unsupported value returns English names, and on a Free plan any value other than `en` returns HTTP 401. Use lowercase codes.",
+                      "description": "Language code for translated location names in the `location` object. Only applies when the lookup is performed via an IP address.  Defaults to `en`. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. On this endpoint the value is not validated: on paid plans an unsupported value returns English names, and on a Free plan any value other than `en` returns HTTP 401.",
                       "disabled": true
                     },
                     {

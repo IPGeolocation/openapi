@@ -551,11 +551,6 @@ paths:
             - The provided IPv4 address, IPv6 address, or domain name is invalid.
             - Special characters such as [ ] { } | ^ ` are present in the API URL,
               either in a parameter name or its value (especially in the API key).
-            - For the `ipgeo-bulk` endpoint:
-              - The request payload is empty or missing.
-              - The JSON body is malformed.
-              - The `ips` field is missing, is not a JSON array of strings, or the `ips` array is empty.
-              - More than 50,000 IP addresses are provided in the request.
             - An invalid or unsupported `lang` parameter is provided.
           content:
             application/json:
@@ -570,26 +565,6 @@ paths:
                   summary: Special characters in API URL or key
                   value:
                     message: "Invalid character found in the request target."
-                malformedJson:
-                  summary: Malformed JSON body for bulk endpoint
-                  value:
-                    message: "Malformed JSON request or invalid field"
-                missingIps:
-                  summary: Bulk body missing ips field
-                  value:
-                    message: "IP addresses for bulk lookup are missing"
-                ipsNotArray:
-                  summary: Bulk ips field is not a JSON array
-                  value:
-                    message: "'ips' must be a JSON array of strings, e.g. {\"ips\": [\"value1\", \"value2\"]}"
-                emptyBulkIps:
-                  summary: Bulk ips array is empty
-                  value:
-                    message: "'ips' must not be empty or null"
-                tooManyBulkEntries:
-                  summary: Bulk body exceeds 50,000 entries
-                  value:
-                    message: "No. of lookup queries cannot be more than 50000"
                 invalidLang:
                   summary: Unsupported lang parameter value
                   value:
@@ -609,9 +584,6 @@ paths:
             - Any of the following `include` values are used with a Free/Developer plan API key:
               `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
               `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
-            - The bulk IP geolocation endpoint is called using Request Origin (CORS)
-              authentication. Bulk requests require an `apiKey` and cannot be authenticated
-              using Request Origin alone.
             - A domain name lookup is performed using a Free subscription API key.
             - A language other than English is specified in the `lang` parameter
               while using a Free/Developer plan API key.
@@ -644,10 +616,6 @@ paths:
                   summary: Subscription is paused
                   value:
                     message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                requestOriginBulk:
-                  summary: Bulk endpoint called using Request Origin authentication
-                  value:
-                    message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
                 freePlanInclude:
                   summary: Free plan used with include=security
                   value:
@@ -4695,7 +4663,7 @@ paths:
             `lang` values return HTTP 400 on `/v3/astronomy`. On
             `/v3/astronomy/timeSeries` the value is not validated: on paid plans an
             unsupported value returns English names, and on a Free plan any value other
-            than `en` returns HTTP 401. Use lowercase codes. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
+            than `en` returns HTTP 401. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
           schema:
             type: string
             default: "en"
