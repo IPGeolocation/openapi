@@ -878,7 +878,7 @@
         "name": "lang",
         "in": "query",
         "required": false,
-        "description": "Language code for translated location names in the `location` object.\nOnly applies when the lookup is performed via an IP address.\n\nDefaults to `en`. Non-English responses require a paid plan.\nRequesting a non-English `lang` value on a Free/Developer plan\nreturns HTTP 401 (see the `freePlanLang` example under the 401\nresponse) rather than silently falling back to English. Unsupported\n`lang` values return HTTP 400 on `/v3/astronomy`. On\n`/v3/astronomy/timeSeries` the value is not validated: on paid plans an\nunsupported value returns English names, and on a Free plan any value\nother than `en` returns HTTP 401. Use lowercase codes.\n",
+        "description": "Language code for translated location names in the `location` object.\nOnly applies when the lookup is performed via an IP address.\n\nDefaults to `en`. Non-English responses require a paid plan.\nRequesting a non-English `lang` value on a Free/Developer plan\nreturns HTTP 401 (see the `freePlanLang` example under the 401\nresponse) rather than silently falling back to English. Unsupported\n`lang` values return HTTP 400 on `/v3/astronomy`. On\n`/v3/astronomy/timeSeries` the value is not validated: on Standard, Advanced and Security plans an unsupported value returns English names; on other plans (Free and legacy paid plans) any value other than `en` returns HTTP 401. Use lowercase codes.\n",
         "schema": {
           "type": "string",
           "default": "en",
