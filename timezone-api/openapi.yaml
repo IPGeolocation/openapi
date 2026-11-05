@@ -1020,7 +1020,7 @@ components:
         Language code for translated location names. Defaults to `en`. Supported values:
         `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. An
         unsupported value returns HTTP 400. On a Free plan, any value other than `en`
-        returns HTTP 401. Use lowercase codes.
+        returns HTTP 401.
       schema:
         type: string
         default: "en"

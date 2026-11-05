@@ -1099,7 +1099,7 @@ components:
         `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`; any
         other value returns HTTP 400. Non-English values need a paid plan; on the Free
         plan they return HTTP 401. On `/v3/ipgeo-bulk` an unsupported value is returned for each
-        entry as a `message` object inside the HTTP 200 array. Use lowercase codes.
+        entry as a `message` object inside the HTTP 200 array.
       schema:
         type: string
         default: "en"

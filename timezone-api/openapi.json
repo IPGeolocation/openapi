@@ -877,7 +877,7 @@
         "name": "lang",
         "in": "query",
         "required": false,
-        "description": "Language code for translated location names. Defaults to `en`. Supported values:\n`en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. An\nunsupported value returns HTTP 400. On a Free plan, any value other than `en`\nreturns HTTP 401. Use lowercase codes.\n",
+        "description": "Language code for translated location names. Defaults to `en`. Supported values:\n`en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. An\nunsupported value returns HTTP 400. On a Free plan, any value other than `en`\nreturns HTTP 401.\n",
         "schema": {
           "type": "string",
           "default": "en",

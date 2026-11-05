@@ -174,7 +174,7 @@ paths:
             `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`; any
             other value returns HTTP 400. Non-English values need a paid plan; on the Free
             plan they return HTTP 401. On `/v3/ipgeo-bulk` an unsupported value is returned for each
-            entry as a `message` object inside the HTTP 200 array. Use lowercase codes.
+            entry as a `message` object inside the HTTP 200 array.
 
           schema:
             type: string
@@ -718,7 +718,7 @@ paths:
             Language code for translated location names. Defaults to `en`. Supported values:
             `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. On
             `/v3/ipgeo-bulk`, an unsupported value does not fail the request: each entry is
-            returned as a `message` object inside the HTTP 200 array. Use lowercase codes.
+            returned as a `message` object inside the HTTP 200 array.
           schema:
             type: string
             default: "en"
@@ -2536,7 +2536,7 @@ paths:
             Language code for translated location names. Defaults to `en`. Supported values:
             `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. An
             unsupported value returns HTTP 400. On a Free plan, any value other than `en`
-            returns HTTP 401. Use lowercase codes.
+            returns HTTP 401.
           schema:
             type: string
             default: "en"
@@ -4234,7 +4234,7 @@ paths:
             Requesting a non-English `lang` value on a Free/Developer plan
             returns HTTP 401 (see the `freePlanLang` example under the 401
             response) rather than silently falling back to English. Unsupported
-            `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`. Use lowercase codes.
+            `lang` values return HTTP 400. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
           schema:
             type: string
             default: "en"
@@ -4663,7 +4663,7 @@ paths:
             `lang` values return HTTP 400 on `/v3/astronomy`. On
             `/v3/astronomy/timeSeries` the value is not validated: on paid plans an
             unsupported value returns English names, and on a Free plan any value other
-            than `en` returns HTTP 401. Use lowercase codes. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
+            than `en` returns HTTP 401. Language code. Supported values: `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`. Defaults to `en`.
           schema:
             type: string
             default: "en"

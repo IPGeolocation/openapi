@@ -751,7 +751,7 @@
         "name": "lang",
         "in": "query",
         "required": false,
-        "description": "Language code for translated location names. Defaults to `en`. Supported values:\n`en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`; any\nother value returns HTTP 400. Non-English values need a paid plan; on the Free\nplan they return HTTP 401. On `/v3/ipgeo-bulk` an unsupported value is returned for each\nentry as a `message` object inside the HTTP 200 array. Use lowercase codes.\n",
+        "description": "Language code for translated location names. Defaults to `en`. Supported values:\n`en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`; any\nother value returns HTTP 400. Non-English values need a paid plan; on the Free\nplan they return HTTP 401. On `/v3/ipgeo-bulk` an unsupported value is returned for each\nentry as a `message` object inside the HTTP 200 array.\n",
         "schema": {
           "type": "string",
           "default": "en",
