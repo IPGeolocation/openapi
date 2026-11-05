@@ -967,9 +967,9 @@ paths:
                     </ArrayList>
 
         "400":
-          $ref: "#/components/responses/BadRequest"
+          $ref: "#/components/responses/BadRequestBulk"
         "401":
-          $ref: "#/components/responses/Unauthorized"
+          $ref: "#/components/responses/UnauthorizedBulk"
         "402":
           $ref: "#/components/responses/PaymentRequired"
         "403":
@@ -1099,7 +1099,7 @@ components:
         `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`; any
         other value returns HTTP 400. Non-English values need a paid plan; on the Free
         plan they return HTTP 401. On `/v3/ipgeo-bulk` an unsupported value is returned for each
-        entry as a `message` object inside the HTTP 200 array.
+        entry as a `message` object inside the HTTP 200 array. Use lowercase codes.
       schema:
         type: string
         default: "en"
@@ -1269,17 +1269,7 @@ components:
         - The provided IPv4 address, IPv6 address, or domain name is invalid.
         - Special characters such as [ ] { } | ^ ` are present in the API URL,
           either in a parameter name or its value (especially in the API key).
-        - For the `ipgeo-bulk` endpoint:
-          - The request payload is empty or missing.
-          - The JSON body is malformed.
-          - The `ips` field is missing, is not a JSON array of strings, or the `ips` array is empty.
-          - More than 50,000 IP addresses are provided in the request.
         - An invalid or unsupported `lang` parameter is provided.
-
-        On the `ipgeo-bulk` endpoint, the whole request fails with HTTP 400 only for the
-        body problems listed above. An invalid IP address or domain name, or an
-        unsupported `lang`, does not fail the request: that entry is returned as an
-        object with only a `message` field inside the HTTP 200 array.
       content:
         application/json:
           schema:
@@ -1289,6 +1279,87 @@ components:
               summary: Invalid IPv4/IPv6/domain input
               value:
                 message: "Provided name, service or IP address '999.999.999.999' is not valid."
+            specialCharacters:
+              summary: Special characters in API URL or key
+              value:
+                message: "Invalid character found in the request target."
+            invalidLang:
+              summary: Unsupported lang parameter value
+              value:
+                message: "This 'zz' lang is not valid. Please use 'en' as the default language"
+
+    Unauthorized:
+      description: |
+        Unauthorized. Returned for one of the following reasons:
+
+        - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
+        - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+        - The account's email address has not been verified.
+        - The account has been locked due to abuse or illegal activity.
+        - The API request is made using an API key for a database subscription.
+        - The subscription is in a 'paused' state.
+        - The subscription trial has expired.
+        - Any of the following `include` values are used with a Free/Developer plan API key:
+          `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
+          `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
+        - A domain name lookup is performed using a Free subscription API key.
+        - A language other than English is specified in the `lang` parameter
+          while using a Free/Developer plan API key.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            missingApiKey:
+              summary: Missing API key
+              value:
+                message: "Please provide an API key (as 'apiKey=YOUR_API_KEY' URL parameter) to use IPGeolocation API. To get your free API Key, sign up at https://app.ipgeolocation.io/login"
+            invalidApiKey:
+              summary: Invalid API key
+              value:
+                message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+            unverifiedEmail:
+              summary: Email address not verified
+              value:
+                message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+            lockedAccount:
+              summary: Account locked
+              value:
+                message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+            databaseSubscriptionKey:
+              summary: Database subscription API key used for REST API
+              value:
+                message: "You cannot query IPGeolocation API on a database plan subscription."
+            pausedSubscription:
+              summary: Subscription is paused
+              value:
+                message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
+            freePlanInclude:
+              summary: Free plan used with include=security
+              value:
+                message: "IP-security lookup is not supported on your subscription. This feature is available on Paid subscriptions only."
+            freePlanDomain:
+              summary: Free plan used with domain lookup
+              value:
+                message: "IP to geolocation lookup for domain or service name is not supported on your current subscription. This feature is available to all paid subscriptions only."
+            freePlanLang:
+              summary: Free plan used with non-English lang value
+              value:
+                message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
+
+    BadRequestBulk:
+      description: |
+        Bad request. Returned for the whole request only when the body is missing or not
+        valid JSON, `ips` is missing, is not a JSON array, or is empty, or `ips` has more
+        than 50,000 entries, or when special characters such as [ ] { } | ^ ` are
+        present in the API URL, either in a parameter name or its value (especially in
+        the API key). An invalid IP or domain or an unsupported `lang` does not fail the
+        request: that entry is returned as a `message` object inside the HTTP 200 array.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
             specialCharacters:
               summary: Special characters in API URL or key
               value:
@@ -1313,31 +1384,21 @@ components:
               summary: Bulk body exceeds 50,000 entries
               value:
                 message: "No. of lookup queries cannot be more than 50000"
-            invalidLang:
-              summary: Unsupported lang parameter value
-              value:
-                message: "This 'zz' lang is not valid. Please use 'en' as the default language"
 
-    Unauthorized:
+    UnauthorizedBulk:
       description: |
         Unauthorized. Returned for one of the following reasons:
 
-        - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
-        - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+        - The `apiKey` URL parameter is missing.
+        - An invalid (random or incorrect) API key is provided.
         - The account's email address has not been verified.
         - The account has been locked due to abuse or illegal activity.
         - The API request is made using an API key for a database subscription.
         - The subscription is in a 'paused' state.
         - The subscription trial has expired.
-        - Any of the following `include` values are used with a Free/Developer plan API key:
-          `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
-          `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
         - The bulk IP geolocation endpoint is called using Request Origin (CORS)
           authentication. Bulk requests require an `apiKey` and cannot be authenticated
           using Request Origin alone.
-        - A domain name lookup is performed using a Free subscription API key.
-        - A language other than English is specified in the `lang` parameter
-          while using a Free/Developer plan API key.
       content:
         application/json:
           schema:
@@ -1371,18 +1432,6 @@ components:
               summary: Bulk endpoint called using Request Origin authentication
               value:
                 message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
-            freePlanInclude:
-              summary: Free plan used with include=security
-              value:
-                message: "IP-security lookup is not supported on your subscription. This feature is available on Paid subscriptions only."
-            freePlanDomain:
-              summary: Free plan used with domain lookup
-              value:
-                message: "IP to geolocation lookup for domain or service name is not supported on your current subscription. This feature is available to all paid subscriptions only."
-            freePlanLang:
-              summary: Free plan used with non-English lang value
-              value:
-                message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
 
     PaymentRequired:
       description: |
