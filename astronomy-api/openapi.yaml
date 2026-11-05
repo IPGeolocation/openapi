@@ -1088,9 +1088,7 @@ components:
         returns HTTP 401 (see the `freePlanLang` example under the 401
         response) rather than silently falling back to English. Unsupported
         `lang` values return HTTP 400 on `/v3/astronomy`. On
-        `/v3/astronomy/timeSeries` the value is not validated: on paid plans an
-        unsupported value returns English names, and on a Free plan any value
-        other than `en` returns HTTP 401. Use lowercase codes.
+        `/v3/astronomy/timeSeries` the value is not validated: on Standard, Advanced and Security plans an unsupported value returns English names; on other plans (Free and legacy paid plans) any value other than `en` returns HTTP 401. Use lowercase codes.
       schema:
         type: string
         default: "en"
