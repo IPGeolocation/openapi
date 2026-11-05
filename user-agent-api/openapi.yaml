@@ -600,9 +600,9 @@ paths:
                 </ArrayList>
 
         "400":
-          $ref: "#/components/responses/BadRequest"
+          $ref: "#/components/responses/BadRequestBulk"
         "401":
-          $ref: "#/components/responses/Unauthorized"
+          $ref: "#/components/responses/UnauthorizedBulk"
         "402":
           $ref: "#/components/responses/PaymentRequired"
         "403":
@@ -672,21 +672,14 @@ components:
         Bad Request. Returned for one of the following reasons:
         - Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
         - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
-        - The JSON body has no `uaStrings` field (or it is `null`) when calling
-          `/v3/user-agent-bulk`. An empty array is not an error: it returns HTTP 200
-          with `[]` and 0 credits.
-        - The `uaStrings` array contains a `null` or blank entry when calling
-          `/v3/user-agent-bulk` (`'userAgentString' must not be empty or null`). The whole
-          request fails and nothing is charged.
-        - More than 50,000 user agent strings are provided in a single bulk request.
-        - The request body is not valid JSON (`Malformed JSON request or invalid field`) or
-          `uaStrings` is not a JSON array of strings.
+        - The request body is not valid JSON (`Malformed JSON request or invalid field`)
+          when calling `/v3/user-agent`(POST).
         - No `User-Agent` header is present when calling `GET /v3/user-agent`. Unlike the
           POST body, there is no alternative way to supply the string for this call, so a
           missing/blank header always fails validation.
 
-        Request body validation (malformed JSON, a missing or blank `uaString`, a missing
-        `uaStrings` field, more than 50,000 entries) runs before the API key is checked.
+        Request body validation (malformed JSON, a missing or blank `uaString`) runs before
+        the API key is checked.
       content:
         application/json:
           schema:
@@ -704,6 +697,35 @@ components:
               summary: Missing User-Agent header on GET
               value:
                 message: "'userAgentString' must not be empty or null"
+            malformedJson:
+              summary: Request body is not valid JSON
+              value:
+                message: "Malformed JSON request or invalid field"
+
+    BadRequestBulk:
+      description: |
+        Bad Request. Returned for one of the following reasons:
+        - Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
+        - The JSON body has no `uaStrings` field (or it is `null`). An empty array is not
+          an error: it returns HTTP 200 with `[]` and 0 credits.
+        - The `uaStrings` array contains a `null` or blank entry
+          (`'userAgentString' must not be empty or null`). The whole request fails and
+          nothing is charged.
+        - More than 50,000 user agent strings are provided in a single bulk request.
+        - The request body is not valid JSON (`Malformed JSON request or invalid field`) or
+          `uaStrings` is not a JSON array of strings.
+
+        Request body validation (malformed JSON, a missing `uaStrings` field, more than
+        50,000 entries) runs before the API key is checked.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            specialCharacters:
+              summary: Invalid special characters in request
+              value:
+                message: "Invalid character found in the request target."
             emptyBulkList:
               summary: Missing uaStrings field
               value:
@@ -735,9 +757,8 @@ components:
         - The account has been locked due to abuse or illegal activity.
         - Requests are made after the subscription trial has expired.
         - The subscription is paused.
-        - A paid feature is accessed using a free subscription.
-        - The bulk user agent parsing endpoint is called using a free subscription API key.
-        - The bulk user agent parsing endpoint is called using Request Origin (CORS) authentication. Bulk requests require an `apiKey`.
+        - `POST /v3/user-agent` (custom user agent string in the request body) is called
+          using a free subscription API key.
       content:
         application/json:
           schema:
@@ -775,6 +796,52 @@ components:
               summary: Paid feature accessed on free plan
               value:
                 message: "Custom User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
+
+    UnauthorizedBulk:
+      description: |
+        Unauthorized. Returned for one of the following reasons:
+        - The `apiKey` URL parameter is missing from the request.
+        - The provided API key is not valid.
+        - The request is made using an API key of a database subscription.
+        - The account's email address has not been verified.
+        - The account has been locked due to abuse or illegal activity.
+        - Requests are made after the subscription trial has expired.
+        - The subscription is paused.
+        - The bulk user agent parsing endpoint is called using a free subscription API key.
+        - The bulk user agent parsing endpoint is called using Request Origin (CORS) authentication. Bulk requests require an `apiKey`.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            missingApiKey:
+              summary: Missing API key
+              value:
+                message: "Please provide an API key (as 'apiKey=YOUR_API_KEY' URL parameter) to use IPGeolocation API. To get your free API Key, sign up at https://app.ipgeolocation.io/login"
+            invalidApiKey:
+              summary: Invalid API key
+              value:
+                message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+            databaseSubscriptionKey:
+              summary: Database subscription API key used
+              value:
+                message: "You cannot query IPGeolocation API on a database plan subscription."
+            unverifiedEmail:
+              summary: Email address not verified
+              value:
+                message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+            lockedAccount:
+              summary: Account locked
+              value:
+                message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+            expiredTrial:
+              summary: Subscription trial expired
+              value:
+                message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
+            pausedSubscription:
+              summary: Subscription is paused
+              value:
+                message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
             bulkOnFreePlan:
               summary: Bulk endpoint called with free subscription key
               value:

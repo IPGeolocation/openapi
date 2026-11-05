@@ -716,6 +716,43 @@
               }
             }
           },
+          "404": {
+            "description": "Not found. Returned when a path segment is added after `/v3/getip` (for\nexample `/v3/getip/8.8.8.8`). This endpoint takes no path variables.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "message": "No endpoint GET /v3/getip/8.8.8.8."
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Method Not Allowed. Only the `GET` method is supported for this endpoint.\nCalling it with an HTTP method it doesn't support (for example `POST`, `PUT`\nor `DELETE`) results in HTTP 405.\n",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "postNotAllowed": {
+                    "summary": "POST method used",
+                    "value": {
+                      "message": "Request method 'POST' is not supported"
+                    }
+                  },
+                  "unsupportedMethod": {
+                    "summary": "Unsupported HTTP method",
+                    "value": {
+                      "message": "Request method 'PUT' is not supported"
+                    }
+                  }
+                }
+              }
+            }
+          },
           "499": {
             "$ref": "#/components/responses/ClientClosedRequest"
           },

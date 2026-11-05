@@ -1063,6 +1063,34 @@ paths:
                   JSON or XML.
                 example: "8.8.8.8"
               example: "8.8.8.8"
+        "404":
+          description: |
+            Not found. Returned when a path segment is added after `/v3/getip` (for
+            example `/v3/getip/8.8.8.8`). This endpoint takes no path variables.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                message: "No endpoint GET /v3/getip/8.8.8.8."
+        "405":
+          description: |
+            Method Not Allowed. Only the `GET` method is supported for this endpoint.
+            Calling it with an HTTP method it doesn't support (for example `POST`, `PUT`
+            or `DELETE`) results in HTTP 405.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                postNotAllowed:
+                  summary: POST method used
+                  value:
+                    message: "Request method 'POST' is not supported"
+                unsupportedMethod:
+                  summary: Unsupported HTTP method
+                  value:
+                    message: "Request method 'PUT' is not supported"
         "499":
           $ref: "#/components/responses/ClientClosedRequest"
         "500":

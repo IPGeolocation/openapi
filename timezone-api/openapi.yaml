@@ -1199,7 +1199,9 @@ components:
         metadata for the specified timezone.
 
         If multiple lookup parameters are provided in the same request,
-        the `tz` parameter takes the highest priority.
+        the `tz` parameter takes the highest priority. An `ip` sent with `tz` is
+        still validated: an invalid IP returns HTTP 400 and a bogon or private IP
+        returns HTTP 423.
 
         Example identifiers include `Europe/London`, `America/New_York`,
         and `Asia/Tokyo`.

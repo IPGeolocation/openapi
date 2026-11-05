@@ -1028,7 +1028,7 @@
         "name": "tz",
         "in": "query",
         "required": false,
-        "description": "IANA timezone identifier, e.g. `Europe/London`. The value is case-sensitive on\nthis endpoint. (On `/v3/timezone/convert`, `tz_from` and `tz_to` are\ncase-insensitive.)\n\nWhen provided, the API returns the current date, time, and timezone\nmetadata for the specified timezone.\n\nIf multiple lookup parameters are provided in the same request,\nthe `tz` parameter takes the highest priority.\n\nExample identifiers include `Europe/London`, `America/New_York`,\nand `Asia/Tokyo`.\n",
+        "description": "IANA timezone identifier, e.g. `Europe/London`. The value is case-sensitive on\nthis endpoint. (On `/v3/timezone/convert`, `tz_from` and `tz_to` are\ncase-insensitive.)\n\nWhen provided, the API returns the current date, time, and timezone\nmetadata for the specified timezone.\n\nIf multiple lookup parameters are provided in the same request,\nthe `tz` parameter takes the highest priority. An `ip` sent with `tz` is\nstill validated: an invalid IP returns HTTP 400 and a bogon or private IP\nreturns HTTP 423.\n\nExample identifiers include `Europe/London`, `America/New_York`,\nand `Asia/Tokyo`.\n",
         "schema": {
           "type": "string"
         },

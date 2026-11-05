@@ -457,9 +457,9 @@ paths:
                 </ArrayList>
 
         "400":
-          $ref: "#/components/responses/BadRequest"
+          $ref: "#/components/responses/BadRequestBulk"
         "401":
-          $ref: "#/components/responses/Unauthorized"
+          $ref: "#/components/responses/UnauthorizedBulk"
         "402":
           $ref: "#/components/responses/PaymentRequired"
         "403":
@@ -605,11 +605,6 @@ components:
           other non-IP string.
         - Special characters such as [ ] { } | ^ ` are present in the API URL,
           either in a parameter name or its value (especially in the API key).
-        - For the `security-bulk` endpoint:
-          - The request payload is empty or missing.
-          - The JSON body is malformed.
-          - The `ips` field is missing, is not a JSON array of strings, or the `ips` array is empty.
-          - More than 50,000 IP addresses are provided in the request.
       content:
         application/json:
           schema:
@@ -619,6 +614,24 @@ components:
               summary: Invalid IPv4/IPv6 input
               value:
                 message: "Provided IP address '999.999.999.999' is not valid."
+            specialCharacters:
+              summary: Special characters in API URL or key
+              value:
+                message: "Invalid character found in the request target."
+
+    BadRequestBulk:
+      description: |
+        Bad request. Returned for the whole request only when the body is missing or not
+        valid JSON, `ips` is missing, is not a JSON array, or is empty, or `ips` has more
+        than 50,000 entries, or when special characters such as [ ] { } | ^ ` are
+        present in the API URL, either in a parameter name or its value (especially in
+        the API key). An invalid IP does not fail the request: that entry is returned as
+        a `message` object inside the HTTP 200 array.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
             specialCharacters:
               summary: Special characters in API URL or key
               value:
@@ -656,10 +669,6 @@ components:
         - The API request is made using a free subscription API key.
         - The subscription is in a 'paused' state.
         - The subscription trial has expired.
-        - The bulk IP security lookup endpoint is called using a free subscription API key.
-        - The bulk IP security lookup endpoint is called using Request Origin (CORS)
-          authentication. Bulk requests require an `apiKey` and cannot be authenticated
-          using Request Origin alone.
       content:
         application/json:
           schema:
@@ -694,6 +703,61 @@ components:
               summary: Free subscription used for single IP Security lookup
               value:
                 message: "IP Security Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
+
+            pausedSubscription:
+              summary: Subscription is paused
+              value:
+                message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
+
+            trialExpired:
+              summary: Subscription trial has expired
+              value:
+                message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
+
+    UnauthorizedBulk:
+      description: |
+        Unauthorized. Returned for one of the following reasons:
+
+        - The `apiKey` URL parameter is missing.
+        - An invalid (random or incorrect) API key is provided.
+        - The account's email address has not been verified.
+        - The account has been locked due to abuse or illegal activity.
+        - The API request is made using an API key for a database subscription.
+        - The subscription is in a 'paused' state.
+        - The subscription trial has expired.
+        - The bulk IP security lookup endpoint is called using a free subscription API key.
+        - The bulk IP security lookup endpoint is called using Request Origin (CORS)
+          authentication. Bulk requests require an `apiKey` and cannot be authenticated
+          using Request Origin alone.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            missingApiKey:
+              summary: Missing API key
+              value:
+                message: "Please provide an API key (as 'apiKey=YOUR_API_KEY' URL parameter) to use IPGeolocation API. To get your free API Key, sign up at https://app.ipgeolocation.io/login"
+
+            invalidApiKey:
+              summary: Invalid API key
+              value:
+                message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+
+            unverifiedEmail:
+              summary: Email address not verified
+              value:
+                message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+
+            lockedAccount:
+              summary: Account locked
+              value:
+                message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+
+            databaseSubscriptionKey:
+              summary: Database subscription API key used for REST API
+              value:
+                message: "You cannot query IPGeolocation API on a database plan subscription."
 
             freePlanAccessBulk:
               summary: Free subscription used for bulk IP Security lookup
