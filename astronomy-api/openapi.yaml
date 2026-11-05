@@ -1163,7 +1163,7 @@ components:
       description: |
         Not Found. Returned for one of the following reasons:
           - If the IPv4 or IPv6 address is passed as a path variable instead
-            of a URL parameter (`ip=`).
+            of as a URL parameter (`ip=`).
           - If the location address provided to the `location` parameter is
             invalid. A city-level or state-level address must be provided.
           - If the wrong endpoint is called that does not exist in the API.
@@ -1185,7 +1185,7 @@ components:
       description: |
         Not Found. Returned for one of the following reasons:
           - If the IPv4 or IPv6 address is passed as a path variable instead
-            of a URL parameter (`ip=`).
+            of as a URL parameter (`ip=`).
           - If the location address provided to the `location` parameter is
             invalid. A city-level or state-level address must be provided.
           - If the wrong endpoint is called that does not exist in the API.

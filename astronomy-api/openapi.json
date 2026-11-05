@@ -916,7 +916,7 @@
     },
     "responses": {
       "NotFound": {
-        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of a URL parameter (`ip=`).\n  - If the location address provided to the `location` parameter is\n    invalid. A city-level or state-level address must be provided.\n  - If the wrong endpoint is called that does not exist in the API.\n",
+        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of as a URL parameter (`ip=`).\n  - If the location address provided to the `location` parameter is\n    invalid. A city-level or state-level address must be provided.\n  - If the wrong endpoint is called that does not exist in the API.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -940,7 +940,7 @@
         }
       },
       "NotFoundTimeSeries": {
-        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of a URL parameter (`ip=`).\n  - If the location address provided to the `location` parameter is\n    invalid. A city-level or state-level address must be provided.\n  - If the wrong endpoint is called that does not exist in the API.\n",
+        "description": "Not Found. Returned for one of the following reasons:\n  - If the IPv4 or IPv6 address is passed as a path variable instead\n    of as a URL parameter (`ip=`).\n  - If the location address provided to the `location` parameter is\n    invalid. A city-level or state-level address must be provided.\n  - If the wrong endpoint is called that does not exist in the API.\n",
         "content": {
           "application/json": {
             "schema": {

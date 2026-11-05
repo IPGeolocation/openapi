@@ -734,7 +734,7 @@
         "description": "HTTP Version Not Supported. Returned by the edge proxy in front of the API,\nnot by the API application, when the request uses an HTTP protocol version\nit does not support. The response body is set by the proxy.\n"
       },
       "NotFoundTimezone": {
-        "description": "Not found. Returned for one of the following reasons:\n- If the IPv4, IPv6 address passed as a path variable, instead of url parameter as ip=.\n\n- If the location address provided to the `location` parameter is invalid. A city-level or state-level address must be provided.\n\n- If the provided UN/LOCODE, IATA code or ICAO code to the query parameters `lo_code`, `iata_code`, or `icao_code` does not exist in our database.\n\n- If the wrong endpoint is called, that does not exist in our API.\n",
+        "description": "Not found. Returned for one of the following reasons:\n- If an IPv4 or IPv6 address is passed as a path variable instead of as a URL parameter (`ip=`).\n\n- If the location address provided to the `location` parameter is invalid. A city-level or state-level address must be provided.\n\n- If the provided UN/LOCODE, IATA code or ICAO code to the query parameters `lo_code`, `iata_code`, or `icao_code` does not exist in our database.\n\n- If the wrong endpoint is called, that does not exist in our API.\n",
         "content": {
           "application/json": {
             "schema": {
