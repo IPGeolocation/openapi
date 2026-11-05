@@ -12,14 +12,16 @@ info:
     spam, phishing, DDoS attacks, IP spoofing, and other network abuse to the
     responsible network operator.
 
-    One endpoint is available:
+    Two endpoints are available:
 
-    - **Abuse lookup** (`GET /v3/abuse`) returns abuse contact information for a
+    - **Single lookup** (`GET /v3/abuse`) returns abuse contact information for a
       single IPv4 or IPv6 address per request.
+    - **Bulk lookup** (`POST /v3/abuse-bulk`) accepts up to 50,000 IPs in a
+      single request.
 
-    Use query parameters to control which fields are returned and which fields are
-    excluded from the response to reduce payload size when only specific data
-    is required.
+    Both endpoints support the `fields`, `excludes` and `output` parameters to
+    control which fields are returned and reduce payload size when only specific
+    data is required.
 
     ## Authentication
 
@@ -36,7 +38,7 @@ info:
     Available on paid plans only. Whitelist your domain in the dashboard under the
     "API Keys" section. Once configured, requests from that domain (and all its subdomains)
     are accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),
-    not the full URL.
+    not the full URL. Bulk requests (`POST /v3/abuse-bulk`) always require an `apiKey`.
 
     Each plan has a limit on the number of extra API keys and request origins:
 
@@ -65,8 +67,9 @@ info:
 
     If neither is specified, the response is returned as JSON. If both are set, the
     `Accept` header takes precedence for successful responses and authentication errors
-    (see the `output` parameter). XML responses use a
-    `LinkedHashMap` root element.
+    (see the `output` parameter). Single lookup XML responses use a
+    `LinkedHashMap` root element; bulk XML responses use an `ArrayList` root with
+    one `item` element per entry.
 
     ## Credit Usage
 
@@ -74,6 +77,13 @@ info:
     credits consumed by a request is returned in the `X-Credits-Charged` response header.
 
     A **single IP abuse contact lookup** (`GET /v3/abuse`) consumes **1 credit** per request.
+    For **bulk lookups** (`POST /v3/abuse-bulk`), **1 credit is charged for each IP that
+    returns abuse contact data**.
+
+    For bulk requests, the total credits charged equal the number of IPs that return
+    abuse contact data multiplied by the per-IP credit cost. Entries returned as a
+    `message` object (malformed, empty, null, private or bogon IPs, and IPs with no
+    abuse contact in the database) do not consume credits.
 
     ## Field Filtering
 
@@ -89,7 +99,8 @@ info:
     ## Plan Availability and Usage Limits
 
     The IP Abuse Contact API is available **only on paid plans** and costs
-    **1 credit** per successful lookup.
+    **1 credit** per successful lookup (bulk: 1 credit per IP that returns abuse
+    contact data).
 
     Billing is based on API credits, not requests. Each billing period includes a
     fixed credit allowance. After the allowance is exhausted, requests continue
@@ -209,6 +220,174 @@ paths:
           $ref: "#/components/responses/MethodNotAllowed"
         "423":
           $ref: "#/components/responses/Locked"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "499":
+          $ref: "#/components/responses/ClientClosedRequest"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+        "505":
+          $ref: "#/components/responses/HttpVersionNotSupported"
+
+  /v3/abuse-bulk:
+    post:
+      operationId: bulkLookupIpAbuseContact
+      summary: Bulk IP abuse contact lookup
+      description: |
+        Returns abuse contact information for up to **50,000 IPv4 or IPv6
+        addresses** in a single request.
+
+        The request body must contain an `ips` array.
+
+        Each IP is processed independently, and surrounding spaces are trimmed. Invalid,
+        empty, null, bogon, or private entries, and IPs with no abuse contact in the
+        database, return an object containing only a `message` field; the rest of the
+        request still succeeds.
+
+        Credits are charged **per IP that returns abuse contact data**, using the same
+        pricing as the single lookup endpoint (1 credit per IP).
+
+        When the number of entries that returned abuse contact data is lower than the
+        number of submitted entries, the response header `X-Successful-Record` gives
+        that number.
+
+        Bulk requests require an `apiKey`; they cannot be authenticated using Request
+        Origin alone.
+
+        Only the `POST` method is supported for this endpoint.
+      tags:
+        - IP Abuse Contact
+      parameters:
+        - $ref: "#/components/parameters/Fields"
+        - $ref: "#/components/parameters/Excludes"
+        - $ref: "#/components/parameters/Output"
+      requestBody:
+        required: true
+        description: |
+          A JSON object containing an `ips` array. Each element is a string representing
+          an IPv4 address or IPv6 address. The array must not be empty and
+          must not contain more than 50,000 entries.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkAbuseRequest"
+            examples:
+              mixedIps:
+                summary: Mixed IPv4 and IPv6
+                value:
+                  ips:
+                    - "1.0.0.0"
+                    - "91.128.103.196"
+                    - "2607:fb91:16c6:8860:e531:2d1d:4944:6c7c"
+              ipv4Only:
+                summary: Multiple IPv4 addresses
+                value:
+                  ips:
+                    - "1.0.0.0"
+                    - "49.12.0.0"
+      responses:
+        "200":
+          description: |
+            An array of results, one per input IP address, in the same order as the
+            request `ips` array.
+
+            Successful entries return an abuse contact lookup object containing the IP
+            address and its abuse contact information.
+
+            Invalid, empty, null, private, or bogon entries, and IPs with no abuse contact
+            in the database, return an object containing only a `message` field; the rest
+            of the request still succeeds.
+
+            The `X-Successful-Record` response header is returned only when the number
+            of entries that returned abuse contact data is lower than the number of
+            submitted entries, and gives that number.
+          headers:
+            X-Credits-Charged:
+              description: |
+                Total number of API credits consumed. Equals 1 credit multiplied by the
+                count of IPs that returned abuse contact data.
+              schema:
+                type: number
+                example: 1
+            X-Successful-Record:
+              description: |
+                Number of IP addresses that returned abuse contact data in this bulk
+                request. Entries returned as a `message` object are not counted. This
+                header is included only when this number is lower than the number of
+                submitted entries.
+              schema:
+                type: number
+                example: 1
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BulkAbuseResponseItem"
+              example:
+                - ip: "1.0.0.0"
+                  abuse:
+                    route: "1.0.0.0/24"
+                    country: "AU"
+                    name: "IRT-APNICRANDNET-AU"
+                    organization: ""
+                    kind: "group"
+                    address: "PO Box 3646, South Brisbane, QLD 4101, Australia"
+                    emails:
+                      - "helpdesk@apnic.net"
+                    phone_numbers:
+                      - "+61738583100"
+                - message: "'10.0.0.1' is a bogon IP address."
+            application/xml:
+              schema:
+                type: array
+                xml:
+                  name: ArrayList
+                  wrapped: true
+                items:
+                  $ref: "#/components/schemas/BulkAbuseResponseItem"
+                  xml:
+                    name: item
+              example: |
+                <ArrayList>
+                  <item>
+                    <ip>1.0.0.0</ip>
+                    <abuse>
+                        <route>1.0.0.0/24</route>
+                        <country>AU</country>
+                        <name>IRT-APNICRANDNET-AU</name>
+                        <organization></organization>
+                        <kind>group</kind>
+                        <address>PO Box 3646, South Brisbane, QLD 4101, Australia</address>
+                        <emails>helpdesk@apnic.net</emails>
+                        <phone_numbers>+61738583100</phone_numbers>
+                    </abuse>
+                  </item>
+                  <item>
+                      <message>'10.0.0.1' is a bogon IP address.</message>
+                  </item>
+                </ArrayList>
+
+        "400":
+          $ref: "#/components/responses/BadRequestBulk"
+        "401":
+          $ref: "#/components/responses/UnauthorizedBulk"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "405":
+          $ref: "#/components/responses/MethodNotAllowed"
+        "413":
+          $ref: "#/components/responses/PayloadTooLarge"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
         "429":
           $ref: "#/components/responses/TooManyRequests"
         "499":
@@ -407,6 +586,101 @@ components:
               value:
                 message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
 
+    BadRequestBulk:
+      description: |
+        Bad request. Returned for the whole request only when the body is missing or not
+        valid JSON, `ips` is missing, is not a JSON array, or is empty, or `ips` has more
+        than 50,000 entries, or when special characters such as [ ] { } | ^ ` are
+        present in the API URL, either in a parameter name or its value (especially in
+        the API key). An invalid IP does not fail the request: that entry is returned as
+        a `message` object inside the HTTP 200 array.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            specialCharacters:
+              summary: Special characters in API URL or key
+              value:
+                message: "Invalid character found in the request target."
+            malformedJson:
+              summary: Malformed JSON body for bulk endpoint
+              value:
+                message: "Malformed JSON request or invalid field"
+            missingIps:
+              summary: Bulk body missing ips field
+              value:
+                message: "IP addresses for bulk lookup are missing"
+            ipsNotArray:
+              summary: Bulk ips field is not a JSON array
+              value:
+                message: "'ips' must be a JSON array of strings, e.g. {\"ips\": [\"value1\", \"value2\"]}"
+            emptyBulkIps:
+              summary: Bulk ips array is empty
+              value:
+                message: "'ipList' must not be empty or null"
+            tooManyBulkEntries:
+              summary: Bulk body exceeds 50,000 entries
+              value:
+                message: "No. of lookup queries cannot be more than 50000"
+
+    UnauthorizedBulk:
+      description: |
+        Unauthorized. Returned for one of the following reasons:
+
+        - The `apiKey` URL parameter is missing.
+        - An invalid (random or incorrect) API key is provided.
+        - The account's email address has not been verified.
+        - The account has been locked due to abuse or illegal activity.
+        - The API request is made using an API key for a database subscription.
+        - The subscription is in a 'paused' state.
+        - The subscription trial has expired.
+        - The bulk abuse contact lookup endpoint is called using a free subscription API key.
+        - The bulk abuse contact lookup endpoint is called using Request Origin (CORS)
+          authentication. Bulk requests require an `apiKey` and cannot be authenticated
+          using Request Origin alone.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            missingApiKey:
+              summary: Missing API key
+              value:
+                message: "Please provide an API key (as 'apiKey=YOUR_API_KEY' URL parameter) to use IPGeolocation API. To get your free API Key, sign up at https://app.ipgeolocation.io/login"
+            invalidApiKey:
+              summary: Invalid API key
+              value:
+                message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+            unverifiedEmail:
+              summary: Email address not verified
+              value:
+                message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+            lockedAccount:
+              summary: Account locked
+              value:
+                message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+            databaseSubscriptionKey:
+              summary: Database subscription API key used for REST API
+              value:
+                message: "You cannot query IPGeolocation API on a database plan subscription."
+            freePlanAccessBulk:
+              summary: Free subscription used for bulk abuse contact lookup
+              value:
+                message: "Bulk Abuse Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
+            pausedSubscription:
+              summary: Subscription is paused
+              value:
+                message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
+            trialExpired:
+              summary: Subscription trial has expired
+              value:
+                message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
+            requestOriginBulk:
+              summary: Bulk endpoint called using Request Origin authentication
+              value:
+                message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
+
     PaymentRequired:
       description: |
         Payment Required. Returned for a paid (non-Free) subscription whose active-until
@@ -469,22 +743,65 @@ components:
         Method Not Allowed. Returned when an unsupported HTTP method is used
         to call an endpoint.
 
-        Only the **GET** method is supported for the Abuse Contact API endpoint.
+        Only GET and POST methods are supported:
 
-        Calling an endpoint with an HTTP method it doesn't support (for example `PUT` or `DELETE`) results in HTTP 405.
+        - `GET` is allowed for the `abuse` endpoint.
+        - `POST` is allowed for the `abuse-bulk` endpoint.
+
+        Calling an endpoint with an HTTP method it doesn't support (for example `PUT` or `DELETE`), or using the correct method on
+        the wrong endpoint, results in HTTP 405.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           examples:
-            postNotAllowed:
-              summary: POST method used
+            getNotAllowedForBulk:
+              summary: GET used on bulk endpoint
+              value:
+                message: "Request method 'GET' is not supported"
+            postNotAllowedForSingle:
+              summary: POST used on single lookup endpoint
               value:
                 message: "Request method 'POST' is not supported"
             unsupportedMethod:
               summary: Unsupported HTTP method
               value:
                 message: "Request method 'PUT' is not supported"
+
+    PayloadTooLarge:
+      description: |
+        Payload too large. Returned by the edge proxy (nginx) when raw POST body size
+        exceeds configured limits before the request reaches the application.
+
+        This status is based on payload byte size, not on the number of IP entries. It
+        can occur even when `ips` contains only one very large value.
+
+        If both conditions apply (oversized body and `ips` count > 50,000), HTTP 413 may
+        be returned first because edge validation runs before application-level checks.
+      content:
+        text/html:
+          schema:
+            type: string
+          example: |
+            <html>
+              <head>
+                <title>413 Request Entity Too Large</title>
+              </head>
+              <body>
+                <center><h1>413 Request Entity Too Large</h1></center>
+                <hr><center>nginx/1.24.0 (Ubuntu)</center>
+              </body>
+            </html>
+
+    UnsupportedMediaType:
+      description: |
+        Unsupported media type. The `Content-Type` header is not set to `application/json`.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Content-Type 'application/x-www-form-urlencoded' is not supported"
 
     Locked:
       description: |
@@ -586,7 +903,68 @@ components:
           type: string
           description: Human-readable explanation of what went wrong. Use HTTP status for control flow.
           example: "Provided IP address '999.999.999.999' is not valid."
-      
+
+    BulkAbuseRequest:
+      type: object
+      description: |
+        Request body for the bulk abuse contact lookup. Contains a single `ips` field
+        with an array of IP addresses to look up.
+      required:
+        - ips
+      properties:
+        ips:
+          type: array
+          description: |
+            Array of IPv4 addresses or IPv6 addresses to look up.
+            Must not be empty. Maximum 50,000 entries per request. Each entry is
+            resolved independently, so you can mix IPv4 and IPv6 freely.
+          minItems: 1
+          maxItems: 50000
+          items:
+            type: string
+          example:
+            - "1.0.0.0"
+            - "91.128.103.196"
+            - "2607:fb91:16c6:8860:e531:2d1d:4944:6c7c"
+
+    BulkAbuseResponseItem:
+      description: |
+        A single element in the bulk lookup response array. Each element is either a
+        full abuse contact lookup object or an error object containing only `message`.
+      oneOf:
+        - $ref: "#/components/schemas/BulkAbuseSuccessItem"
+        - $ref: "#/components/schemas/BulkAbuseErrorItem"
+
+    BulkAbuseSuccessItem:
+      type: object
+      required:
+        - ip
+        - abuse
+      properties:
+        ip:
+          type: string
+          description: IP address for this lookup result.
+          example: "1.0.0.0"
+        abuse:
+          $ref: "#/components/schemas/Abuse"
+
+    BulkAbuseErrorItem:
+      type: object
+      description: |
+        Error object returned for an entry in the bulk lookup request that has no abuse
+        contact data (invalid, empty, null, private or bogon IP, or an IP with no abuse
+        contact in the database). Contains only a `message` field. Note: unlike success
+        entries, error entries do NOT include the original `ip` field, so the only way to
+        correlate errors to inputs is by array index. The response array preserves the
+        same order as the request `ips` array.
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Human-readable error for the specific bulk entry.
+          example: "Provided IP address 'invalid-ip' is not valid."
+
     AbuseLookupResponse:
       type: object
       xml:
@@ -672,10 +1050,16 @@ components:
 tags:
   - name: IP Abuse Contact
     description: |
-      API endpoint for retrieving abuse contact information associated
+      API endpoints for retrieving abuse contact information associated
       with IPv4 and IPv6 addresses. The response contains registry-based
       contact details for reporting malicious or abusive network activity
       such as spam, phishing, DDoS attacks, or unauthorized access attempts.
+
+      The single lookup endpoint (`GET /v3/abuse`) returns one IP per
+      request.
+
+      The bulk lookup endpoint (`POST /v3/abuse-bulk`) accepts up to
+      50,000 IP addresses per request.
     externalDocs:
       description: IP Abuse Contact API documentation
       url: https://ipgeolocation.io/documentation/ip-abuse-contact-api.html

@@ -820,6 +820,34 @@
               "body": "{\n  \"ip\": \"8.8.8.8\"\n}"
             },
             {
+              "name": "404 Not Found – Path segment after /v3/getip",
+              "originalRequest": {},
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"No endpoint GET /v3/getip/8.8.8.8.\"\n}"
+            },
+            {
+              "name": "405 Method Not Allowed – POST used",
+              "originalRequest": {},
+              "status": "Method Not Allowed",
+              "code": 405,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Request method 'POST' is not supported\"\n}"
+            },
+            {
               "name": "499 Client Closed Request – logged by the edge proxy, no response body",
               "originalRequest": {},
               "status": "Client Closed Request",
@@ -1790,7 +1818,7 @@
     },
     {
       "name": "Abuse Contact API",
-      "description": "API endpoint for retrieving abuse contact information associated\nwith IPv4 and IPv6 addresses. The response contains registry-based\ncontact details for reporting malicious or abusive network activity\nsuch as spam, phishing, DDoS attacks, or unauthorized access attempts.",
+      "description": "API endpoints for retrieving abuse contact information associated\nwith IPv4 and IPv6 addresses. The response contains registry-based\ncontact details for reporting malicious or abusive network activity\nsuch as spam, phishing, DDoS attacks, or unauthorized access attempts.\n\nThe single lookup endpoint (`GET /v3/abuse`) returns one IP per\nrequest.\n\nThe bulk lookup endpoint (`POST /v3/abuse-bulk`) accepts up to\n50,000 IP addresses per request.",
       "item": [
         {
           "name": "IP Abuse Contact Lookup",
@@ -2073,6 +2101,348 @@
               "body": "{\n  \"message\": \"We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io\"\n}"
             }
           ]
+        },
+        {
+          "name": "Bulk IP Abuse Contact Lookup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "https://api.ipgeolocation.io/v3/abuse-bulk",
+              "protocol": "https",
+              "host": [
+                "api",
+                "ipgeolocation",
+                "io"
+              ],
+              "path": [
+                "v3",
+                "abuse-bulk"
+              ],
+              "query": [
+                {
+                  "key": "fields",
+                  "value": "abuse.name,abuse.organization",
+                  "description": "Comma-separated list of fields or objects to return. Everything else is omitted. The `ip` field is always returned regardless of this filter.  Supports dot-notation for nested fields: `abuse.route`, `abuse.organization`.  If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and it is left out of the response. An object left with no fields after `excludes` is removed.  If you list both an object key and one of its nested fields separated by comma (e.g. `abuse,abuse.name`), the full object is returned.  Unknown field paths are ignored. The API still returns HTTP 200. If no name in `fields` is a real field, the full response is returned.  This parameter only has an effect once a request is authorized; the Abuse Contact API as a whole requires a paid plan.",
+                  "disabled": true
+                },
+                {
+                  "key": "excludes",
+                  "value": "abuse.address,abuse.emails",
+                  "description": "Comma-separated list of fields or objects to remove from the response. The `ip` field cannot be excluded.  Supports dot-notation for nested fields: `abuse.name`.  If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and it is left out of the response. An object left with no fields after `excludes` is removed.  Unknown fields or object keys in `excludes` are ignored. The API still returns HTTP 200.  This parameter only has an effect once a request is authorized; the Abuse Contact API as a whole requires a paid plan.",
+                  "disabled": true
+                },
+                {
+                  "key": "output",
+                  "value": "json",
+                  "description": "Desired response format. Defaults to `json` if not specified. You can also control the format using the `Accept` header (`application/json`, `application/xml`, or `text/xml`). For successful responses and authentication errors, the `Accept` header takes precedence if both are provided: `output` is used only when the `Accept` header is absent or set to `*/*`, and an `Accept` value other than `application/xml` or `text/xml` (for example a browser's default) returns JSON even with `output=xml`. Values are matched exactly (use lowercase `xml`). The requests in this collection send `Accept: application/json`, so disable that header to try `output=xml`.  If `output` is unknown or unsupported, it is ignored and the response defaults to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Returns abuse contact information for up to **50,000 IPv4 or IPv6\naddresses** in a single request.\n\nThe request body must contain an `ips` array.\n\nEach IP is processed independently, and surrounding spaces are trimmed. Invalid,\nempty, null, bogon, or private entries, and IPs with no abuse contact in the\ndatabase, return an object containing only a `message` field; the rest of the\nrequest still succeeds.\n\nCredits are charged **per IP that returns abuse contact data**, using the same\npricing as the single lookup endpoint (1 credit per IP).\n\nWhen the number of entries that returned abuse contact data is lower than the\nnumber of submitted entries, the response header `X-Successful-Record` gives\nthat number.\n\nBulk requests require an `apiKey`; they cannot be authenticated using Request\nOrigin alone.\n\nOnly the `POST` method is supported for this endpoint.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ips\": [\n    \"1.0.0.0\",\n    \"91.128.103.196\",\n    \"2607:fb91:16c6:8860:e531:2d1d:4944:6c7c\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK – Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "https://api.ipgeolocation.io/v3/abuse-bulk",
+                  "protocol": "https",
+                  "host": [
+                    "api",
+                    "ipgeolocation",
+                    "io"
+                  ],
+                  "path": [
+                    "v3",
+                    "abuse-bulk"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "abuse.name,abuse.organization",
+                      "description": "Comma-separated list of fields or objects to return. Everything else is omitted. The `ip` field is always returned regardless of this filter.  Supports dot-notation for nested fields: `abuse.route`, `abuse.organization`.  If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and it is left out of the response. An object left with no fields after `excludes` is removed.  If you list both an object key and one of its nested fields separated by comma (e.g. `abuse,abuse.name`), the full object is returned.  Unknown field paths are ignored. The API still returns HTTP 200. If no name in `fields` is a real field, the full response is returned.  This parameter only has an effect once a request is authorized; the Abuse Contact API as a whole requires a paid plan.",
+                      "disabled": true
+                    },
+                    {
+                      "key": "excludes",
+                      "value": "abuse.address,abuse.emails",
+                      "description": "Comma-separated list of fields or objects to remove from the response. The `ip` field cannot be excluded.  Supports dot-notation for nested fields: `abuse.name`.  If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and it is left out of the response. An object left with no fields after `excludes` is removed.  Unknown fields or object keys in `excludes` are ignored. The API still returns HTTP 200.  This parameter only has an effect once a request is authorized; the Abuse Contact API as a whole requires a paid plan.",
+                      "disabled": true
+                    },
+                    {
+                      "key": "output",
+                      "value": "json",
+                      "description": "Desired response format. Defaults to `json` if not specified. You can also control the format using the `Accept` header (`application/json`, `application/xml`, or `text/xml`). For successful responses and authentication errors, the `Accept` header takes precedence if both are provided: `output` is used only when the `Accept` header is absent or set to `*/*`, and an `Accept` value other than `application/xml` or `text/xml` (for example a browser's default) returns JSON even with `output=xml`. Values are matched exactly (use lowercase `xml`). The requests in this collection send `Accept: application/json`, so disable that header to try `output=xml`.  If `output` is unknown or unsupported, it is ignored and the response defaults to JSON (`application/json`) with HTTP 200. Supported values: `json`, `xml`. Defaults to `json`.",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"ips\": [\n    \"1.0.0.0\",\n    \"10.0.0.1\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "X-Credits-Charged",
+                  "value": "1"
+                },
+                {
+                  "key": "X-Successful-Record",
+                  "value": "1"
+                }
+              ],
+              "body": "[\n  {\n    \"ip\": \"1.0.0.0\",\n    \"abuse\": {\n      \"route\": \"1.0.0.0/24\",\n      \"country\": \"AU\",\n      \"name\": \"IRT-APNICRANDNET-AU\",\n      \"organization\": \"\",\n      \"kind\": \"group\",\n      \"address\": \"PO Box 3646, South Brisbane, QLD 4101, Australia\",\n      \"emails\": [\n        \"helpdesk@apnic.net\"\n      ],\n      \"phone_numbers\": [\n        \"+61738583100\"\n      ]\n    }\n  },\n  {\n    \"message\": \"'10.0.0.1' is a bogon IP address.\"\n  }\n]"
+            },
+            {
+              "name": "400 Bad Request – `ips` is not a JSON array",
+              "originalRequest": {},
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"'ips' must be a JSON array of strings, e.g. {\\\"ips\\\": [\\\"value1\\\", \\\"value2\\\"]}\"\n}"
+            },
+            {
+              "name": "400 Bad Request – Empty array",
+              "originalRequest": {},
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"'ipList' must not be empty or null\"\n}"
+            },
+            {
+              "name": "400 Bad Request – Exceeded 50,000 entries",
+              "originalRequest": {},
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"No. of lookup queries cannot be more than 50000\"\n}"
+            },
+            {
+              "name": "401 Unauthorized – Invalid or missing API key",
+              "originalRequest": {},
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io\"\n}"
+            },
+            {
+              "name": "401 Unauthorized – Free plan restriction",
+              "originalRequest": {},
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Bulk Abuse Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only.\"\n}"
+            },
+            {
+              "name": "401 Unauthorized – Bulk request with Request Origin",
+              "originalRequest": {},
+              "status": "Unauthorized",
+              "code": 401,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries.\"\n}"
+            },
+            {
+              "name": "402 Payment Required – Subscription expired",
+              "originalRequest": {},
+              "status": "Payment Required",
+              "code": 402,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io\"\n}"
+            },
+            {
+              "name": "403 Forbidden – IP address not allowed for this API key",
+              "originalRequest": {},
+              "status": "Forbidden",
+              "code": 403,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io\"\n}"
+            },
+            {
+              "name": "405 Method Not Allowed – GET used on bulk endpoint",
+              "originalRequest": {},
+              "status": "Method Not Allowed",
+              "code": 405,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Request method 'GET' is not supported\"\n}"
+            },
+            {
+              "name": "413 Payload Too Large – Returned by nginx",
+              "originalRequest": {},
+              "status": "Payload Too Large",
+              "code": 413,
+              "_postman_previewlanguage": "html",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/html"
+                }
+              ],
+              "body": "<html>\n  <head>\n    <title>413 Request Entity Too Large</title>\n  </head>\n  <body>\n    <center><h1>413 Request Entity Too Large</h1></center>\n    <hr><center>nginx/1.24.0 (Ubuntu)</center>\n  </body>\n</html>\n"
+            },
+            {
+              "name": "415 Unsupported Media Type – `Content-Type` not correct",
+              "originalRequest": {},
+              "status": "Unsupported Media Type",
+              "code": 415,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Content-Type 'application/x-www-form-urlencoded' is not supported\"\n}"
+            },
+            {
+              "name": "429 Too Many Requests – Credit limit reached",
+              "originalRequest": {},
+              "status": "Too Many Requests",
+              "code": 429,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption.\"\n}"
+            },
+            {
+              "name": "499 Client Closed Request – logged by the edge proxy, no response body",
+              "originalRequest": {},
+              "status": "Client Closed Request",
+              "code": 499,
+              "_postman_previewlanguage": "text",
+              "header": [],
+              "body": ""
+            },
+            {
+              "name": "500 Internal Server Error",
+              "originalRequest": {},
+              "status": "Internal Server Error",
+              "code": 500,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io\"\n}"
+            },
+            {
+              "name": "503 Service Unavailable – API key cannot be verified",
+              "originalRequest": {},
+              "status": "Service Unavailable",
+              "code": 503,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -2160,7 +2530,7 @@
                 {
                   "key": "tz",
                   "value": "Australia/Lord_Howe",
-                  "description": "IANA timezone identifier to retrieve timezone information.  When provided, the API returns the current date, time, and timezone metadata for the specified timezone.  If multiple lookup parameters are provided in the same request, the `tz` parameter takes the highest priority.  Example identifiers include `Europe/London`, `America/New_York`, and `Asia/Tokyo`.",
+                  "description": "IANA timezone identifier to retrieve timezone information.  When provided, the API returns the current date, time, and timezone metadata for the specified timezone.  If multiple lookup parameters are provided in the same request, the `tz` parameter takes the highest priority. An `ip` sent with `tz` is still validated: an invalid IP returns HTTP 400 and a bogon or private IP returns HTTP 423.  Example identifiers include `Europe/London`, `America/New_York`, and `Asia/Tokyo`.",
                   "disabled": true
                 }
               ]
@@ -2248,7 +2618,7 @@
                     {
                       "key": "tz",
                       "value": "Australia/Lord_Howe",
-                      "description": "IANA timezone identifier to retrieve timezone information.  When provided, the API returns the current date, time, and timezone metadata for the specified timezone.  If multiple lookup parameters are provided in the same request, the `tz` parameter takes the highest priority.  Example identifiers include `Europe/London`, `America/New_York`, and `Asia/Tokyo`.",
+                      "description": "IANA timezone identifier to retrieve timezone information.  When provided, the API returns the current date, time, and timezone metadata for the specified timezone.  If multiple lookup parameters are provided in the same request, the `tz` parameter takes the highest priority. An `ip` sent with `tz` is still validated: an invalid IP returns HTTP 400 and a bogon or private IP returns HTTP 423.  Example identifiers include `Europe/London`, `America/New_York`, and `Asia/Tokyo`.",
                       "disabled": true
                     }
                   ]

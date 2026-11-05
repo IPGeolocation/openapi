@@ -453,10 +453,10 @@
             }
           },
           "400": {
-            "$ref": "#/components/responses/BadRequest"
+            "$ref": "#/components/responses/BadRequestBulk"
           },
           "401": {
-            "$ref": "#/components/responses/Unauthorized"
+            "$ref": "#/components/responses/UnauthorizedBulk"
           },
           "402": {
             "$ref": "#/components/responses/PaymentRequired"
@@ -527,7 +527,7 @@
     },
     "responses": {
       "BadRequest": {
-        "description": "Bad Request. Returned for one of the following reasons:\n- Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.\n- The `uaString` is empty or null when calling `/v3/user-agent`(POST).\n- The JSON body has no `uaStrings` field (or it is `null`) when calling\n  `/v3/user-agent-bulk`. An empty array is not an error: it returns HTTP 200\n  with `[]` and 0 credits.\n- The `uaStrings` array contains a `null` or blank entry when calling\n  `/v3/user-agent-bulk` (`'userAgentString' must not be empty or null`). The whole\n  request fails and nothing is charged.\n- More than 50,000 user agent strings are provided in a single bulk request.\n- The request body is not valid JSON (`Malformed JSON request or invalid field`) or\n  `uaStrings` is not a JSON array of strings.\n- No `User-Agent` header is present when calling `GET /v3/user-agent`. Unlike the\n  POST body, there is no alternative way to supply the string for this call, so a\n  missing/blank header always fails validation.\n\nRequest body validation (malformed JSON, a missing or blank `uaString`, a missing\n`uaStrings` field, more than 50,000 entries) runs before the API key is checked.\n",
+        "description": "Bad Request. Returned for one of the following reasons:\n- Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.\n- The `uaString` is empty or null when calling `/v3/user-agent`(POST).\n- The request body is not valid JSON (`Malformed JSON request or invalid field`)\n  when calling `/v3/user-agent`(POST).\n- No `User-Agent` header is present when calling `GET /v3/user-agent`. Unlike the\n  POST body, there is no alternative way to supply the string for this call, so a\n  missing/blank header always fails validation.\n\nRequest body validation (malformed JSON, a missing or blank `uaString`) runs before\nthe API key is checked.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -550,6 +550,30 @@
                 "summary": "Missing User-Agent header on GET",
                 "value": {
                   "message": "'userAgentString' must not be empty or null"
+                }
+              },
+              "malformedJson": {
+                "summary": "Request body is not valid JSON",
+                "value": {
+                  "message": "Malformed JSON request or invalid field"
+                }
+              }
+            }
+          }
+        }
+      },
+      "BadRequestBulk": {
+        "description": "Bad Request. Returned for one of the following reasons:\n- Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.\n- The JSON body has no `uaStrings` field (or it is `null`). An empty array is not\n  an error: it returns HTTP 200 with `[]` and 0 credits.\n- The `uaStrings` array contains a `null` or blank entry\n  (`'userAgentString' must not be empty or null`). The whole request fails and\n  nothing is charged.\n- More than 50,000 user agent strings are provided in a single bulk request.\n- The request body is not valid JSON (`Malformed JSON request or invalid field`) or\n  `uaStrings` is not a JSON array of strings.\n\nRequest body validation (malformed JSON, a missing `uaStrings` field, more than\n50,000 entries) runs before the API key is checked.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "specialCharacters": {
+                "summary": "Invalid special characters in request",
+                "value": {
+                  "message": "Invalid character found in the request target."
                 }
               },
               "emptyBulkList": {
@@ -587,7 +611,7 @@
         }
       },
       "Unauthorized": {
-        "description": "Unauthorized. Returned for one of the following reasons:\n- An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.\n- The provided API key is not valid, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.\n- The request is made using an API key of a database subscription.\n- The account's email address has not been verified.\n- The account has been locked due to abuse or illegal activity.\n- Requests are made after the subscription trial has expired.\n- The subscription is paused.\n- A paid feature is accessed using a free subscription.\n- The bulk user agent parsing endpoint is called using a free subscription API key.\n- The bulk user agent parsing endpoint is called using Request Origin (CORS) authentication. Bulk requests require an `apiKey`.\n",
+        "description": "Unauthorized. Returned for one of the following reasons:\n- An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.\n- The provided API key is not valid, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.\n- The request is made using an API key of a database subscription.\n- The account's email address has not been verified.\n- The account has been locked due to abuse or illegal activity.\n- Requests are made after the subscription trial has expired.\n- The subscription is paused.\n- `POST /v3/user-agent` (custom user agent string in the request body) is called\n  using a free subscription API key.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -640,6 +664,60 @@
                 "summary": "Paid feature accessed on free plan",
                 "value": {
                   "message": "Custom User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
+                }
+              }
+            }
+          }
+        }
+      },
+      "UnauthorizedBulk": {
+        "description": "Unauthorized. Returned for one of the following reasons:\n- The `apiKey` URL parameter is missing from the request.\n- The provided API key is not valid.\n- The request is made using an API key of a database subscription.\n- The account's email address has not been verified.\n- The account has been locked due to abuse or illegal activity.\n- Requests are made after the subscription trial has expired.\n- The subscription is paused.\n- The bulk user agent parsing endpoint is called using a free subscription API key.\n- The bulk user agent parsing endpoint is called using Request Origin (CORS) authentication. Bulk requests require an `apiKey`.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "examples": {
+              "missingApiKey": {
+                "summary": "Missing API key",
+                "value": {
+                  "message": "Please provide an API key (as 'apiKey=YOUR_API_KEY' URL parameter) to use IPGeolocation API. To get your free API Key, sign up at https://app.ipgeolocation.io/login"
+                }
+              },
+              "invalidApiKey": {
+                "summary": "Invalid API key",
+                "value": {
+                  "message": "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+                }
+              },
+              "databaseSubscriptionKey": {
+                "summary": "Database subscription API key used",
+                "value": {
+                  "message": "You cannot query IPGeolocation API on a database plan subscription."
+                }
+              },
+              "unverifiedEmail": {
+                "summary": "Email address not verified",
+                "value": {
+                  "message": "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+                }
+              },
+              "lockedAccount": {
+                "summary": "Account locked",
+                "value": {
+                  "message": "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+                }
+              },
+              "expiredTrial": {
+                "summary": "Subscription trial expired",
+                "value": {
+                  "message": "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
+                }
+              },
+              "pausedSubscription": {
+                "summary": "Subscription is paused",
+                "value": {
+                  "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
                 }
               },
               "bulkOnFreePlan": {
