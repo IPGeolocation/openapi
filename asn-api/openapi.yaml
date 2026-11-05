@@ -86,7 +86,8 @@ info:
 
     Use `fields` to cherry-pick specific fields, or `excludes` to drop fields you do not
     need. Both accept dot-notation for nested fields (e.g. `asn.as_number`,
-    `asn.organization`). The `ip` field is always present regardless of filters.
+    `asn.organization`). On an IP lookup the `ip` field is always present regardless
+    of filters; an `asn` lookup has no `ip` field.
 
     ## Parameter Name Casing
 
@@ -105,6 +106,9 @@ info:
     - `upstreams`
     - `routes`
     - `whois_response`
+
+    Use `*` (or `all`, `any`) to add all five modules. Values are case-sensitive; unknown
+    values are ignored.
 
     Multiple values must be comma-separated.
 
@@ -336,6 +340,10 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "405":
@@ -368,8 +376,8 @@ components:
         An IPv4 address or IPv6 address to look up. When omitted, the API
         resolves the public IP of the requesting client.
 
-        If the `asn` parameter is provided, the `ip` parameter must not be used,
-        because the lookup will be performed directly using the specified ASN.
+        If both `ip` and a non-empty `asn` are sent, the lookup uses `asn` and ignores `ip`
+        (no error, and the response has no `ip` field).
 
         Empty or whitespace-only values are treated the same as omission and resolve
         the caller IP.
@@ -399,8 +407,9 @@ components:
       description: |
         An Autonomous System Number (ASN) to look up.
 
-        When provided, the lookup is performed directly using the specified ASN,
-        and the `ip` parameter must not be included in the request.
+        When provided, the lookup is performed directly using the specified ASN.
+        If both `ip` and a non-empty `asn` are sent, the lookup uses `asn` and ignores `ip`
+        (no error, and the response has no `ip` field).
 
         The API returns detailed information about the ASN including the
         organization name, country of registration, ASN type, routing statistics,
@@ -444,6 +453,9 @@ components:
         - `routes`
         - `whois_response`
 
+        Use `*` (or `all`, `any`) to add all five modules. Values are case-sensitive; unknown
+        values are ignored.
+
         If multiple values are provided, they must be comma-separated.
 
         For additional query parameters (`include`, `fields`, `excludes`, `output`),
@@ -480,10 +492,17 @@ components:
 
         Supports dot-notation for nested fields: `asn.organization`, `asn.domain`.
 
-        If the same nested field path is specified in both `fields` and `excludes`
-        (e.g. `asn.organization` in both), the object is still returned, but it will
-        be empty. Duplicating a bare top-level object name (e.g. `asn` in both
-        `fields` and `excludes`) has no emptying effect; the full object is returned.
+        Modules added with `include` are always kept, even when `fields` lists only some
+        `asn` fields (e.g. `include=peers&fields=asn.as_number` returns `as_number` and
+        `peers`). `fields` cannot add a module on its own. `*` anywhere in `fields` returns
+        the full response. Fields inside `peers`, `upstreams`, `downstreams` and `routes`
+        entries cannot be selected individually. Names are case-sensitive.
+
+        If the same field or object is listed in both `fields` and `excludes`, `excludes` wins
+        and it is left out of the response (e.g.
+        `fields=asn.organization&excludes=asn.organization` drops `organization`). An object
+        left with no fields is removed, so `fields=asn&excludes=asn` returns an empty object
+        for an `asn` lookup, or only `ip` for an `ip` lookup.
 
         If you list both an object key and one of its nested fields separated by comma
         (e.g. `asn,asn.organization`), the full object is returned.
@@ -517,10 +536,14 @@ components:
 
         Supports dot-notation for nested fields: `asn.domain`.
 
-        If the same nested field path is specified in both `fields` and `excludes`
-        (e.g. `asn.organization` in both), the object is still returned, but it will
-        be empty. Duplicating a bare top-level object name (e.g. `asn` in both
-        `fields` and `excludes`) has no emptying effect; the full object is returned.
+        `excludes` also wins over `include`: `include=*&excludes=peers` (or
+        `excludes=asn.peers`) returns every module except `peers`.
+
+        If the same field or object is listed in both `fields` and `excludes`, `excludes` wins
+        and it is left out of the response (e.g.
+        `fields=asn.organization&excludes=asn.organization` drops `organization`). An object
+        left with no fields is removed, so `fields=asn&excludes=asn` returns an empty object
+        for an `asn` lookup, or only `ip` for an `ip` lookup.
 
         Unknown fields or object keys in `excludes` are ignored. The API still returns
         HTTP 200.
@@ -546,8 +569,12 @@ components:
       description: |
         Desired response format. Defaults to `json` if not specified. You can also
         control the format using the `Accept` header (`application/json`,
-        `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-        takes precedence.
+        `application/xml`, or `text/xml`). For successful responses and authentication
+        errors, the `Accept` header takes precedence if both are provided: `output` is
+        used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+        value other than `application/xml` or `text/xml` (for example a browser's
+        default) returns JSON even with `output=xml`. Values are matched exactly (use
+        lowercase `xml`).
 
         If `output` is unknown or unsupported, it is ignored and the response defaults
         to JSON (`application/json`) with HTTP 200.
@@ -563,7 +590,7 @@ components:
         - The provided IPv4 address or IPv6 address is invalid.
         - The provided `asn` value is non-numeric (once any `AS` prefix is stripped)
           or outside the accepted range of 1-4294967295.
-        - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
+        - Special characters such as [ ] { } | ^ ` are present in the API URL,
           either in a parameter name or its value (especially in the API key).
       content:
         application/json:
@@ -588,14 +615,14 @@ components:
       description: |
         Unauthorized. Returned for one of the following reasons:
 
-        - The `apiKey` URL parameter is missing.
-        - An invalid (random or incorrect) API key is provided.
-        - The account has been disabled or locked due to abuse or illegal activity.
+        - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
+        - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+        - The account's email address has not been verified.
+        - The account has been locked due to abuse or illegal activity.
         - The API request is made using an API key for a database subscription.
         - The API request is made using a free subscription API key.
         - The subscription is in a 'paused' state.
         - The subscription trial has expired.
-        - The account’s active-until date has passed and renewal or upgrade is required.
       content:
         application/json:
           schema:
@@ -609,34 +636,61 @@ components:
               summary: Invalid API key
               value:
                 message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+            unverifiedEmail:
+              summary: Email address not verified
+              value:
+                message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
             lockedAccount:
-              summary: Account locked or disabled
+              summary: Account locked
               value:
                 message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
             databaseSubscriptionKey:
               summary: Database subscription API key used for REST API
               value:
-                message: "You cannot query IPGeolocation API on a database plan subscription. "
+                message: "You cannot query IPGeolocation API on a database plan subscription."
             freePlanAccess:
               summary: Free subscription used for ASN lookup API
               value:
-                message: "ASN Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
+                message: "ASN API Lookup is not supported on your current subscription. This feature is available to Paid subscriptions only."
             pausedSubscription:
               summary: Subscription is paused
               value:
                 message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
+
+    PaymentRequired:
+      description: |
+        Payment Required. Returned for a paid (non-Free) subscription whose active-until
+        date has passed: one day after the active-until date for active or trialing
+        subscriptions, and from the active-until date for past-due or deleted
+        subscriptions. It is checked before any usage quota. Paused subscriptions and
+        expired trials get HTTP 401 instead, and Free plan keys never get 402. Renew or
+        upgrade the plan to continue using IPGeolocation API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
             expiredSubscription:
-              summary: Subscription expired or trial ended
+              summary: Subscription expired
               value:
-                message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+
+    Forbidden:
+      description: |
+        Forbidden. The API key has an IP allow-list and the request comes from an IP address that is not on it.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io"
 
     NotFound:
       description: |
         Not found. Returned for one of the following reasons:
 
-        - A syntactically valid IPv4, IPv6, or ASN does not exist in the IPGeolocation database.
-        - A syntactically valid IP address resolves successfully but has no ASN
-          associated with it in the database.
+        - An IPv4 or IPv6 address has no ASN in the IPGeolocation database ("Provided IP Address '...' doesn't have an associated ASN in our database.").
+        - A valid ASN does not exist in the database ("Provided ASN or IP Address '...' doesn't exist in our database.").
         - An IPv4, IPv6, or ASN is passed as a path variable
           instead of as a URL query parameter (e.g., using `/v3/asn/8.8.8.8`
           instead of `/v3/asn?ip=8.8.8.8`).
@@ -649,13 +703,13 @@ components:
             $ref: "#/components/schemas/ErrorResponse"
           examples:
             ipNotInDatabase:
-              summary: IPv4/IPv6/ASN not found in database
+              summary: ASN not found in database
               value:
-                message: "Provided ASN or IP Address '24940' doesn't exist in our database."
+                message: "Provided ASN or IP Address 'AS4200000000' doesn't exist in our database."
             asnForIpNotFound:
-              summary: IP resolves but has no associated ASN in the database
+              summary: IP address has no associated ASN in the database
               value:
-                message: "Provided IP Address '8.8.8.8' doesn't have an associated ASN in our database."
+                message: "Provided IP Address 'IP_ADDRESS' doesn't have an associated ASN in our database."
             ipAsPathVariable:
               summary: IP passed as path variable instead of query parameter
               value:
@@ -676,7 +730,7 @@ components:
 
         Only the **GET** method is supported for the ASN lookup API endpoint.
 
-        Any other HTTP method results in HTTP 405.
+        Calling an endpoint with an HTTP method it doesn't support (for example `PUT` or `DELETE`) results in HTTP 405.
       content:
         application/json:
           schema:
@@ -689,7 +743,7 @@ components:
             unsupportedMethod:
               summary: Unsupported HTTP method
               value:
-                message: "Request method is not supported"
+                message: "Request method 'PUT' is not supported"
 
     Locked:
       description: |
@@ -705,8 +759,9 @@ components:
     TooManyRequests:
       description: |
         Too Many Requests. Returned for one of the following reasons:
-        - The API credit allowance has been reached for a Paid subscription with
-          status 'past due', 'deleted', or 'trial expired'.
+        - The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).
+        - The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.
+        - The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.
         - The surcharge (overage) credit limit has been reached for the subscribed plan.
       content:
         application/json:
@@ -716,23 +771,22 @@ components:
             usageLimitReached:
               summary: API credit limit reached
               value:
-                message: "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+            trialLimitReached:
+              summary: Trial credit cap (100,000) reached
+              value:
+                message: "You have exceeded the limit of 100000 requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
             surchargeLimitReached:
               summary: Surcharge usage limit reached
               value:
-                message: "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have reached the surcharge amount limit of $SURCHARGE_AMOUNT_LIMIT on your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
 
     ClientClosedRequest:
       description: |
         The client closed the connection before the server finished processing the
-        request. This usually happens when the client sets a very short request or
-        connection timeout. Increase the timeout on the client side.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Client closed the request before the server could respond."
+        request (logged by the edge proxy; the client receives no response). This
+        usually happens when the client sets a very short request or connection
+        timeout. Increase the timeout on the client side.
 
     InternalServerError:
       description: |
@@ -744,47 +798,35 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Something went wrong on the server side."
+            message: "Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io"
     BadGateway:
       description: |
-        Bad Gateway. The API server received an invalid response from an upstream
-        server while processing the request. This is usually temporary.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Upstream service error. Please try again later."
+        Bad Gateway. Returned by the edge proxy in front of the API, not by the API
+        application, when it gets an invalid response from the API server. The
+        response body is set by the proxy. This is usually temporary; retry the
+        request.
     ServiceUnavailable:
       description: |
-        Service Unavailable. The API is temporarily unavailable due to maintenance
-        or overload. Please try again later.
+        Service Unavailable. Returned when the API cannot verify your API key (or request
+        origin) because of a temporary internal error, for example when the billing service
+        is unreachable and the key has not been verified recently. Keys that were verified
+        recently keep working. Retry later; if it persists, contact support@ipgeolocation.io.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Service temporarily unavailable. Please try again later."
+            message: "We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io"
     GatewayTimeout:
       description: |
-        Gateway Timeout. The API server did not receive a timely response from
-        an upstream server.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "The server timed out while processing the request."
+        Gateway Timeout. Returned by the edge proxy in front of the API, not by the
+        API application, when the API server does not respond in time. The response
+        body is set by the proxy. Retry the request.
     HttpVersionNotSupported:
       description: |
-        HTTP Version Not Supported. The server does not support the HTTP protocol
-        version used in the request.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "HTTP version not supported."
+        HTTP Version Not Supported. Returned by the edge proxy in front of the API,
+        not by the API application, when the request uses an HTTP protocol version
+        it does not support. The response body is set by the proxy.
     
 
   schemas:

@@ -9,9 +9,10 @@ info:
 
     Two endpoints are available, supporting three usage modes:
 
-    - **`GET /v3/user-agent`** supports two modes: omit the `User-Agent` header to
-      auto-detect the caller's own user agent, or pass any string in the `User-Agent`
-      header to parse it explicitly.
+    - **`GET /v3/user-agent`** supports two modes: don't set a custom `User-Agent`
+      header to parse the caller's own user agent (browsers and most HTTP clients send
+      one automatically), or pass any string in the `User-Agent` header to parse it
+      explicitly. A request with no `User-Agent` header at all returns HTTP 400.
     - **`POST /v3/user-agent`** parses a custom user agent string from a JSON body
       (`uaString` field). Available on paid plans only.
     - **`POST /v3/user-agent-bulk`** parses up to 50,000 user agent strings in a
@@ -121,11 +122,10 @@ paths:
 
         This endpoint supports two usage modes:
 
-        **Mode 1 — Auto-detect caller's user agent:**
-        Omit the `User-Agent` header entirely. The API will parse the user agent string
-        of the calling client automatically. This is the default browser behavior — when
-        executed in browser JavaScript, the header is appended automatically and no
-        additional configuration is needed.
+        **Mode 1 — Caller's own user agent:**
+        Don't set a custom `User-Agent` header. Browsers and most HTTP clients send one
+        automatically, and the API parses it. If the request carries no `User-Agent`
+        header at all, the API returns HTTP 400.
 
         **Mode 2 — Explicit user agent header:**
         Pass any user agent string in the `User-Agent` request header. The API parses
@@ -143,9 +143,10 @@ paths:
           in: header
           required: false
           description: |
-            The user agent string to parse. When omitted, the API automatically parses
-            the user agent of the calling client. When provided, the supplied string is
-            parsed instead.
+            The user agent string to parse. Browsers and most HTTP clients send their own
+            `User-Agent` header automatically, so by default the caller's own user agent is
+            parsed. Set it to any string to parse that string instead. If the request has
+            no `User-Agent` header at all, the API returns HTTP 400.
           schema:
             type: string
           example: "Mozilla/5.0 (Linux; Android 6.0.1; Nexus 5X Build/MMB29P) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.96 Mobile Safari/537.36 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
@@ -220,6 +221,10 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "405":
@@ -347,6 +352,10 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "405":
@@ -377,9 +386,10 @@ paths:
       description: |
         Parses up to **50,000 user agent strings** in a single request.
 
-        Pass a JSON body containing the `uaStrings` array. Each entry in the array
-        is parsed independently. The total credits charged equals the number of strings
-        in the array.
+        Pass a JSON body containing the `uaStrings` array. Each entry is parsed as sent.
+        A `null` or blank entry fails the whole request with HTTP 400
+        (`'userAgentString' must not be empty or null`) and nothing is charged. The total
+        credits charged equals the number of strings in the array.
 
         This endpoint is available on **paid plans only**.
 
@@ -404,8 +414,9 @@ paths:
                   type: array
                   description: |
                     Array of user agent strings to parse. Maximum 50,000 entries per request.
+                    A `null` or blank entry fails the whole request with HTTP 400. An empty
+                    array is not an error: it returns HTTP 200 with `[]` and 0 credits.
                   maxItems: 50000
-                  minItems: 1
                   items:
                     type: string
                   example:
@@ -592,6 +603,10 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "405":
@@ -637,8 +652,12 @@ components:
       description: |
         Desired response format. Defaults to `json` if not specified. You can also
         control the format using the `Accept` header (`application/json`,
-        `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-        takes precedence.
+        `application/xml`, or `text/xml`). For successful responses and authentication
+        errors, the `Accept` header takes precedence if both are provided: `output` is
+        used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+        value other than `application/xml` or `text/xml` (for example a browser's
+        default) returns JSON even with `output=xml`. Values are matched exactly (use
+        lowercase `xml`).
 
         If `output` is unknown or unsupported, it is ignored and the response defaults
         to JSON (`application/json`) with HTTP 200.
@@ -651,14 +670,23 @@ components:
     BadRequest:
       description: |
         Bad Request. Returned for one of the following reasons:
-        - Special characters ( ) [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
+        - Special characters [ ] { } | ^ ` are passed in the API URL (either in parameters or values), especially in the API key.
         - The `uaString` is empty or null when calling `/v3/user-agent`(POST).
-        - The `uaStrings` array is empty, or the JSON body does not contain a `uaStrings`
-          field when calling `/v3/user-agent-bulk`.
+        - The JSON body has no `uaStrings` field (or it is `null`) when calling
+          `/v3/user-agent-bulk`. An empty array is not an error: it returns HTTP 200
+          with `[]` and 0 credits.
+        - The `uaStrings` array contains a `null` or blank entry when calling
+          `/v3/user-agent-bulk` (`'userAgentString' must not be empty or null`). The whole
+          request fails and nothing is charged.
         - More than 50,000 user agent strings are provided in a single bulk request.
+        - The request body is not valid JSON (`Malformed JSON request or invalid field`) or
+          `uaStrings` is not a JSON array of strings.
         - No `User-Agent` header is present when calling `GET /v3/user-agent`. Unlike the
           POST body, there is no alternative way to supply the string for this call, so a
           missing/blank header always fails validation.
+
+        Request body validation (malformed JSON, a missing or blank `uaString`, a missing
+        `uaStrings` field, more than 50,000 entries) runs before the API key is checked.
       content:
         application/json:
           schema:
@@ -677,9 +705,21 @@ components:
               value:
                 message: "'userAgentString' must not be empty or null"
             emptyBulkList:
-              summary: Empty uaStrings array or missing field
+              summary: Missing uaStrings field
               value:
                 message: "User-Agent strings for bulk lookup are missing"
+            blankBulkEntry:
+              summary: Null or blank entry in uaStrings
+              value:
+                message: "'userAgentString' must not be empty or null"
+            malformedJson:
+              summary: Request body is not valid JSON
+              value:
+                message: "Malformed JSON request or invalid field"
+            uaStringsNotArray:
+              summary: uaStrings is not a JSON array of strings
+              value:
+                message: "'uaStrings' must be a JSON array of strings, e.g. {\"uaStrings\": [\"value1\", \"value2\"]}"
             bulkLimitExceeded:
               summary: More than 50,000 strings in bulk request
               value:
@@ -688,15 +728,16 @@ components:
     Unauthorized:
       description: |
         Unauthorized. Returned for one of the following reasons:
-        - The `apiKey` URL parameter is missing from the request.
-        - The provided API key is not valid.
+        - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
+        - The provided API key is not valid, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
         - The request is made using an API key of a database subscription.
-        - The account has been disabled or locked due to illegal activity.
+        - The account's email address has not been verified.
+        - The account has been locked due to abuse or illegal activity.
         - Requests are made after the subscription trial has expired.
-        - The subscription is paused or not active.
-        - The account’s active-until date has passed.
+        - The subscription is paused.
         - A paid feature is accessed using a free subscription.
         - The bulk user agent parsing endpoint is called using a free subscription API key.
+        - The bulk user agent parsing endpoint is called using Request Origin (CORS) authentication. Bulk requests require an `apiKey`.
       content:
         application/json:
           schema:
@@ -714,20 +755,20 @@ components:
               summary: Database subscription API key used
               value:
                 message: "You cannot query IPGeolocation API on a database plan subscription."
+            unverifiedEmail:
+              summary: Email address not verified
+              value:
+                message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
             lockedAccount:
-              summary: Account locked or disabled
+              summary: Account locked
               value:
                 message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
             expiredTrial:
               summary: Subscription trial expired
               value:
-                message: "Your subscription has expired. Please subscribe to a paid plan to continue using IPGeolocation API."
-            inactiveSubscription:
-              summary: Subscription inactive or paused
-              value:
-                message: "Your subscription is not active."
-            expiredAccount:
-              summary: Account active-until date passed
+                message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
+            pausedSubscription:
+              summary: Subscription is paused
               value:
                 message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
             freePlanPaidFeature:
@@ -738,6 +779,38 @@ components:
               summary: Bulk endpoint called with free subscription key
               value:
                 message: "Bulk User-Agent lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
+            requestOriginBulk:
+              summary: Bulk endpoint called with Request Origin authentication
+              value:
+                message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
+
+    PaymentRequired:
+      description: |
+        Payment Required. Returned for a paid (non-Free) subscription whose active-until
+        date has passed: one day after the active-until date for active or trialing
+        subscriptions, and from the active-until date for past-due or deleted
+        subscriptions. It is checked before any usage quota. Paused subscriptions and
+        expired trials get HTTP 401 instead, and Free plan keys never get 402. Renew or
+        upgrade the plan to continue using IPGeolocation API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            expiredSubscription:
+              summary: Subscription expired
+              value:
+                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+
+    Forbidden:
+      description: |
+        Forbidden. The API key has an IP allow-list and the request comes from an IP address that is not on it.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io"
 
     NotFound:
       description: |
@@ -801,8 +874,9 @@ components:
       description: |
         Too Many Requests. Returned for one of the following reasons:
         - The API credit allowance has been reached for a free subscription.
-        - The API credit allowance has been reached for a paid subscription with
-          status 'past due', 'deleted', or 'trial expired'.
+        - The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).
+        - The API credit allowance has been reached for a paid subscription with surcharge usage disabled.
+        - The API credit allowance has been reached for a paid subscription with status 'past due' or 'deleted'.
         - The surcharge (overage) credit limit has been reached.
       content:
         application/json:
@@ -812,22 +886,22 @@ components:
             usageLimitReached:
               summary: API credit limit reached
               value:
-                message: "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+            trialLimitReached:
+              summary: Trial credit cap (100,000) reached
+              value:
+                message: "You have exceeded the limit of 100000 requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
             surchargeLimitReached:
               summary: Surcharge usage limit reached
               value:
-                message: "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have reached the surcharge amount limit of $SURCHARGE_AMOUNT_LIMIT on your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
 
     ClientClosedRequest:
       description: |
         Client Closed Request. Returned when the client sets a very short timeout,
-        causing the connection to close before the server responds.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Client closed the request before the server could respond."
+        causing the connection to close before the server responds (logged by the
+        edge proxy; the client receives no response). Increase the timeout on the
+        client side.
 
     InternalServerError:
       description: |
@@ -839,47 +913,35 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Something went wrong on the server side."
+            message: "Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io"
     BadGateway:
       description: |
-        Bad Gateway. The API server received an invalid response from an upstream
-        server while processing the request. This is usually temporary.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Upstream service error. Please try again later."
+        Bad Gateway. Returned by the edge proxy in front of the API, not by the API
+        application, when it gets an invalid response from the API server. The
+        response body is set by the proxy. This is usually temporary; retry the
+        request.
     ServiceUnavailable:
       description: |
-        Service Unavailable. The API is temporarily unavailable due to maintenance
-        or overload. Please try again later.
+        Service Unavailable. Returned when the API cannot verify your API key (or request
+        origin) because of a temporary internal error, for example when the billing service
+        is unreachable and the key has not been verified recently. Keys that were verified
+        recently keep working. Retry later; if it persists, contact support@ipgeolocation.io.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Service temporarily unavailable. Please try again later."
+            message: "We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io"
     GatewayTimeout:
       description: |
-        Gateway Timeout. The API server did not receive a timely response from
-        an upstream server.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "The server timed out while processing the request."
+        Gateway Timeout. Returned by the edge proxy in front of the API, not by the
+        API application, when the API server does not respond in time. The response
+        body is set by the proxy. Retry the request.
     HttpVersionNotSupported:
       description: |
-        HTTP Version Not Supported. The server does not support the HTTP protocol
-        version used in the request.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "HTTP version not supported."
+        HTTP Version Not Supported. Returned by the edge proxy in front of the API,
+        not by the API application, when the request uses an HTTP protocol version
+        it does not support. The response body is set by the proxy.
 
   schemas:
     ErrorResponse:
@@ -894,7 +956,7 @@ components:
         message:
           type: string
           description: Human-readable explanation of what went wrong. Use HTTP status for control flow.
-          example: "User agent string is empty or null."
+          example: "User-Agent string must not be blank"
 
     UserAgentResponse:
       type: object

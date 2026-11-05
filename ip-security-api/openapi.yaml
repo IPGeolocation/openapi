@@ -62,7 +62,9 @@ info:
     - Alternatively, set the `Accept` header to `application/json`, `application/xml`,
       or `text/xml`.
 
-    If neither is specified, the response is returned as JSON. XML responses use a
+    If neither is specified, the response is returned as JSON. If both are set, the
+    `Accept` header takes precedence for successful responses and authentication errors
+    (see the `output` parameter). XML responses use a
     `LinkedHashMap` root element.
 
     ## Credit Usage
@@ -152,7 +154,12 @@ paths:
         - $ref: "#/components/parameters/Output"
       responses:
         "200":
-          description: Security intelligence for the requested IP.
+          description: |
+            Security intelligence for the requested IP.
+
+            If the IP is not in the security database, the response is still 200 with
+            every flag false, scores and counts 0, and empty names, lists and dates. It is
+            billed the same as a lookup that has security data.
           headers:
             X-Credits-Charged:
               description: Number of API credits consumed by this request.
@@ -174,6 +181,9 @@ paths:
                   ]
                   proxy_confidence_score: 80
                   proxy_last_seen: "2025-12-12"
+                  proxy_days_seen_30d: 4
+                  proxy_days_seen_7d: 1
+                  proxy_provider_count_30d: 1
                   is_residential_proxy: true
                   is_vpn: true
                   vpn_provider_names: [
@@ -210,6 +220,9 @@ paths:
                       <proxy_provider_names>Zyte Proxy</proxy_provider_names>
                       <proxy_confidence_score>80</proxy_confidence_score>
                       <proxy_last_seen>2025-12-12</proxy_last_seen>
+                      <proxy_days_seen_30d>4</proxy_days_seen_30d>
+                      <proxy_days_seen_7d>1</proxy_days_seen_7d>
+                      <proxy_provider_count_30d>1</proxy_provider_count_30d>
                       <is_residential_proxy>true</is_residential_proxy>
                       <is_vpn>true</is_vpn>
                       <vpn_provider_names>Nord VPN</vpn_provider_names>
@@ -237,6 +250,10 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "405":
@@ -268,8 +285,9 @@ paths:
 
         The request body must contain an `ips` array.
 
-        Each IP is processed independently. Invalid, bogon, or private
-        IP addresses return an object containing only a `message` field.
+        Each IP is processed independently, and surrounding spaces are trimmed. Invalid,
+        empty, null, bogon, or private entries return an object containing only a
+        `message` field; the rest of the request still succeeds.
 
         Credits are charged **per valid IP address** using the same
         pricing rules as the single lookup endpoint.
@@ -318,8 +336,8 @@ paths:
             Valid entries return a security lookup object containing the IP address
             and its associated security intelligence.
 
-            Invalid, private, or bogon IP addresses return an object containing only
-            a `message` field.
+            Invalid, empty, null, private, or bogon entries return an object containing
+            only a `message` field; the rest of the request still succeeds.
 
             The `X-Successful-Record` response header is returned only when the request
             contains one or more invalid entries and indicates the number of successful
@@ -359,6 +377,9 @@ paths:
                     ]
                     proxy_confidence_score: 80
                     proxy_last_seen: "2025-12-12"
+                    proxy_days_seen_30d: 4
+                    proxy_days_seen_7d: 1
+                    proxy_provider_count_30d: 1
                     is_residential_proxy: true
                     is_vpn: true
                     vpn_provider_names: [
@@ -404,6 +425,9 @@ paths:
                         <proxy_provider_names>Zyte Proxy</proxy_provider_names>
                         <proxy_confidence_score>80</proxy_confidence_score>
                         <proxy_last_seen>2025-12-12</proxy_last_seen>
+                        <proxy_days_seen_30d>4</proxy_days_seen_30d>
+                        <proxy_days_seen_7d>1</proxy_days_seen_7d>
+                        <proxy_provider_count_30d>1</proxy_provider_count_30d>
                         <is_residential_proxy>true</is_residential_proxy>
                         <is_vpn>true</is_vpn>
                         <vpn_provider_names>Nord VPN</vpn_provider_names>
@@ -436,6 +460,10 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "413":
@@ -488,16 +516,18 @@ components:
 
         Supports dot-notation for nested fields: `security.is_tor`, `security.threat_score`.
 
-        If the same nested field path is specified in both `fields` and `excludes`
-        (e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned
-        as an empty value. Specifying the same top-level object name in both (e.g.
-        `fields=security&excludes=security`) has no emptying effect — the full object
-        is returned.
+        If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and
+        it is left out of the response (e.g. `fields=security.is_vpn&excludes=security.is_vpn`
+        drops `is_vpn`). An object left with no fields is removed, so
+        `fields=security&excludes=security` returns only `ip`.
 
         If you list both an object key and one of its nested fields separated by comma
         (e.g. `security,security.is_vpn`), the full object is returned.
 
-        Unknown field paths are ignored. The API still returns HTTP 200.
+        Unknown names are ignored and the API still returns HTTP 200. Names are
+        case-sensitive. If none of the names in `fields` is valid, `fields` is ignored
+        and the full response is returned (and charged). `*` anywhere in `fields`
+        returns everything.
 
         This parameter only has an effect once a request is authorized; the IP Security
         API as a whole requires a paid plan (see Usage Limits above).
@@ -524,11 +554,10 @@ components:
 
         Supports dot-notation for nested fields: `security.is_relay`.
 
-        If the same nested field path is specified in both `fields` and `excludes`
-        (e.g. `fields=security.is_vpn&excludes=security.is_vpn`), that field is returned
-        as an empty value. Specifying the same top-level object name in both (e.g.
-        `fields=security&excludes=security`) has no emptying effect — the full object
-        is returned.
+        If the same field or object is listed in both `fields` and `excludes`, `excludes` wins and
+        it is left out of the response (e.g. `fields=security.is_vpn&excludes=security.is_vpn`
+        drops `is_vpn`). An object left with no fields is removed, so
+        `fields=security&excludes=security` returns only `ip`.
 
         Unknown fields or object keys in `excludes` are ignored. The API still returns
         HTTP 200.
@@ -552,8 +581,12 @@ components:
       description: |
         Desired response format. Defaults to `json` if not specified. You can also
         control the format using the `Accept` header (`application/json`,
-        `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-        takes precedence.
+        `application/xml`, or `text/xml`). For successful responses and authentication
+        errors, the `Accept` header takes precedence if both are provided: `output` is
+        used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+        value other than `application/xml` or `text/xml` (for example a browser's
+        default) returns JSON even with `output=xml`. Values are matched exactly (use
+        lowercase `xml`).
 
         If `output` is unknown or unsupported, it is ignored and the response defaults
         to JSON (`application/json`) with HTTP 200.
@@ -570,12 +603,12 @@ components:
         - The provided IPv4 or IPv6 address is invalid. This API does not accept domain
           names in the `ip` parameter — a domain name is rejected the same way as any
           other non-IP string.
-        - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
+        - Special characters such as [ ] { } | ^ ` are present in the API URL,
           either in a parameter name or its value (especially in the API key).
         - For the `security-bulk` endpoint:
           - The request payload is empty or missing.
           - The JSON body is malformed.
-          - The `ips` field is missing or the `ips` array is empty.
+          - The `ips` field is missing, is not a JSON array of strings, or the `ips` array is empty.
           - More than 50,000 IP addresses are provided in the request.
       content:
         application/json:
@@ -598,6 +631,10 @@ components:
               summary: Bulk body missing ips field
               value:
                 message: "IP addresses for bulk lookup are missing"
+            ipsNotArray:
+              summary: Bulk ips field is not a JSON array
+              value:
+                message: "'ips' must be a JSON array of strings, e.g. {\"ips\": [\"value1\", \"value2\"]}"
             emptyBulkIps:
               summary: Bulk ips array is empty
               value:
@@ -611,14 +648,14 @@ components:
       description: |
         Unauthorized. Returned for one of the following reasons:
 
-        - The `apiKey` URL parameter is missing.
-        - An invalid (random or incorrect) API key is provided.
-        - The account has been disabled or locked due to abuse or illegal activity.
+        - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
+        - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+        - The account's email address has not been verified.
+        - The account has been locked due to abuse or illegal activity.
         - The API request is made using an API key for a database subscription.
         - The API request is made using a free subscription API key.
         - The subscription is in a 'paused' state.
         - The subscription trial has expired.
-        - The account’s active-until date has passed and renewal or upgrade is required.
         - The bulk IP security lookup endpoint is called using a free subscription API key.
         - The bulk IP security lookup endpoint is called using Request Origin (CORS)
           authentication. Bulk requests require an `apiKey` and cannot be authenticated
@@ -638,8 +675,13 @@ components:
               value:
                 message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
 
+            unverifiedEmail:
+              summary: Email address not verified
+              value:
+                message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+
             lockedAccount:
-              summary: Account locked or disabled
+              summary: Account locked
               value:
                 message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
 
@@ -668,40 +710,60 @@ components:
               value:
                 message: "Your subscription trial has been expired. Please subscribe to a paid plan to use IPGeolocation API."
 
-            subscriptionExpired:
-              summary: Subscription active-until date has passed
-              value:
-                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
-
             requestOriginBulk:
               summary: Bulk endpoint called using Request Origin authentication
               value:
                 message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
 
-    NotFound:
+    PaymentRequired:
       description: |
-        Not found. Returned for one of the following reasons:
-
-        - A syntactically valid IPv4 or IPv6 address does not exist in the IPGeolocation database.
-        - An IPv4 address, IPv6 address, or domain name is passed as a path variable
-          instead of as a URL query parameter (e.g., using `/v3/ipgeo/8.8.8.8`
-          instead of `/v3/ipgeo?ip=8.8.8.8`).
-        - A non-existent or incorrect API endpoint is called.
-
-        Invalid or malformed IPv4, IPv6, or domain input returns HTTP 400 instead.
+        Payment Required. Returned for a paid (non-Free) subscription whose active-until
+        date has passed: one day after the active-until date for active or trialing
+        subscriptions, and from the active-until date for past-due or deleted
+        subscriptions. It is checked before any usage quota. Paused subscriptions and
+        expired trials get HTTP 401 instead, and Free plan keys never get 402. Renew or
+        upgrade the plan to continue using IPGeolocation API.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           examples:
-            ipNotInDatabase:
-              summary: IPv4/IPv6 not found in database
+            subscriptionExpired:
+              summary: Subscription active-until date has passed
               value:
-                message: "Provided IPv4 or IPv6 address does not exist in our database."
+                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+
+    Forbidden:
+      description: |
+        Forbidden. The API key has an IP allow-list and the request comes from an IP address that is not on it.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io"
+
+    NotFound:
+      description: |
+        Not found. Returned for one of the following reasons:
+
+        - An IPv4 address, IPv6 address, or domain name is passed as a path variable
+          instead of as a URL query parameter (e.g., using `/v3/security/8.8.8.8`
+          instead of `/v3/security?ip=8.8.8.8`).
+        - A non-existent or incorrect API endpoint is called.
+
+        An IP address that is not in the security database does not return 404; it
+        returns HTTP 200 with the default security object. Invalid or malformed IPv4,
+        IPv6, or domain input returns HTTP 400 instead.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
             ipAsPathVariable:
               summary: IP passed as path variable instead of query parameter
               value:
-                message: "No endpoint GET /v3/ipgeo/8.8.8.8."
+                message: "No endpoint GET /v3/security/8.8.8.8."
             wrongEndpoint:
               summary: Incorrect or non-existent endpoint
               value:
@@ -714,11 +776,11 @@ components:
 
         Only GET and POST methods are supported:
 
-        - `GET` is allowed for the `ipgeo` endpoint.
-        - `POST` is allowed for the `ipgeo-bulk` endpoint.
+        - `GET` is allowed for the `security` endpoint.
+        - `POST` is allowed for the `security-bulk` endpoint.
 
-        Any other HTTP method, or using the correct method on the wrong endpoint,
-        results in HTTP 405.
+        Calling an endpoint with an HTTP method it doesn't support (for example `PUT` or `DELETE`), or using the correct method on
+        the wrong endpoint, results in HTTP 405.
       content:
         application/json:
           schema:
@@ -735,7 +797,7 @@ components:
             unsupportedMethod:
               summary: Unsupported HTTP method
               value:
-                message: "Request method is not supported"
+                message: "Request method 'PUT' is not supported"
 
     PayloadTooLarge:
       description: |
@@ -786,8 +848,9 @@ components:
     TooManyRequests:
       description: |
         Too Many Requests. Returned for one of the following reasons:
-        - The API credit allowance has been reached for a Paid subscription with
-          status 'past due', 'deleted', or 'trial expired'.
+        - The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).
+        - The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.
+        - The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.
         - The surcharge (overage) credit limit has been reached for the subscribed plan.
       content:
         application/json:
@@ -797,23 +860,22 @@ components:
             usageLimitReached:
               summary: API credit limit reached
               value:
-                message: "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+            trialLimitReached:
+              summary: Trial credit cap (100,000) reached
+              value:
+                message: "You have exceeded the limit of 100000 requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
             surchargeLimitReached:
               summary: Surcharge usage limit reached
               value:
-                message: "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have reached the surcharge amount limit of $SURCHARGE_AMOUNT_LIMIT on your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
 
     ClientClosedRequest:
       description: |
         The client closed the connection before the server finished processing the
-        request. This usually happens when the client sets a very short request or
-        connection timeout. Increase the timeout on the client side.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Client closed the request before the server could respond."
+        request (logged by the edge proxy; the client receives no response). This
+        usually happens when the client sets a very short request or connection
+        timeout. Increase the timeout on the client side.
 
     InternalServerError:
       description: |
@@ -825,47 +887,36 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Something went wrong on the server side."
+            message: "Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io"
     BadGateway:
       description: |
-        Bad Gateway. The API server received an invalid response from an upstream
-        server while processing the request. This is usually temporary.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Upstream service error. Please try again later."
+        Bad Gateway. Returned by the edge proxy in front of the API, not by the API
+        application, when it gets an invalid response from the API server. The
+        response body is set by the proxy. This is usually temporary; retry the
+        request.
     ServiceUnavailable:
       description: |
-        Service Unavailable. The API is temporarily unavailable due to maintenance
-        or overload. Please try again later.
+        Service Unavailable. Returned when the API cannot verify your API key (or request
+        origin) because of a temporary internal error, for example when the billing
+        service is unreachable and the key has not been verified recently. Keys that
+        were verified recently keep working. Retry later; if it persists, contact
+        support@ipgeolocation.io.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Service temporarily unavailable. Please try again later."
+            message: "We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io"
     GatewayTimeout:
       description: |
-        Gateway Timeout. The API server did not receive a timely response from
-        an upstream server.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "The server timed out while processing the request."
+        Gateway Timeout. Returned by the edge proxy in front of the API, not by the
+        API application, when the API server does not respond in time. The response
+        body is set by the proxy. Retry the request.
     HttpVersionNotSupported:
       description: |
-        HTTP Version Not Supported. The server does not support the HTTP protocol
-        version used in the request.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "HTTP version not supported."
+        HTTP Version Not Supported. Returned by the edge proxy in front of the API,
+        not by the API application, when the request uses an HTTP protocol version
+        it does not support. The response body is set by the proxy.
     
 
   schemas:
@@ -1002,6 +1053,18 @@ components:
             Date when this IP was last observed acting as a proxy, in `YYYY-MM-DD`
             format. Empty string if never seen.
           example: "2025-12-12"
+        proxy_days_seen_30d:
+          type: integer
+          description: Number of days in the last 30 days this IP was observed acting as a proxy.
+          example: 4
+        proxy_days_seen_7d:
+          type: integer
+          description: Number of days in the last 7 days this IP was observed acting as a proxy.
+          example: 1
+        proxy_provider_count_30d:
+          type: integer
+          description: Number of distinct proxy providers associated with this IP in the last 30 days.
+          example: 1
         is_residential_proxy:
           type: boolean
           description: Whether the IP is a known residential proxy.

@@ -3,7 +3,7 @@
   "info": {
     "title": "IPGeolocation.io: IPGeolocation API",
     "version": "3.0",
-    "description": "Look up geolocation, network, company, ASN, timezone, currency, abuse contact, and security\nthreat data for any IPv4 address, IPv6 address, or domain name. The API also parses\nUser-Agent strings when requested.\n\nTwo endpoints are available:\n\n- **Single lookup** (`GET /v3/ipgeo`) returns data for one IP or domain per request.\n- **Bulk lookup** (`POST /v3/ipgeo-bulk`) accepts up to 50,000 IPs or domains in a\n  single request. Requires a paid plan.\n\nUse query parameters to control which optional modules are included, which fields are\nreturned, and which fields are excluded. Both endpoints share the same query parameters\nand the same response schema per IP.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Response Formats\n\nThe API supports JSON (default) and XML output.\n\n- Set the `output` query parameter to `json` or `xml`.\n- Alternatively, set the `Accept` header to `application/json`, `application/xml`,\n  or `text/xml`.\n\nIf neither is specified, the response is returned as JSON. XML responses use a\n`LinkedHashMap` root element.\n\n## Credits\n\nCredits are charged only on successful HTTP 200 responses. The exact charge for any\nrequest is returned in the `X-Credits-Charged` response header.\n\n| Condition | Credits charged |\n|---|---|\n| Base lookup (location, ASN, company, network, currency, timezone) | 1 |\n| Adding `dma_code`, `geo_accuracy`, `hostname`, or `user_agent` | 0 extra (still 1) |\n| Adding `security` | +2 (total 3) |\n| Adding `abuse` | +1 (total 2) |\n| Adding `security` and `abuse` | +3 (total 4) |\n| `include=*` (everything) | 4 |\n| Only `security` via `include=security&fields=security` | 2 |\n| Only `abuse` via `include=abuse&fields=abuse` | 1 |\n\nFor bulk requests, total credits equal credits per lookup multiplied by the number of\nvalid IPs. Private, bogon, and malformed IPs are not counted as valid and do not\nconsume credits.\n\n## Response Language\n\nPass `lang` to get translated location names. English is the default. Non-English\nresponses require a paid plan.\n\n## Field Filtering\n\nUse `fields` to cherry-pick specific fields, or `excludes` to drop fields you do not\nneed. Both accept dot-notation for nested fields (e.g. `location.city`,\n`security.threat_score`). The `ip` field is always present regardless of filters.\n\n## Parameter Name Casing\n\nQuery parameter names are case-sensitive. Use exact names such as `apiKey`, `ip`,\n`include`, `fields`, `excludes`, `lang`, and `output`.\n\n## Usage Limits\n\nBilling is based on API credits, not requests (see Credits above).\n\n- **Free plan:** 1,000 credits per day (hard limit — overage is not available).\n- **Paid plans:** No rate limits. Each billing period includes a fixed credit\n  allowance (Starter 150,000/month, Plus 500,000/month, Pro 1,000,000/month,\n  Business 2,000,000/month, Premium 5,000,000/month). After the allowance is\n  exhausted, requests keep succeeding only while overage (surcharge) is enabled\n  and within its limit; otherwise the API returns HTTP 429.\n\n## Free vs. Paid Plan Differences\n\n| Capability | Free | Paid |\n|---|---|---|\n| IPv4 / IPv6 lookup | Yes | Yes |\n| Domain lookup | No | Yes |\n| Bulk lookup (`/v3/ipgeo-bulk`) | No | Yes |\n| `include` parameter (optional modules) | No | Yes |\n| `lang` (non-English responses) | No | Yes |\n| `fields` / `excludes` filtering | Yes | Yes |\n| `network` object in default response | No | Yes |\n| `company` object in default response | No | Yes |\n| Basic `asn` fields (`as_number`, `organization`, `country`) | Yes | Yes |\n| Extended `asn` fields (`type`, `domain`, `rir`, `date_allocated`) | No | Yes |\n",
+    "description": "Look up geolocation, network, company, ASN, timezone, currency, abuse contact, and security\nthreat data for any IPv4 address, IPv6 address, or domain name. The API also parses\nUser-Agent strings when requested.\n\nTwo endpoints are available:\n\n- **Single lookup** (`GET /v3/ipgeo`) returns data for one IP or domain per request.\n- **Bulk lookup** (`POST /v3/ipgeo-bulk`) accepts up to 50,000 IPs or domains in a\n  single request. Requires a paid plan.\n\nUse query parameters to control which optional modules are included, which fields are\nreturned, and which fields are excluded. Both endpoints share the same query parameters\nand the same response schema per IP.\n\n## Authentication\n\nTwo authentication methods are supported:\n\n### API Key\n\nPass your API key as the `apiKey` query parameter on every request. You can find your\nkey in the [IPGeolocation dashboard](https://app.ipgeolocation.io/). Store it in\nserver-side environment variables. Avoid exposing it in client-side JavaScript.\n\n### Request Origin (CORS)\n\nAvailable on paid plans only. Whitelist your domain in the dashboard under the\n\"API Keys\" section. Once configured, requests from that domain (and all its subdomains)\nare accepted without passing `apiKey`. Enter your root domain (e.g. `example.com`),\nnot the full URL.\n\nEach plan has a limit on the number of extra API keys and request origins:\n\n| Plan | Extra API Keys + Request Origins |\n|---|---|\n| Free | 0 |\n| Starter | 1 |\n| Plus | 2 |\n| Pro | 2 |\n| Business | 3 |\n| Premium | 3 |\n\nPlans are sized by API credits, not requests: Free includes 1,000 credits\nper day; Starter 150,000 credits/month; Plus 500,000; Pro 1,000,000;\nBusiness 2,000,000; Premium 5,000,000.\n\nAdditional keys or origins can be added for $2.50 per month each.\n\n## Response Formats\n\nThe API supports JSON (default) and XML output.\n\n- Set the `output` query parameter to `json` or `xml`.\n- Alternatively, set the `Accept` header to `application/json`, `application/xml`,\n  or `text/xml`.\n\nIf neither is specified, the response is returned as JSON. If both are set, the\n`Accept` header takes precedence for successful responses and authentication errors\n(see the `output` parameter). XML responses use a\n`LinkedHashMap` root element.\n\n## Credits\n\nCredits are charged only on successful HTTP 200 responses. The exact charge for any\nrequest is returned in the `X-Credits-Charged` response header.\n\n| Condition | Credits charged |\n|---|---|\n| Base lookup (location, ASN, company, network, currency, timezone) | 1 |\n| Adding `dma_code`, `geo_accuracy`, `hostname`, or `user_agent` | 0 extra (still 1) |\n| Adding `security` | +2 (total 3) |\n| Adding `abuse` | +1 (total 2) |\n| Adding `security` and `abuse` | +3 (total 4) |\n| `include=*` (everything) | 4 |\n| Only `security` via `include=security&fields=security` | 2 |\n| Only `abuse` via `include=abuse&fields=abuse` | 1 |\n\nFor bulk requests, total credits equal credits per lookup multiplied by the number of\nvalid IPs. Private, bogon, and malformed IPs are not counted as valid and do not\nconsume credits.\n\n## Response Language\n\nPass `lang` to get translated location names. English is the default. Non-English\nresponses require a paid plan.\n\n## Field Filtering\n\nUse `fields` to cherry-pick specific fields, or `excludes` to drop fields you do not\nneed. Both accept dot-notation for nested fields (e.g. `location.city`,\n`security.threat_score`). The `ip` field, and `domain` on domain lookups, are always\nreturned; `fields` and `excludes` cannot remove them.\n\n## Parameter Name Casing\n\nQuery parameter names are case-sensitive. Use exact names such as `apiKey`, `ip`,\n`include`, `fields`, `excludes`, `lang`, and `output`.\n\n## Usage Limits\n\nBilling is based on API credits, not requests (see Credits above).\n\n- **Free plan:** 1,000 credits per day (hard limit — overage is not available).\n- **Paid plans:** No rate limits. Each billing period includes a fixed credit\n  allowance (Starter 150,000/month, Plus 500,000/month, Pro 1,000,000/month,\n  Business 2,000,000/month, Premium 5,000,000/month). After the allowance is\n  exhausted, requests keep succeeding only while overage (surcharge) is enabled\n  and within its limit; otherwise the API returns HTTP 429.\n\n## Free vs. Paid Plan Differences\n\n| Capability | Free | Paid |\n|---|---|---|\n| IPv4 / IPv6 lookup | Yes | Yes |\n| Domain lookup | No | Yes |\n| Bulk lookup (`/v3/ipgeo-bulk`) | No | Yes |\n| `include` parameter (optional modules) | No | Yes |\n| `lang` (non-English responses) | No | Yes |\n| `fields` / `excludes` filtering | Yes | Yes |\n| `network` object in default response | No | Yes |\n| `company` object in default response | No | Yes |\n| Basic `asn` fields (`as_number`, `organization`, `country`) | Yes | Yes |\n| Extended `asn` fields (`type`, `domain`, `rir`, `date_allocated`) | No | Yes |\n",
     "contact": {
       "name": "IPGeolocation Support",
       "url": "https://ipgeolocation.io/contact.html",
@@ -148,16 +148,15 @@
                         "threat_score": 0,
                         "is_tor": false,
                         "is_proxy": false,
-                        "proxy_provider_names": [
-
-                        ],
+                        "proxy_provider_names": [],
                         "proxy_confidence_score": 0,
                         "proxy_last_seen": "",
+                        "proxy_days_seen_30d": 0,
+                        "proxy_days_seen_7d": 0,
+                        "proxy_provider_count_30d": 0,
                         "is_residential_proxy": false,
                         "is_vpn": false,
-                        "vpn_provider_names": [
-
-                        ],
+                        "vpn_provider_names": [],
                         "vpn_confidence_score": 0,
                         "vpn_last_seen": "",
                         "is_relay": false,
@@ -338,7 +337,7 @@
                 "examples": {
                   "paidFullResponse": {
                     "summary": "Paid plan, all modules included (XML)",
-                    "value": "<LinkedHashMap>\n  <ip>91.128.103.196</ip>\n  <hostname>91.128.103.196</hostname>\n  <location>\n      <continent_code>EU</continent_code>\n      <continent_name>Europe</continent_name>\n      <country_code2>SE</country_code2>\n      <country_code3>SWE</country_code3>\n      <country_name>Sweden</country_name>\n      <country_name_official>Kingdom of Sweden</country_name_official>\n      <country_capital>Stockholm</country_capital>\n      <state_prov>Stockholms län</state_prov>\n      <state_code>SE-AB</state_code>\n      <district>Stockholm</district>\n      <city>Stockholm</city>\n      <locality>Stockholm</locality>\n      <accuracy_radius>8.793</accuracy_radius>\n      <confidence>high</confidence>\n      <dma_code></dma_code>\n      <zipcode>164 40</zipcode>\n      <latitude>59.40510</latitude>\n      <longitude>17.95510</longitude>\n      <is_eu>true</is_eu>\n      <country_flag>https://ipgeolocation.io/static/flags/se_64.png</country_flag>\n      <geoname_id>9972319</geoname_id>\n      <country_emoji>🇸🇪</country_emoji>\n  </location>\n  <country_metadata>\n      <calling_code>+46</calling_code>\n      <tld>.se</tld>\n      <languages>sv-SE</languages>\n      <languages>se</languages>\n      <languages>sma</languages>\n      <languages>fi-SE</languages>\n  </country_metadata>\n  <network>\n      <connection_type></connection_type>\n      <route>91.128.0.0/14</route>\n      <is_anycast>false</is_anycast>\n      <is_cdn>false</is_cdn>\n      <cdn_provider_name></cdn_provider_name>\n  </network>\n  <currency>\n      <code>SEK</code>\n      <name>Swedish Krona</name>\n      <symbol>kr</symbol>\n  </currency>\n  <asn>\n      <as_number>AS1257</as_number>\n      <organization>Tele2 Sverige AB</organization>\n      <country>SE</country>\n      <type>ISP</type>\n      <domain>tele2.com</domain>\n      <date_allocated>2002-09-19</date_allocated>\n      <rir>RIPE</rir>\n  </asn>\n  <company>\n      <name>Tele2 Sverige AB</name>\n      <type>ISP</type>\n      <domain>tele2.com</domain>\n  </company>\n  <security>\n      <threat_score>0</threat_score>\n      <is_tor>false</is_tor>\n      <is_proxy>false</is_proxy>\n      <proxy_confidence_score>0</proxy_confidence_score>\n      <proxy_last_seen></proxy_last_seen>\n      <is_residential_proxy>false</is_residential_proxy>\n      <is_vpn>false</is_vpn>\n      <vpn_confidence_score>0</vpn_confidence_score>\n      <vpn_last_seen></vpn_last_seen>\n      <is_relay>false</is_relay>\n      <relay_provider_name></relay_provider_name>\n      <is_anonymous>false</is_anonymous>\n      <is_known_attacker>false</is_known_attacker>\n      <is_bot>false</is_bot>\n      <bot_confidence_score>0</bot_confidence_score>\n      <bot_operator_name></bot_operator_name>\n      <bot_type></bot_type>\n      <is_known_good_bot>false</is_known_good_bot>\n      <bot_last_seen></bot_last_seen>\n      <is_spam>false</is_spam>\n      <is_cloud_provider>false</is_cloud_provider>\n      <cloud_provider_name></cloud_provider_name>\n      <is_corporate_gateway>false</is_corporate_gateway>\n      <corporate_gateway_type></corporate_gateway_type>\n      <corporate_gateway_provider_name></corporate_gateway_provider_name>\n  </security>\n  <abuse>\n      <route>91.128.0.0/14</route>\n      <country>SE</country>\n      <name>Swipnet Staff</name>\n      <organization></organization>\n      <kind>group</kind>\n      <address>Tele2 AB/Swedish IP Network, IP Registry, Torshamnsgatan 17 164 40 Kista SWEDEN</address>\n      <emails>abuse@tele2.com</emails>\n      <phone_numbers>+46 8 5626 42 10</phone_numbers>\n  </abuse>\n  <time_zone>\n      <name>Europe/Stockholm</name>\n      <offset>1</offset>\n      <offset_with_dst>1</offset_with_dst>\n      <current_time>2026-03-02 13:32:39.256+0100</current_time>\n      <current_time_unix>1772454759.256</current_time_unix>\n      <current_tz_abbreviation>CET</current_tz_abbreviation>\n      <current_tz_full_name>Central European Standard Time</current_tz_full_name>\n      <standard_tz_abbreviation>CET</standard_tz_abbreviation>\n      <standard_tz_full_name>Central European Standard Time</standard_tz_full_name>\n      <is_dst>false</is_dst>\n      <dst_savings>0</dst_savings>\n      <dst_exists>true</dst_exists>\n      <dst_tz_abbreviation>CEST</dst_tz_abbreviation>\n      <dst_tz_full_name>Central European Summer Time</dst_tz_full_name>\n      <dst_start>\n          <utc_time>2026-03-29 TIME 01:00</utc_time>\n          <duration>+1.00H</duration>\n          <gap>true</gap>\n          <date_time_after>2026-03-29 TIME 03:00</date_time_after>\n          <date_time_before>2026-03-29 TIME 02:00</date_time_before>\n          <overlap>false</overlap>\n      </dst_start>\n      <dst_end>\n          <utc_time>2026-10-25 TIME 01:00</utc_time>\n          <duration>-1.00H</duration>\n          <gap>false</gap>\n          <date_time_after>2026-10-25 TIME 02:00</date_time_after>\n          <date_time_before>2026-10-25 TIME 03:00</date_time_before>\n          <overlap>true</overlap>\n      </dst_end>\n  </time_zone>\n  <user_agent>\n      <user_agent_string>PostmanRuntime/7.49.1</user_agent_string>\n      <name>PostmanRuntime</name>\n      <type>Robot</type>\n      <version>7.49.1</version>\n      <version_major>7</version_major>\n      <device>\n          <name>Postman Runtime</name>\n          <type>Robot</type>\n          <brand>Postman</brand>\n          <cpu>Unknown</cpu>\n      </device>\n      <engine>\n          <name>PostmanRuntime</name>\n          <type>Robot</type>\n          <version>7.49.1</version>\n          <version_major>7</version_major>\n      </engine>\n      <operating_system>\n          <name>Cloud</name>\n          <type>Cloud</type>\n          <version>??</version>\n          <version_major>??</version_major>\n          <build>??</build>\n      </operating_system>\n  </user_agent>\n</LinkedHashMap>\n"
+                    "value": "<LinkedHashMap>\n  <ip>91.128.103.196</ip>\n  <hostname>91.128.103.196</hostname>\n  <location>\n      <continent_code>EU</continent_code>\n      <continent_name>Europe</continent_name>\n      <country_code2>SE</country_code2>\n      <country_code3>SWE</country_code3>\n      <country_name>Sweden</country_name>\n      <country_name_official>Kingdom of Sweden</country_name_official>\n      <country_capital>Stockholm</country_capital>\n      <state_prov>Stockholms län</state_prov>\n      <state_code>SE-AB</state_code>\n      <district>Stockholm</district>\n      <city>Stockholm</city>\n      <locality>Stockholm</locality>\n      <accuracy_radius>8.793</accuracy_radius>\n      <confidence>high</confidence>\n      <dma_code></dma_code>\n      <zipcode>164 40</zipcode>\n      <latitude>59.40510</latitude>\n      <longitude>17.95510</longitude>\n      <is_eu>true</is_eu>\n      <country_flag>https://ipgeolocation.io/static/flags/se_64.png</country_flag>\n      <geoname_id>9972319</geoname_id>\n      <country_emoji>🇸🇪</country_emoji>\n  </location>\n  <country_metadata>\n      <calling_code>+46</calling_code>\n      <tld>.se</tld>\n      <languages>sv-SE</languages>\n      <languages>se</languages>\n      <languages>sma</languages>\n      <languages>fi-SE</languages>\n  </country_metadata>\n  <network>\n      <connection_type></connection_type>\n      <route>91.128.0.0/14</route>\n      <is_anycast>false</is_anycast>\n      <is_cdn>false</is_cdn>\n      <cdn_provider_name></cdn_provider_name>\n  </network>\n  <currency>\n      <code>SEK</code>\n      <name>Swedish Krona</name>\n      <symbol>kr</symbol>\n  </currency>\n  <asn>\n      <as_number>AS1257</as_number>\n      <organization>Tele2 Sverige AB</organization>\n      <country>SE</country>\n      <type>ISP</type>\n      <domain>tele2.com</domain>\n      <date_allocated>2002-09-19</date_allocated>\n      <rir>RIPE</rir>\n  </asn>\n  <company>\n      <name>Tele2 Sverige AB</name>\n      <type>ISP</type>\n      <domain>tele2.com</domain>\n  </company>\n  <security>\n      <threat_score>0</threat_score>\n      <is_tor>false</is_tor>\n      <is_proxy>false</is_proxy>\n      <proxy_confidence_score>0</proxy_confidence_score>\n      <proxy_last_seen></proxy_last_seen>\n      <proxy_days_seen_30d>0</proxy_days_seen_30d>\n      <proxy_days_seen_7d>0</proxy_days_seen_7d>\n      <proxy_provider_count_30d>0</proxy_provider_count_30d>\n      <is_residential_proxy>false</is_residential_proxy>\n      <is_vpn>false</is_vpn>\n      <vpn_confidence_score>0</vpn_confidence_score>\n      <vpn_last_seen></vpn_last_seen>\n      <is_relay>false</is_relay>\n      <relay_provider_name></relay_provider_name>\n      <is_anonymous>false</is_anonymous>\n      <is_known_attacker>false</is_known_attacker>\n      <is_bot>false</is_bot>\n      <bot_confidence_score>0</bot_confidence_score>\n      <bot_operator_name></bot_operator_name>\n      <bot_type></bot_type>\n      <is_known_good_bot>false</is_known_good_bot>\n      <bot_last_seen></bot_last_seen>\n      <is_spam>false</is_spam>\n      <is_cloud_provider>false</is_cloud_provider>\n      <cloud_provider_name></cloud_provider_name>\n      <is_corporate_gateway>false</is_corporate_gateway>\n      <corporate_gateway_type></corporate_gateway_type>\n      <corporate_gateway_provider_name></corporate_gateway_provider_name>\n  </security>\n  <abuse>\n      <route>91.128.0.0/14</route>\n      <country>SE</country>\n      <name>Swipnet Staff</name>\n      <organization></organization>\n      <kind>group</kind>\n      <address>Tele2 AB/Swedish IP Network, IP Registry, Torshamnsgatan 17 164 40 Kista SWEDEN</address>\n      <emails>abuse@tele2.com</emails>\n      <phone_numbers>+46 8 5626 42 10</phone_numbers>\n  </abuse>\n  <time_zone>\n      <name>Europe/Stockholm</name>\n      <offset>1</offset>\n      <offset_with_dst>1</offset_with_dst>\n      <current_time>2026-03-02 13:32:39.256+0100</current_time>\n      <current_time_unix>1772454759.256</current_time_unix>\n      <current_tz_abbreviation>CET</current_tz_abbreviation>\n      <current_tz_full_name>Central European Standard Time</current_tz_full_name>\n      <standard_tz_abbreviation>CET</standard_tz_abbreviation>\n      <standard_tz_full_name>Central European Standard Time</standard_tz_full_name>\n      <is_dst>false</is_dst>\n      <dst_savings>0</dst_savings>\n      <dst_exists>true</dst_exists>\n      <dst_tz_abbreviation>CEST</dst_tz_abbreviation>\n      <dst_tz_full_name>Central European Summer Time</dst_tz_full_name>\n      <dst_start>\n          <utc_time>2026-03-29 TIME 01:00</utc_time>\n          <duration>+1.00H</duration>\n          <gap>true</gap>\n          <date_time_after>2026-03-29 TIME 03:00</date_time_after>\n          <date_time_before>2026-03-29 TIME 02:00</date_time_before>\n          <overlap>false</overlap>\n      </dst_start>\n      <dst_end>\n          <utc_time>2026-10-25 TIME 01:00</utc_time>\n          <duration>-1.00H</duration>\n          <gap>false</gap>\n          <date_time_after>2026-10-25 TIME 02:00</date_time_after>\n          <date_time_before>2026-10-25 TIME 03:00</date_time_before>\n          <overlap>true</overlap>\n      </dst_end>\n  </time_zone>\n  <user_agent>\n      <user_agent_string>PostmanRuntime/7.49.1</user_agent_string>\n      <name>PostmanRuntime</name>\n      <type>Robot</type>\n      <version>7.49.1</version>\n      <version_major>7</version_major>\n      <device>\n          <name>Postman Runtime</name>\n          <type>Robot</type>\n          <brand>Postman</brand>\n          <cpu>Unknown</cpu>\n      </device>\n      <engine>\n          <name>PostmanRuntime</name>\n          <type>Robot</type>\n          <version>7.49.1</version>\n          <version_major>7</version_major>\n      </engine>\n      <operating_system>\n          <name>Cloud</name>\n          <type>Cloud</type>\n          <version>??</version>\n          <version_major>??</version_major>\n          <build>??</build>\n      </operating_system>\n  </user_agent>\n</LinkedHashMap>\n"
                   },
                   "freeMinimalResponse": {
                     "summary": "Free plan default response (XML)",
@@ -353,6 +352,12 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
@@ -391,7 +396,7 @@
       "post": {
         "operationId": "bulkLookupIpGeolocation",
         "summary": "Bulk IP geolocation lookup",
-        "description": "Returns geolocation and enrichment data for up to 50,000 IPv4 addresses, IPv6\naddresses, or domain names in a single request. The request body must be a JSON\nobject with an `ips` array.\n\nThis endpoint requires a paid plan. Calling it with a free\nplan API key returns HTTP 401.\n\nThe response is a JSON array with one element per IP in the request. Each element\nis either a full geolocation response object or an error object with only a\n`message` field. Invalid, bogon, and unresolvable entries appear as error\nobjects. Invalid, private, and bogon IPs are not billed.\n\nThis endpoint supports the same query parameters as the single lookup endpoint,\nincluding `lang`, `include`, `fields`, `excludes`, and `output`.\n\nCredits are calculated as: credits per lookup multiplied by the number of valid\nIPs in the request. The total is returned in the `X-Credits-Charged` response\nheader. When at least one submitted ip is invalid, the `X-Successful-Record`\nresponse header indicates how many entries were successfully resolved.\n\nOnly the `POST` method is accepted. Sending a `GET` request returns HTTP 405.\n",
+        "description": "Returns geolocation and enrichment data for up to 50,000 IPv4 addresses, IPv6\naddresses, or domain names in a single request. The request body must be a JSON\nobject with an `ips` array.\n\nThis endpoint requires a paid plan.\n\nThe response is a JSON array with one element per IP in the request. Each element\nis either a lookup result or an object with only a `message` field. An entry gets\na `message` object when it is invalid, empty or `null`, not in the database, a\nbogon or private IP, or when `lang` is unsupported. These entries are not\ncharged.\n\nThis endpoint supports the same query parameters as the single lookup endpoint,\nincluding `lang`, `include`, `fields`, `excludes`, and `output`.\n\nCredits are calculated as: credits per lookup multiplied by the number of valid\nIPs in the request. The total is returned in the `X-Credits-Charged` response\nheader. When at least one submitted ip is invalid, the `X-Successful-Record`\nresponse header indicates how many entries were successfully resolved.\n\nOnly the `POST` method is accepted. Sending a `GET` request returns HTTP 405.\n",
         "tags": [
           "IP Geolocation"
         ],
@@ -448,20 +453,20 @@
         },
         "responses": {
           "200": {
-            "description": "An array of results, one per input entry. Valid entries return full\ngeolocation objects. Invalid, bogon, and unresolvable entries return\nobjects with only a `message` field.\n`X-Successful-Record` is returned only when at least one submitted entry\nfails and the number of successful lookups is lower than the number of\nsubmitted entries.\n",
+            "description": "An array of results, one per input entry. Valid entries return full\ngeolocation objects. An entry that is invalid, empty or `null`, not in the\ndatabase, a bogon or private IP, or that uses an unsupported `lang`, returns\nan object with only a `message` field and is not charged.\n`X-Successful-Record` is returned only when at least one submitted entry\nfails and the number of successful lookups is lower than the number of\nsubmitted entries.\n",
             "headers": {
               "X-Credits-Charged": {
                 "description": "Total number of API credits consumed. Equals credits per lookup\nmultiplied by the count of valid IPs.\n",
                 "schema": {
                   "type": "number",
-                  "example": 3
+                  "example": 1
                 }
               },
               "X-Successful-Record": {
                 "description": "Number of valid IP addresses or domains that were successfully resolved in\nthis bulk request. Invalid, bogon, and private IPs are not counted.\nThis header is included only when at least one bulk entry returns an\nerror message and total successful lookups are fewer than submitted\nentries.\n",
                 "schema": {
                   "type": "number",
-                  "example": 4
+                  "example": 1
                 }
               }
             },
@@ -604,6 +609,12 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
+          "402": {
+            "$ref": "#/components/responses/PaymentRequired"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
           "405": {
             "$ref": "#/components/responses/MethodNotAllowed"
           },
@@ -714,9 +725,6 @@
           "502": {
             "$ref": "#/components/responses/BadGateway"
           },
-          "503": {
-            "$ref": "#/components/responses/ServiceUnavailable"
-          },
           "504": {
             "$ref": "#/components/responses/GatewayTimeout"
           },
@@ -743,7 +751,7 @@
         "name": "lang",
         "in": "query",
         "required": false,
-        "description": "Language code for translated location names. Defaults to `en`. Non-English\nresponses require a paid plan. Free plans always receive English regardless\nof this parameter. Unsupported `lang` values return HTTP 400.\n",
+        "description": "Language code for translated location names. Defaults to `en`. Supported values:\n`en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`; any\nother value returns HTTP 400. Non-English values need a paid plan; on the Free\nplan they return HTTP 401. On `/v3/ipgeo-bulk` an unsupported value is returned for each\nentry as a `message` object inside the HTTP 200 array.\n",
         "schema": {
           "type": "string",
           "default": "en",
@@ -768,7 +776,7 @@
         "name": "include",
         "in": "query",
         "required": false,
-        "description": "Comma-separated list of optional data modules to add to the response. These are\nnot returned by default. Requires a paid plan.\n\n**Available values:**\n\n| Value | What it adds | Extra credits |\n|---|---|---|\n| `geo_accuracy` | `location.locality`, `location.accuracy_radius`, `location.confidence` | 0 |\n| `dma_code` | `location.dma_code` (US IPs only) | 0 |\n| `user_agent` | `user_agent` object (parses the `User-Agent` header) | 0 |\n| `security` | `security` object with threat signals | +2 |\n| `abuse` | `abuse` object with abuse contact info | +1 |\n| `hostname` | `hostname` field (from local database, fast, experimental) | 0 |\n| `liveHostname` | `hostname` field (live DNS lookup, slower, accurate) | 0 |\n| `hostnameFallbackLive` | `hostname` field (local first, falls back to live) | 0 |\n| `*` | All of the above | +3 |\n\nIf multiple hostname options are passed in `include`, hostname resolution uses\nthis precedence order: `liveHostname` first, then `hostname`, then\n`hostnameFallbackLive`.\nIf none is specified, the `hostname` field is not returned.\n\nFor `user_agent`, the API parses the `User-Agent` header from the request. For\nserver-side calls, forward your visitor's User-Agent string in the header so the\nparsed result matches the actual visitor.\n\nFor additional query parameters (`include`, `fields`, `excludes`, `output`),\nunknown values are ignored. The API still returns HTTP 200 and applies only\nrecognized values.\n\nFree plan behavior for `include=*`: the API returns HTTP 200 and ignores the\ninclude request, returning only base response fields. In contrast, specific\ninclude values such as `include=security` return HTTP 401 on free plans.\n",
+        "description": "Comma-separated list of optional data modules to add to the response. These are\nnot returned by default. Requires a paid plan.\n\n**Available values:**\n\n| Value | What it adds | Extra credits |\n|---|---|---|\n| `geo_accuracy` | `location.locality`, `location.accuracy_radius`, `location.confidence` | 0 |\n| `dma_code` | `location.dma_code` (US IPs only) | 0 |\n| `user_agent` | `user_agent` object (parses the `User-Agent` header) | 0 |\n| `security` | `security` object with threat signals | +2 |\n| `abuse` | `abuse` object with abuse contact info | +1 |\n| `hostname` | `hostname` field from the local database (fast, experimental; IPv4 only, so IPv6 lookups return the IP address) | 0 |\n| `liveHostname` | `hostname` field (live DNS lookup, slower, accurate) | 0 |\n| `hostnameFallbackLive` | `hostname` field (local first, falls back to live) | 0 |\n| `*` (or `all`, `any`) | `geo_accuracy`, `dma_code`, `user_agent`, `security`, `abuse`, and `hostname` (local database). Live hostname lookups (`liveHostname`, `hostnameFallbackLive`) must be named separately. | +3 |\n\nIf multiple hostname options are passed in `include`, hostname resolution uses\nthis precedence order: `liveHostname` first, then `hostname`, then\n`hostnameFallbackLive`.\nIf none is specified, the `hostname` field is not returned.\n\nFor `user_agent`, the API parses the `User-Agent` header from the request. For\nserver-side calls, forward your visitor's User-Agent string in the header so the\nparsed result matches the actual visitor.\n\nFor additional query parameters (`include`, `fields`, `excludes`, `output`),\nunknown values are ignored. The API still returns HTTP 200 and applies only\nrecognized values.\n\nFree plan behavior: `include=*` (or `all`, `any`) is ignored and the default\nresponse is returned with HTTP 200. Any named module (`security`, `abuse`,\n`user_agent`, `geo_accuracy`, `dma_code`, `hostname`, `liveHostname`,\n`hostnameFallbackLive`) returns HTTP 401, even if the same module is also listed\nin `excludes`.\n",
         "schema": {
           "type": "string"
         }
@@ -777,7 +785,7 @@
         "name": "fields",
         "in": "query",
         "required": false,
-        "description": "Comma-separated list of fields or objects to return. Everything else is omitted.\nThe `ip` field is always returned regardless of this filter.\n\nSupports dot-notation for nested fields: `location.city`, `asn.organization`.\nTo return an entire object, use the object key: `location`, `security`.\n\nIf a field belongs to an optional module (e.g. `security.threat_score`), you\nmust also pass the corresponding `include` value.\nIf you omit `include`, the request still succeeds, but fields from optional\nmodules are not returned.\n\nIf the same field or object is specified in both `fields` and `excludes`, the\nobject is still returned, but it will be empty.\nIf the same field or object is specified in `include`, `fields`, and `excludes`,\n`include` takes priority over both `fields` and `excludes`.\n\nIf you list both an object key and one of its nested fields separated by comma\n(e.g. `security,security.threat_score`), the full object is returned.\n\nUnknown field paths are ignored. The API still returns HTTP 200.\n\nAvailable on all plans including Free.\n",
+        "description": "Comma-separated list of fields or objects to return. Fields and objects not listed\nare omitted, except add-ons requested with `include`: they are still returned when\n`fields` doesn't list them (e.g. `include=security&fields=location.city` returns\n`location.city` and `security`). To narrow an add-on, list a path inside it (e.g.\n`security.threat_score`). `dma_code` and `geo_accuracy` likewise add their own\n`location` fields.\nThe `ip` field, and `domain` on domain lookups, are always returned; `fields` and\n`excludes` cannot remove them.\n\nSupports dot-notation for nested fields: `location.city`, `asn.organization`.\nTo return an entire object, use the object key: `location`, `security`.\n\nIf a field belongs to an optional module (e.g. `security.threat_score`), you\nmust also pass the corresponding `include` value.\nIf you omit `include`, the request still succeeds, but fields from optional\nmodules are not returned.\nA path into an object that is empty for this IP (for example\n`time_zone.dst_start.utc_time` for a zone without DST) is still valid; the\nobject comes back empty (`{}`).\n\nIf the same field or object is listed in both `fields` and `excludes`,\n`excludes` wins and it is left out of the response. An object left with no\nfields after `excludes` is removed.\n`excludes` also wins over `include`: an add-on that is excluded is not looked up\nor returned, and its extra credits are not charged. This covers `security`,\n`abuse`, `user_agent`, `hostname` (for all three hostname options), `dma_code` and\n`geo_accuracy`: `excludes=dma_code` removes `location.dma_code`,\n`excludes=geo_accuracy` removes `location.locality`, `location.accuracy_radius`\nand `location.confidence`, and `excludes=location` removes both.\n`object.*` removes the whole object; `*` is recognized only as the\nlast part of a path (`location.*.city` is ignored).\n\nIf you list both an object key and one of its nested fields separated by comma\n(e.g. `security,security.threat_score`), the full object is returned.\n\nUnknown names are ignored and the API still returns HTTP 200. Names are\ncase-sensitive. If none of the names in `fields` is valid, `fields` is ignored\nand the full response is returned (and charged). `*` anywhere in `fields`\nreturns everything.\n\nAvailable on all plans including Free.\n",
         "schema": {
           "type": "string"
         }
@@ -786,7 +794,7 @@
         "name": "excludes",
         "in": "query",
         "required": false,
-        "description": "Comma-separated list of fields or objects to remove from the response. The `ip`\nfield cannot be excluded.\n\nSupports dot-notation for nested fields: `location.continent_code`.\nTo exclude an entire object, use the object key: `currency`, `time_zone`.\n\nIf the same field or object is specified in both `fields` and `excludes`, the\nobject is still returned, but it will be empty.\nIf the same field or object is specified in `include`, `fields`, and `excludes`,\n`include` takes priority over both `fields` and `excludes`.\n\nUnknown fields or object keys in `excludes` are ignored. The API still returns\nHTTP 200.\n\nAvailable on all plans including Free.\n",
+        "description": "Comma-separated list of fields or objects to remove from the response. The `ip`\nfield, and `domain` on domain lookups, cannot be excluded.\n\nSupports dot-notation for nested fields: `location.continent_code`.\nTo exclude an entire object, use the object key: `currency`, `time_zone`.\n\nIf the same field or object is listed in both `fields` and `excludes`,\n`excludes` wins and it is left out of the response. An object left with no\nfields after `excludes` is removed.\n`excludes` also wins over `include`: an add-on that is excluded is not looked up\nor returned, and its extra credits are not charged. This covers `security`,\n`abuse`, `user_agent`, `hostname` (for all three hostname options), `dma_code` and\n`geo_accuracy`: `excludes=dma_code` removes `location.dma_code`,\n`excludes=geo_accuracy` removes `location.locality`, `location.accuracy_radius`\nand `location.confidence`, and `excludes=location` removes both.\n`object.*` removes the whole object; `*` is recognized only as the\nlast part of a path (`location.*.city` is ignored).\n\nUnknown fields or object keys in `excludes` are ignored. The API still returns\nHTTP 200.\n\nAvailable on all plans including Free.\n",
         "schema": {
           "type": "string"
         }
@@ -795,7 +803,7 @@
         "name": "output",
         "in": "query",
         "required": false,
-        "description": "Desired response format. Defaults to `json` if not specified. You can also\ncontrol the format using the `Accept` header (`application/json`,\n`application/xml`, or `text/xml`). If both are provided, the `output` parameter\ntakes precedence.\n\nIf `output` is unknown or unsupported, it is ignored and the response defaults\nto JSON (`application/json`) with HTTP 200.\n",
+        "description": "Desired response format. Defaults to `json` if not specified. You can also\ncontrol the format using the `Accept` header (`application/json`,\n`application/xml`, or `text/xml`). For successful responses and authentication\nerrors, the `Accept` header takes precedence if both are provided: `output` is\nused only when the `Accept` header is absent or set to `*/*`, and an `Accept`\nvalue other than `application/xml` or `text/xml` (for example a browser's\ndefault) returns JSON even with `output=xml`. Values are matched exactly (use\nlowercase `xml`).\n\nIf `output` is unknown or unsupported, it is ignored and the response defaults\nto JSON (`application/json`) with HTTP 200.\n",
         "schema": {
           "type": "string",
           "enum": [
@@ -808,7 +816,7 @@
     },
     "responses": {
       "BadRequest": {
-        "description": "Bad request. Returned for one of the following reasons:\n\n- The provided IPv4 address, IPv6 address, or domain name is invalid.\n- Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,\n  either in a parameter name or its value (especially in the API key).\n- For the `ipgeo-bulk` endpoint:\n  - The request payload is empty or missing.\n  - The JSON body is malformed.\n  - The `ips` field is missing or the `ips` array is empty.\n  - More than 50,000 IP addresses are provided in the request.\n- An invalid or unsupported `lang` parameter is provided.\n",
+        "description": "Bad request. Returned for one of the following reasons:\n\n- The provided IPv4 address, IPv6 address, or domain name is invalid.\n- Special characters such as [ ] { } | ^ ` are present in the API URL,\n  either in a parameter name or its value (especially in the API key).\n- For the `ipgeo-bulk` endpoint:\n  - The request payload is empty or missing.\n  - The JSON body is malformed.\n  - The `ips` field is missing, is not a JSON array of strings, or the `ips` array is empty.\n  - More than 50,000 IP addresses are provided in the request.\n- An invalid or unsupported `lang` parameter is provided.\n\nOn the `ipgeo-bulk` endpoint, the whole request fails with HTTP 400 only for the\nbody problems listed above. An invalid IP address or domain name, or an\nunsupported `lang`, does not fail the request: that entry is returned as an\nobject with only a `message` field inside the HTTP 200 array.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -839,6 +847,12 @@
                   "message": "IP addresses for bulk lookup are missing"
                 }
               },
+              "ipsNotArray": {
+                "summary": "Bulk ips field is not a JSON array",
+                "value": {
+                  "message": "'ips' must be a JSON array of strings, e.g. {\"ips\": [\"value1\", \"value2\"]}"
+                }
+              },
               "emptyBulkIps": {
                 "summary": "Bulk ips array is empty",
                 "value": {
@@ -862,7 +876,7 @@
         }
       },
       "Unauthorized": {
-        "description": "Unauthorized. Returned for one of the following reasons:\n\n- The `apiKey` URL parameter is missing.\n- An invalid (random or incorrect) API key is provided.\n- The account has been disabled or locked due to abuse or illegal activity.\n- The API request is made using an API key for a database subscription.\n- The subscription is in a 'paused' state.\n- The subscription trial has expired.\n- The account’s active-until date has passed and renewal or upgrade is required.\n- Any of the following `include` values are used with a Free/Developer plan API key:\n  `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,\n  `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.\n- The bulk IP geolocation endpoint is called using a Free subscription API key.\n- The bulk IP geolocation endpoint is called using Request Origin (CORS)\n  authentication. Bulk requests require an `apiKey` and cannot be authenticated\n  using Request Origin alone.\n- A domain name lookup is performed using a Free subscription API key.\n- A language other than English is specified in the `lang` parameter\n  while using a Free/Developer plan API key.\n",
+        "description": "Unauthorized. Returned for one of the following reasons:\n\n- An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.\n- An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.\n- The account's email address has not been verified.\n- The account has been locked due to abuse or illegal activity.\n- The API request is made using an API key for a database subscription.\n- The subscription is in a 'paused' state.\n- The subscription trial has expired.\n- Any of the following `include` values are used with a Free/Developer plan API key:\n  `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,\n  `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.\n- The bulk IP geolocation endpoint is called using Request Origin (CORS)\n  authentication. Bulk requests require an `apiKey` and cannot be authenticated\n  using Request Origin alone.\n- A domain name lookup is performed using a Free subscription API key.\n- A language other than English is specified in the `lang` parameter\n  while using a Free/Developer plan API key.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -881,8 +895,14 @@
                   "message": "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
                 }
               },
+              "unverifiedEmail": {
+                "summary": "Email address not verified",
+                "value": {
+                  "message": "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
+                }
+              },
               "lockedAccount": {
-                "summary": "Account locked or disabled",
+                "summary": "Account locked",
                 "value": {
                   "message": "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
                 }
@@ -890,25 +910,13 @@
               "databaseSubscriptionKey": {
                 "summary": "Database subscription API key used for REST API",
                 "value": {
-                  "message": "You cannot query IPGeolocation API on a database plan subscription. "
+                  "message": "You cannot query IPGeolocation API on a database plan subscription."
                 }
               },
               "pausedSubscription": {
                 "summary": "Subscription is paused",
                 "value": {
                   "message": "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-                }
-              },
-              "expiredSubscription": {
-                "summary": "Subscription expired or trial ended",
-                "value": {
-                  "message": "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
-                }
-              },
-              "freePlanBulk": {
-                "summary": "Free plan used for bulk endpoint",
-                "value": {
-                  "message": "Bulk IP to geolocation lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
                 }
               },
               "requestOriginBulk": {
@@ -918,9 +926,9 @@
                 }
               },
               "freePlanInclude": {
-                "summary": "Free plan used with restricted include parameter",
+                "summary": "Free plan used with include=security",
                 "value": {
-                  "message": "This feature is not supported on your subscription. This feature is available on Paid subscriptions only."
+                  "message": "IP-security lookup is not supported on your subscription. This feature is available on Paid subscriptions only."
                 }
               },
               "freePlanDomain": {
@@ -940,7 +948,7 @@
         }
       },
       "NotFound": {
-        "description": "Not found. Returned for one of the following reasons:\n\n- A syntactically valid IPv4 or IPv6 address does not exist in the IPGeolocation database.\n- An IPv4 address, IPv6 address, or domain name is passed as a path variable\n  instead of as a URL query parameter (e.g., using `/v3/ipgeo/8.8.8.8`\n  instead of `/v3/ipgeo?ip=8.8.8.8`).\n- A non-existent or incorrect API endpoint is called.\n\nInvalid or malformed IPv4, IPv6, or domain input returns HTTP 400 instead.\n",
+        "description": "Not found. Returned for one of the following reasons:\n\n- A syntactically valid IPv4 or IPv6 address, or the IP a domain resolves to, does not exist in the IPGeolocation database (for a domain: \"Provided domain or service name 'example.com' doesn't exist in our database.\").\n- An IPv4 address, IPv6 address, or domain name is passed as a path variable\n  instead of as a URL query parameter (e.g., using `/v3/ipgeo/8.8.8.8`\n  instead of `/v3/ipgeo?ip=8.8.8.8`).\n- A non-existent or incorrect API endpoint is called.\n\nInvalid or malformed IPv4, IPv6, or domain input returns HTTP 400 instead.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -950,7 +958,7 @@
               "ipNotInDatabase": {
                 "summary": "IPv4/IPv6 not found in database",
                 "value": {
-                  "message": "Provided IP Address '8.8.8.8' doesn't exist in our database."
+                  "message": "Provided IP Address 'IP_ADDRESS' doesn't exist in our database."
                 }
               },
               "ipAsPathVariable": {
@@ -970,7 +978,7 @@
         }
       },
       "MethodNotAllowed": {
-        "description": "Method Not Allowed. Returned when an unsupported HTTP method is used\nto call an endpoint.\n\nOnly GET and POST methods are supported:\n\n- `GET` is allowed for the `ipgeo` endpoint.\n- `POST` is allowed for the `ipgeo-bulk` endpoint.\n\nAny other HTTP method, or using the correct method on the wrong endpoint,\nresults in HTTP 405.\n",
+        "description": "Method Not Allowed. Returned when an unsupported HTTP method is used\nto call an endpoint.\n\nOnly GET and POST methods are supported:\n\n- `GET` is allowed for the `ipgeo` endpoint.\n- `POST` is allowed for the `ipgeo-bulk` endpoint.\n\nCalling an endpoint with an HTTP method it doesn't support (for example `PUT` or `DELETE`), or using the correct method on\nthe wrong endpoint, results in HTTP 405.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -992,7 +1000,7 @@
               "unsupportedMethod": {
                 "summary": "Unsupported HTTP method",
                 "value": {
-                  "message": "Request method is not supported"
+                  "message": "Request method 'PUT' is not supported"
                 }
               }
             }
@@ -1037,7 +1045,7 @@
         }
       },
       "TooManyRequests": {
-        "description": "Too Many Requests. Returned for one of the following reasons:\n\n- The API credit allowance has been reached for a Free subscription.\n- The API credit allowance has been reached for a Paid subscription with\n  status 'past due', 'deleted', or 'trial expired'.\n- The surcharge (overage) credit limit has been reached for the subscribed plan.\n",
+        "description": "Too Many Requests. Returned for one of the following reasons:\n\n- The API credit allowance has been reached for a Free subscription.\n- The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).\n- The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.\n- The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.\n- The surcharge (overage) credit limit has been reached for the subscribed plan.\n",
         "content": {
           "application/json": {
             "schema": {
@@ -1047,13 +1055,19 @@
               "usageLimitReached": {
                 "summary": "API credit limit reached",
                 "value": {
-                  "message": "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
+                  "message": "You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+                }
+              },
+              "trialLimitReached": {
+                "summary": "Trial credit cap (100,000) reached",
+                "value": {
+                  "message": "You have exceeded the limit of 100000 requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
                 }
               },
               "surchargeLimitReached": {
                 "summary": "Surcharge usage limit reached",
                 "value": {
-                  "message": "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
+                  "message": "You have reached the surcharge amount limit of $SURCHARGE_AMOUNT_LIMIT on your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
                 }
               }
             }
@@ -1061,17 +1075,7 @@
         }
       },
       "ClientClosedRequest": {
-        "description": "The client closed the connection before the server finished processing the\nrequest. This usually happens when the client sets a very short request or\nconnection timeout. Increase the timeout on the client side.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "Client closed the request before the server could respond."
-            }
-          }
-        }
+        "description": "The client closed the connection before the server finished processing the\nrequest (logged by the edge proxy; the client receives no response). This\nusually happens when the client sets a very short request or connection\ntimeout. Increase the timeout on the client side.\n"
       },
       "InternalServerError": {
         "description": "Internal Server Error. The server encountered an unexpected condition\nthat prevented it from fulfilling the request. If the issue persists,\ncontact support@ipgeolocation.io.\n",
@@ -1081,59 +1085,60 @@
               "$ref": "#/components/schemas/ErrorResponse"
             },
             "example": {
-              "message": "Something went wrong on the server side."
+              "message": "Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io"
             }
           }
         }
       },
       "BadGateway": {
-        "description": "Bad Gateway. The API server received an invalid response from an upstream\nserver while processing the request. This is usually temporary.\n",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/ErrorResponse"
-            },
-            "example": {
-              "message": "Upstream service error. Please try again later."
-            }
-          }
-        }
+        "description": "Bad Gateway. Returned by the edge proxy in front of the API, not by the API\napplication, when it gets an invalid response from the API server. The\nresponse body is set by the proxy. This is usually temporary; retry the\nrequest.\n"
       },
       "ServiceUnavailable": {
-        "description": "Service Unavailable. The API is temporarily unavailable due to maintenance\nor overload. Please try again later.\n",
+        "description": "Service Unavailable. Returned when the API cannot verify your API key (or request\norigin) because of a temporary internal error, for example when the billing\nservice is unreachable and the key has not been verified recently. Keys that\nwere verified recently keep working. Retry later; if it persists, contact\nsupport@ipgeolocation.io.\n",
         "content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ErrorResponse"
             },
             "example": {
-              "message": "Service temporarily unavailable. Please try again later."
+              "message": "We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io"
             }
           }
         }
       },
       "GatewayTimeout": {
-        "description": "Gateway Timeout. The API server did not receive a timely response from\nan upstream server.\n",
+        "description": "Gateway Timeout. Returned by the edge proxy in front of the API, not by the\nAPI application, when the API server does not respond in time. The response\nbody is set by the proxy. Retry the request.\n"
+      },
+      "HttpVersionNotSupported": {
+        "description": "HTTP Version Not Supported. Returned by the edge proxy in front of the API,\nnot by the API application, when the request uses an HTTP protocol version\nit does not support. The response body is set by the proxy.\n"
+      },
+      "PaymentRequired": {
+        "description": "Payment Required. Returned for a paid (non-Free) subscription whose active-until\ndate has passed: one day after the active-until date for active or trialing\nsubscriptions, and from the active-until date for past-due or deleted\nsubscriptions. It is checked before any usage quota. Paused subscriptions and\nexpired trials get HTTP 401 instead, and Free plan keys never get 402. Renew or\nupgrade the plan to continue using IPGeolocation API.\n",
         "content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ErrorResponse"
             },
-            "example": {
-              "message": "The server timed out while processing the request."
+            "examples": {
+              "expiredSubscription": {
+                "summary": "Subscription expired",
+                "value": {
+                  "message": "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+                }
+              }
             }
           }
         }
       },
-      "HttpVersionNotSupported": {
-        "description": "HTTP Version Not Supported. The server does not support the HTTP protocol\nversion used in the request.\n",
+      "Forbidden": {
+        "description": "Forbidden. The API key has an IP allow-list and the request comes from an IP address that is not on it.\n",
         "content": {
           "application/json": {
             "schema": {
               "$ref": "#/components/schemas/ErrorResponse"
             },
             "example": {
-              "message": "HTTP version not supported."
+              "message": "Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io"
             }
           }
         }
@@ -1219,7 +1224,7 @@
           },
           "domain": {
             "type": "string",
-            "description": "Present only when the submitted `ips` entry was a domain name.\nContains the original domain input exactly as submitted.\n",
+            "description": "Present only when the submitted `ips` entry was a domain name.\nThe submitted domain, trimmed and without a leading `scheme://` (e.g. `https://`).\n",
             "example": "ipgeolocation.io"
           },
           "hostname": {
@@ -1278,7 +1283,7 @@
         "xml": {
           "name": "LinkedHashMap"
         },
-        "description": "The top-level response object for a single IP lookup. Where fields and nested\nobjects appear depends on your plan (free vs. paid) and the `include`, `fields`,\nand `excludes` parameters. The `ip` field is always present.\n",
+        "description": "The top-level response object for a single IP lookup. Where fields and nested\nobjects appear depends on your plan (free vs. paid) and the `include`, `fields`,\nand `excludes` parameters. The `ip` field, and `domain` on domain lookups, are\nalways returned; `fields` and `excludes` cannot remove them.\n",
         "required": [
           "ip"
         ],
@@ -1290,7 +1295,7 @@
           },
           "domain": {
             "type": "string",
-            "description": "Present only when the `ip` query parameter contained a domain name. Mirrors\nthe domain value from the request.\n",
+            "description": "Present only when the `ip` query parameter contained a domain name. The\nsubmitted domain, trimmed and without a leading `scheme://` (e.g. `https://`).\n",
             "example": "ipgeolocation.io"
           },
           "hostname": {
@@ -1638,6 +1643,21 @@
             "description": "Date when this IP was last observed acting as a proxy, in `YYYY-MM-DD`\nformat. Empty string if never seen.\n",
             "example": "2025-12-12"
           },
+          "proxy_days_seen_30d": {
+            "type": "integer",
+            "description": "Number of days in the last 30 days this IP was observed acting as a proxy.",
+            "example": 4
+          },
+          "proxy_days_seen_7d": {
+            "type": "integer",
+            "description": "Number of days in the last 7 days this IP was observed acting as a proxy.",
+            "example": 1
+          },
+          "proxy_provider_count_30d": {
+            "type": "integer",
+            "description": "Number of distinct proxy providers associated with this IP in the last 30 days.",
+            "example": 1
+          },
           "is_residential_proxy": {
             "type": "boolean",
             "description": "Whether the IP is a known residential proxy.",
@@ -1842,7 +1862,7 @@
           },
           "current_time": {
             "type": "string",
-            "description": "Current local time at the IP's location. Observed formats include\n`YYYY-MM-DDTHH:mm:ss±ZZZZ` and `YYYY-MM-DD HH:mm:ss.SSS±ZZZZ`.\n",
+            "description": "Current local date and time at the IP's location, in `yyyy-MM-dd HH:mm:ss.SSSZ`\nformat, e.g. `2026-02-13 09:19:24.410+0100`.\n",
             "example": "2026-02-13 09:19:24.410+0100"
           },
           "current_time_unix": {
@@ -1925,7 +1945,7 @@
       },
       "DstTransition": {
         "type": "object",
-        "description": "Details about a DST transition (start or end). Only present when `dst_exists`\nis `true`. When `dst_exists` is `false`, `dst_start` and `dst_end` are\nreturned as empty objects with no properties.\n",
+        "description": "Details about a DST transition (start or end). Only present when `dst_exists`\nis `true`. When `dst_exists` is `false`, `dst_start` and `dst_end` are\nreturned as empty objects with no properties.\n`dst_start` and `dst_end` describe the current DST period while DST is\nin effect, otherwise the next one.\n",
         "properties": {
           "utc_time": {
             "type": "string",

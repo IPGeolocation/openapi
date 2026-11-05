@@ -59,7 +59,9 @@ info:
     - Alternatively, set the `Accept` header to `application/json`, `application/xml`,
       or `text/xml`.
 
-    If neither is specified, the response is returned as JSON. XML responses use a
+    If neither is specified, the response is returned as JSON. If both are set, the
+    `Accept` header takes precedence for successful responses and authentication errors
+    (see the `output` parameter). XML responses use a
     `LinkedHashMap` root element.
 
     ## Credits
@@ -91,7 +93,8 @@ info:
 
     Use `fields` to cherry-pick specific fields, or `excludes` to drop fields you do not
     need. Both accept dot-notation for nested fields (e.g. `location.city`,
-    `security.threat_score`). The `ip` field is always present regardless of filters.
+    `security.threat_score`). The `ip` field, and `domain` on domain lookups, are always
+    returned; `fields` and `excludes` cannot remove them.
 
     ## Parameter Name Casing
 
@@ -247,6 +250,9 @@ paths:
                       proxy_provider_names: []
                       proxy_confidence_score: 0
                       proxy_last_seen: ""
+                      proxy_days_seen_30d: 0
+                      proxy_days_seen_7d: 0
+                      proxy_provider_count_30d: 0
                       is_residential_proxy: false
                       is_vpn: false
                       vpn_provider_names: []
@@ -472,6 +478,9 @@ paths:
                           <is_proxy>false</is_proxy>
                           <proxy_confidence_score>0</proxy_confidence_score>
                           <proxy_last_seen></proxy_last_seen>
+                          <proxy_days_seen_30d>0</proxy_days_seen_30d>
+                          <proxy_days_seen_7d>0</proxy_days_seen_7d>
+                          <proxy_provider_count_30d>0</proxy_provider_count_30d>
                           <is_residential_proxy>false</is_residential_proxy>
                           <is_vpn>false</is_vpn>
                           <vpn_confidence_score>0</vpn_confidence_score>
@@ -644,6 +653,10 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
         "405":
@@ -674,13 +687,13 @@ paths:
         addresses, or domain names in a single request. The request body must be a JSON
         object with an `ips` array.
 
-        This endpoint requires a paid plan. Calling it with a free
-        plan API key returns HTTP 401.
+        This endpoint requires a paid plan.
 
         The response is a JSON array with one element per IP in the request. Each element
-        is either a full geolocation response object or an error object with only a
-        `message` field. Invalid, bogon, and unresolvable entries appear as error
-        objects. Invalid, private, and bogon IPs are not billed.
+        is either a lookup result or an object with only a `message` field. An entry gets
+        a `message` object when it is invalid, empty or `null`, not in the database, a
+        bogon or private IP, or when `lang` is unsupported. These entries are not
+        charged.
 
         This endpoint supports the same query parameters as the single lookup endpoint,
         including `lang`, `include`, `fields`, `excludes`, and `output`.
@@ -729,8 +742,9 @@ paths:
         "200":
           description: |
             An array of results, one per input entry. Valid entries return full
-            geolocation objects. Invalid, bogon, and unresolvable entries return
-            objects with only a `message` field.
+            geolocation objects. An entry that is invalid, empty or `null`, not in the
+            database, a bogon or private IP, or that uses an unsupported `lang`, returns
+            an object with only a `message` field and is not charged.
             `X-Successful-Record` is returned only when at least one submitted entry
             fails and the number of successful lookups is lower than the number of
             submitted entries.
@@ -741,7 +755,7 @@ paths:
                 multiplied by the count of valid IPs.
               schema:
                 type: number
-                example: 3
+                example: 1
             X-Successful-Record:
               description: |
                 Number of valid IP addresses or domains that were successfully resolved in
@@ -751,7 +765,7 @@ paths:
                 entries.
               schema:
                 type: number
-                example: 4
+                example: 1
           content:
             application/json:
               schema:
@@ -956,6 +970,10 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "402":
+          $ref: "#/components/responses/PaymentRequired"
+        "403":
+          $ref: "#/components/responses/Forbidden"
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "413":
@@ -1051,8 +1069,6 @@ paths:
           $ref: "#/components/responses/InternalServerError"
         "502":
           $ref: "#/components/responses/BadGateway"
-        "503":
-          $ref: "#/components/responses/ServiceUnavailable"
         "504":
           $ref: "#/components/responses/GatewayTimeout"
         "505":
@@ -1079,9 +1095,11 @@ components:
       in: query
       required: false
       description: |
-        Language code for translated location names. Defaults to `en`. Non-English
-        responses require a paid plan. Free plans always receive English regardless
-        of this parameter. Unsupported `lang` values return HTTP 400.
+        Language code for translated location names. Defaults to `en`. Supported values:
+        `en`, `de`, `ru`, `ja`, `fr`, `cn`, `es`, `cs`, `it`, `ko`, `fa`, `pt`, `ar`; any
+        other value returns HTTP 400. Non-English values need a paid plan; on the Free
+        plan they return HTTP 401. On `/v3/ipgeo-bulk` an unsupported value is returned for each
+        entry as a `message` object inside the HTTP 200 array.
       schema:
         type: string
         default: "en"
@@ -1117,10 +1135,10 @@ components:
         | `user_agent` | `user_agent` object (parses the `User-Agent` header) | 0 |
         | `security` | `security` object with threat signals | +2 |
         | `abuse` | `abuse` object with abuse contact info | +1 |
-        | `hostname` | `hostname` field (from local database, fast, experimental) | 0 |
+        | `hostname` | `hostname` field from the local database (fast, experimental; IPv4 only, so IPv6 lookups return the IP address) | 0 |
         | `liveHostname` | `hostname` field (live DNS lookup, slower, accurate) | 0 |
         | `hostnameFallbackLive` | `hostname` field (local first, falls back to live) | 0 |
-        | `*` | All of the above | +3 |
+        | `*` (or `all`, `any`) | `geo_accuracy`, `dma_code`, `user_agent`, `security`, `abuse`, and `hostname` (local database). Live hostname lookups (`liveHostname`, `hostnameFallbackLive`) must be named separately. | +3 |
 
         If multiple hostname options are passed in `include`, hostname resolution uses
         this precedence order: `liveHostname` first, then `hostname`, then
@@ -1135,9 +1153,11 @@ components:
         unknown values are ignored. The API still returns HTTP 200 and applies only
         recognized values.
 
-        Free plan behavior for `include=*`: the API returns HTTP 200 and ignores the
-        include request, returning only base response fields. In contrast, specific
-        include values such as `include=security` return HTTP 401 on free plans.
+        Free plan behavior: `include=*` (or `all`, `any`) is ignored and the default
+        response is returned with HTTP 200. Any named module (`security`, `abuse`,
+        `user_agent`, `geo_accuracy`, `dma_code`, `hostname`, `liveHostname`,
+        `hostnameFallbackLive`) returns HTTP 401, even if the same module is also listed
+        in `excludes`.
       schema:
         type: string
 
@@ -1146,8 +1166,14 @@ components:
       in: query
       required: false
       description: |
-        Comma-separated list of fields or objects to return. Everything else is omitted.
-        The `ip` field is always returned regardless of this filter.
+        Comma-separated list of fields or objects to return. Fields and objects not listed
+        are omitted, except add-ons requested with `include`: they are still returned when
+        `fields` doesn't list them (e.g. `include=security&fields=location.city` returns
+        `location.city` and `security`). To narrow an add-on, list a path inside it (e.g.
+        `security.threat_score`). `dma_code` and `geo_accuracy` likewise add their own
+        `location` fields.
+        The `ip` field, and `domain` on domain lookups, are always returned; `fields` and
+        `excludes` cannot remove them.
 
         Supports dot-notation for nested fields: `location.city`, `asn.organization`.
         To return an entire object, use the object key: `location`, `security`.
@@ -1156,16 +1182,29 @@ components:
         must also pass the corresponding `include` value.
         If you omit `include`, the request still succeeds, but fields from optional
         modules are not returned.
+        A path into an object that is empty for this IP (for example
+        `time_zone.dst_start.utc_time` for a zone without DST) is still valid; the
+        object comes back empty (`{}`).
 
-        If the same field or object is specified in both `fields` and `excludes`, the
-        object is still returned, but it will be empty.
-        If the same field or object is specified in `include`, `fields`, and `excludes`,
-        `include` takes priority over both `fields` and `excludes`.
+        If the same field or object is listed in both `fields` and `excludes`,
+        `excludes` wins and it is left out of the response. An object left with no
+        fields after `excludes` is removed.
+        `excludes` also wins over `include`: an add-on that is excluded is not looked up
+        or returned, and its extra credits are not charged. This covers `security`,
+        `abuse`, `user_agent`, `hostname` (for all three hostname options), `dma_code` and
+        `geo_accuracy`: `excludes=dma_code` removes `location.dma_code`,
+        `excludes=geo_accuracy` removes `location.locality`, `location.accuracy_radius`
+        and `location.confidence`, and `excludes=location` removes both.
+        `object.*` removes the whole object; `*` is recognized only as the
+        last part of a path (`location.*.city` is ignored).
 
         If you list both an object key and one of its nested fields separated by comma
         (e.g. `security,security.threat_score`), the full object is returned.
 
-        Unknown field paths are ignored. The API still returns HTTP 200.
+        Unknown names are ignored and the API still returns HTTP 200. Names are
+        case-sensitive. If none of the names in `fields` is valid, `fields` is ignored
+        and the full response is returned (and charged). `*` anywhere in `fields`
+        returns everything.
 
         Available on all plans including Free.
       schema:
@@ -1177,15 +1216,22 @@ components:
       required: false
       description: |
         Comma-separated list of fields or objects to remove from the response. The `ip`
-        field cannot be excluded.
+        field, and `domain` on domain lookups, cannot be excluded.
 
         Supports dot-notation for nested fields: `location.continent_code`.
         To exclude an entire object, use the object key: `currency`, `time_zone`.
 
-        If the same field or object is specified in both `fields` and `excludes`, the
-        object is still returned, but it will be empty.
-        If the same field or object is specified in `include`, `fields`, and `excludes`,
-        `include` takes priority over both `fields` and `excludes`.
+        If the same field or object is listed in both `fields` and `excludes`,
+        `excludes` wins and it is left out of the response. An object left with no
+        fields after `excludes` is removed.
+        `excludes` also wins over `include`: an add-on that is excluded is not looked up
+        or returned, and its extra credits are not charged. This covers `security`,
+        `abuse`, `user_agent`, `hostname` (for all three hostname options), `dma_code` and
+        `geo_accuracy`: `excludes=dma_code` removes `location.dma_code`,
+        `excludes=geo_accuracy` removes `location.locality`, `location.accuracy_radius`
+        and `location.confidence`, and `excludes=location` removes both.
+        `object.*` removes the whole object; `*` is recognized only as the
+        last part of a path (`location.*.city` is ignored).
 
         Unknown fields or object keys in `excludes` are ignored. The API still returns
         HTTP 200.
@@ -1201,8 +1247,12 @@ components:
       description: |
         Desired response format. Defaults to `json` if not specified. You can also
         control the format using the `Accept` header (`application/json`,
-        `application/xml`, or `text/xml`). If both are provided, the `output` parameter
-        takes precedence.
+        `application/xml`, or `text/xml`). For successful responses and authentication
+        errors, the `Accept` header takes precedence if both are provided: `output` is
+        used only when the `Accept` header is absent or set to `*/*`, and an `Accept`
+        value other than `application/xml` or `text/xml` (for example a browser's
+        default) returns JSON even with `output=xml`. Values are matched exactly (use
+        lowercase `xml`).
 
         If `output` is unknown or unsupported, it is ignored and the response defaults
         to JSON (`application/json`) with HTTP 200.
@@ -1217,14 +1267,19 @@ components:
         Bad request. Returned for one of the following reasons:
 
         - The provided IPv4 address, IPv6 address, or domain name is invalid.
-        - Special characters such as ( ) [ ] { } | ^ ` are present in the API URL,
+        - Special characters such as [ ] { } | ^ ` are present in the API URL,
           either in a parameter name or its value (especially in the API key).
         - For the `ipgeo-bulk` endpoint:
           - The request payload is empty or missing.
           - The JSON body is malformed.
-          - The `ips` field is missing or the `ips` array is empty.
+          - The `ips` field is missing, is not a JSON array of strings, or the `ips` array is empty.
           - More than 50,000 IP addresses are provided in the request.
         - An invalid or unsupported `lang` parameter is provided.
+
+        On the `ipgeo-bulk` endpoint, the whole request fails with HTTP 400 only for the
+        body problems listed above. An invalid IP address or domain name, or an
+        unsupported `lang`, does not fail the request: that entry is returned as an
+        object with only a `message` field inside the HTTP 200 array.
       content:
         application/json:
           schema:
@@ -1246,6 +1301,10 @@ components:
               summary: Bulk body missing ips field
               value:
                 message: "IP addresses for bulk lookup are missing"
+            ipsNotArray:
+              summary: Bulk ips field is not a JSON array
+              value:
+                message: "'ips' must be a JSON array of strings, e.g. {\"ips\": [\"value1\", \"value2\"]}"
             emptyBulkIps:
               summary: Bulk ips array is empty
               value:
@@ -1263,17 +1322,16 @@ components:
       description: |
         Unauthorized. Returned for one of the following reasons:
 
-        - The `apiKey` URL parameter is missing.
-        - An invalid (random or incorrect) API key is provided.
-        - The account has been disabled or locked due to abuse or illegal activity.
+        - An API key is required for this request, but the `apiKey` query parameter is missing and the request doesn't come from a domain added under Request Origin.
+        - An invalid (random or incorrect) API key is provided, or the request has no API key and its `Origin` or `Referer` domain is not registered as a Request Origin.
+        - The account's email address has not been verified.
+        - The account has been locked due to abuse or illegal activity.
         - The API request is made using an API key for a database subscription.
         - The subscription is in a 'paused' state.
         - The subscription trial has expired.
-        - The account’s active-until date has passed and renewal or upgrade is required.
         - Any of the following `include` values are used with a Free/Developer plan API key:
           `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
           `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
-        - The bulk IP geolocation endpoint is called using a Free subscription API key.
         - The bulk IP geolocation endpoint is called using Request Origin (CORS)
           authentication. Bulk requests require an `apiKey` and cannot be authenticated
           using Request Origin alone.
@@ -1293,34 +1351,30 @@ components:
               summary: Invalid API key
               value:
                 message: "Provided API key is not valid. Contact technical support for assistance at support@ipgeolocation.io"
+            unverifiedEmail:
+              summary: Email address not verified
+              value:
+                message: "Please verify your email before using IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
             lockedAccount:
-              summary: Account locked or disabled
+              summary: Account locked
               value:
                 message: "Your account has been locked to use IPGeolocation API. Contact technical support for assistance at support@ipgeolocation.io"
             databaseSubscriptionKey:
               summary: Database subscription API key used for REST API
               value:
-                message: "You cannot query IPGeolocation API on a database plan subscription. "
+                message: "You cannot query IPGeolocation API on a database plan subscription."
             pausedSubscription:
               summary: Subscription is paused
               value:
                 message: "Your subscription has been paused. Please resume your subscription to use IPGeolocation API."
-            expiredSubscription:
-              summary: Subscription expired or trial ended
-              value:
-                message: "Your subscription has expired at DATE. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
-            freePlanBulk:
-              summary: Free plan used for bulk endpoint
-              value:
-                message: "Bulk IP to geolocation lookup is not supported on your current subscription. This feature is available to all paid subscriptions only."
             requestOriginBulk:
               summary: Bulk endpoint called using Request Origin authentication
               value:
                 message: "Bulk queries are not allowed with request origins. Please use an API key to perform bulk queries."
             freePlanInclude:
-              summary: Free plan used with restricted include parameter
+              summary: Free plan used with include=security
               value:
-                message: "This feature is not supported on your subscription. This feature is available on Paid subscriptions only."
+                message: "IP-security lookup is not supported on your subscription. This feature is available on Paid subscriptions only."
             freePlanDomain:
               summary: Free plan used with domain lookup
               value:
@@ -1330,11 +1384,39 @@ components:
               value:
                 message: "This 'de' lang is not supported for your current subscription. Please use 'en' as the default language or upgrade your subscription to use this feature."
 
+    PaymentRequired:
+      description: |
+        Payment Required. Returned for a paid (non-Free) subscription whose active-until
+        date has passed: one day after the active-until date for active or trialing
+        subscriptions, and from the active-until date for past-due or deleted
+        subscriptions. It is checked before any usage quota. Paused subscriptions and
+        expired trials get HTTP 401 instead, and Free plan keys never get 402. Renew or
+        upgrade the plan to continue using IPGeolocation API.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          examples:
+            expiredSubscription:
+              summary: Subscription expired
+              value:
+                message: "Your subscription has expired at 2026-01-15 00:00. Please subscribe to a paid plan to continue using IPGeolocation API without interruption or contact technical support for assistance at support@ipgeolocation.io"
+
+    Forbidden:
+      description: |
+        Forbidden. The API key has an IP allow-list and the request comes from an IP address that is not on it.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            message: "Your IP address '203.0.113.10' is not allowed to use this API key. Please contact technical support for assistance at support@ipgeolocation.io"
+
     NotFound:
       description: |
         Not found. Returned for one of the following reasons:
 
-        - A syntactically valid IPv4 or IPv6 address does not exist in the IPGeolocation database.
+        - A syntactically valid IPv4 or IPv6 address, or the IP a domain resolves to, does not exist in the IPGeolocation database (for a domain: "Provided domain or service name 'example.com' doesn't exist in our database.").
         - An IPv4 address, IPv6 address, or domain name is passed as a path variable
           instead of as a URL query parameter (e.g., using `/v3/ipgeo/8.8.8.8`
           instead of `/v3/ipgeo?ip=8.8.8.8`).
@@ -1349,7 +1431,7 @@ components:
             ipNotInDatabase:
               summary: IPv4/IPv6 not found in database
               value:
-                message: "Provided IP Address '8.8.8.8' doesn't exist in our database."
+                message: "Provided IP Address 'IP_ADDRESS' doesn't exist in our database."
             ipAsPathVariable:
               summary: IP passed as path variable instead of query parameter
               value:
@@ -1369,8 +1451,8 @@ components:
         - `GET` is allowed for the `ipgeo` endpoint.
         - `POST` is allowed for the `ipgeo-bulk` endpoint.
 
-        Any other HTTP method, or using the correct method on the wrong endpoint,
-        results in HTTP 405.
+        Calling an endpoint with an HTTP method it doesn't support (for example `PUT` or `DELETE`), or using the correct method on
+        the wrong endpoint, results in HTTP 405.
       content:
         application/json:
           schema:
@@ -1387,7 +1469,7 @@ components:
             unsupportedMethod:
               summary: Unsupported HTTP method
               value:
-                message: "Request method is not supported"
+                message: "Request method 'PUT' is not supported"
 
     PayloadTooLarge:
       description: |
@@ -1440,8 +1522,9 @@ components:
         Too Many Requests. Returned for one of the following reasons:
 
         - The API credit allowance has been reached for a Free subscription.
-        - The API credit allowance has been reached for a Paid subscription with
-          status 'past due', 'deleted', or 'trial expired'.
+        - The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).
+        - The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.
+        - The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.
         - The surcharge (overage) credit limit has been reached for the subscribed plan.
       content:
         application/json:
@@ -1451,23 +1534,22 @@ components:
             usageLimitReached:
               summary: API credit limit reached
               value:
-                message: "You have exceeded the limit of PLAN_USAGE_LIMIT API credits per PLAN_INTERVAL for your subscribed PLAN plan. Please wait for your credits to reset, enable overage, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have exceeded the limit of PLAN_REQUESTS_LIMIT requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
+            trialLimitReached:
+              summary: Trial credit cap (100,000) reached
+              value:
+                message: "You have exceeded the limit of 100000 requests per PLAN_INTERVAL for your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
             surchargeLimitReached:
               summary: Surcharge usage limit reached
               value:
-                message: "You have reached the surcharge amount limit of PLAN_USAGE_LIMIT_AND_SURCHARGE_LIMIT on your subscribed PLAN plan. Please wait for your credits to reset, enable a higher surcharge limit, or upgrade your plan to continue using IPGeolocation API without interruption."
+                message: "You have reached the surcharge amount limit of $SURCHARGE_AMOUNT_LIMIT on your subscribed 'PLAN_NAME' plan. Please throttle your requests or upgrade your plan to continue using IPGeolocation API without interruption."
 
     ClientClosedRequest:
       description: |
         The client closed the connection before the server finished processing the
-        request. This usually happens when the client sets a very short request or
-        connection timeout. Increase the timeout on the client side.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Client closed the request before the server could respond."
+        request (logged by the edge proxy; the client receives no response). This
+        usually happens when the client sets a very short request or connection
+        timeout. Increase the timeout on the client side.
 
     InternalServerError:
       description: |
@@ -1479,47 +1561,36 @@ components:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Something went wrong on the server side."
+            message: "Something went wrong while processing your request. Please try again or contact technical support at support@ipgeolocation.io"
     BadGateway:
       description: |
-        Bad Gateway. The API server received an invalid response from an upstream
-        server while processing the request. This is usually temporary.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "Upstream service error. Please try again later."
+        Bad Gateway. Returned by the edge proxy in front of the API, not by the API
+        application, when it gets an invalid response from the API server. The
+        response body is set by the proxy. This is usually temporary; retry the
+        request.
     ServiceUnavailable:
       description: |
-        Service Unavailable. The API is temporarily unavailable due to maintenance
-        or overload. Please try again later.
+        Service Unavailable. Returned when the API cannot verify your API key (or request
+        origin) because of a temporary internal error, for example when the billing
+        service is unreachable and the key has not been verified recently. Keys that
+        were verified recently keep working. Retry later; if it persists, contact
+        support@ipgeolocation.io.
       content:
         application/json:
           schema:
             $ref: "#/components/schemas/ErrorResponse"
           example:
-            message: "Service temporarily unavailable. Please try again later."
+            message: "We're unable to verify your API key (YOUR_API_KEY) due to an internal error. Please contact technical support for assistance at support@ipgeolocation.io"
     GatewayTimeout:
       description: |
-        Gateway Timeout. The API server did not receive a timely response from
-        an upstream server.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "The server timed out while processing the request."
+        Gateway Timeout. Returned by the edge proxy in front of the API, not by the
+        API application, when the API server does not respond in time. The response
+        body is set by the proxy. Retry the request.
     HttpVersionNotSupported:
       description: |
-        HTTP Version Not Supported. The server does not support the HTTP protocol
-        version used in the request.
-      content:
-        application/json:
-          schema:
-            $ref: "#/components/schemas/ErrorResponse"
-          example:
-            message: "HTTP version not supported."
+        HTTP Version Not Supported. Returned by the edge proxy in front of the API,
+        not by the API application, when the request uses an HTTP protocol version
+        it does not support. The response body is set by the proxy.
     
 
   schemas:
@@ -1605,7 +1676,7 @@ components:
           type: string
           description: |
             Present only when the submitted `ips` entry was a domain name.
-            Contains the original domain input exactly as submitted.
+            The submitted domain, trimmed and without a leading `scheme://` (e.g. `https://`).
           example: "ipgeolocation.io"
         hostname:
           type: string
@@ -1656,7 +1727,8 @@ components:
       description: |
         The top-level response object for a single IP lookup. Where fields and nested
         objects appear depends on your plan (free vs. paid) and the `include`, `fields`,
-        and `excludes` parameters. The `ip` field is always present.
+        and `excludes` parameters. The `ip` field, and `domain` on domain lookups, are
+        always returned; `fields` and `excludes` cannot remove them.
       required:
         - ip
       properties:
@@ -1669,8 +1741,8 @@ components:
         domain:
           type: string
           description: |
-            Present only when the `ip` query parameter contained a domain name. Mirrors
-            the domain value from the request.
+            Present only when the `ip` query parameter contained a domain name. The
+            submitted domain, trimmed and without a leading `scheme://` (e.g. `https://`).
           example: "ipgeolocation.io"
         hostname:
           type: string
@@ -1988,6 +2060,18 @@ components:
             Date when this IP was last observed acting as a proxy, in `YYYY-MM-DD`
             format. Empty string if never seen.
           example: "2025-12-12"
+        proxy_days_seen_30d:
+          type: integer
+          description: Number of days in the last 30 days this IP was observed acting as a proxy.
+          example: 4
+        proxy_days_seen_7d:
+          type: integer
+          description: Number of days in the last 7 days this IP was observed acting as a proxy.
+          example: 1
+        proxy_provider_count_30d:
+          type: integer
+          description: Number of distinct proxy providers associated with this IP in the last 30 days.
+          example: 1
         is_residential_proxy:
           type: boolean
           description: Whether the IP is a known residential proxy.
@@ -2178,8 +2262,8 @@ components:
         current_time:
           type: string
           description: |
-            Current local time at the IP's location. Observed formats include
-            `YYYY-MM-DDTHH:mm:ss±ZZZZ` and `YYYY-MM-DD HH:mm:ss.SSS±ZZZZ`.
+            Current local date and time at the IP's location, in `yyyy-MM-dd HH:mm:ss.SSSZ`
+            format, e.g. `2026-02-13 09:19:24.410+0100`.
           example: "2026-02-13 09:19:24.410+0100"
         current_time_unix:
           type: number
@@ -2251,6 +2335,8 @@ components:
         Details about a DST transition (start or end). Only present when `dst_exists`
         is `true`. When `dst_exists` is `false`, `dst_start` and `dst_end` are
         returned as empty objects with no properties.
+        `dst_start` and `dst_end` describe the current DST period while DST is
+        in effect, otherwise the next one.
       properties:
         utc_time:
           type: string
