@@ -803,7 +803,7 @@ components:
     NotFoundTimezone:
       description: |
         Not found. Returned for one of the following reasons:
-        - If the IPv4, IPv6 address passed as a path variable, instead of url parameter as ip=.
+        - If an IPv4 or IPv6 address is passed as a path variable instead of as a URL parameter (`ip=`).
 
         - If the location address provided to the `location` parameter is invalid. A city-level or state-level address must be provided.
 
