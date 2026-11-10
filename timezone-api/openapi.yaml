@@ -449,9 +449,9 @@ paths:
 
               - If special character(s) [ ] { } | ^ ` is passed in the API URL either as parameter or its value. Specially in case of API key.
               
-              - If the provided IATA code to the request parameter `iata_code` is not in the format as three letter code AAA.
+              - If the provided IATA code to the request parameter `iata_code` is not a three-letter code (AAA).
               
-              - If the provided ICAO code to the request parameter `icao_code` is not in the format as four letter code AAAA.
+              - If the provided ICAO code to the request parameter `icao_code` is not a four-letter code (AAAA).
 
               - If the provided UN/LOCODE to the request parameter `lo_code` is not in format as first two characters of country code, followed by the three alphanumeric characters of the city/region.
               
