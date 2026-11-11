@@ -169,9 +169,11 @@ info:
     Free plan subscriptions include **up to 1,000 credits per day** (hard limit).
 
     Paid subscriptions have no rate limits. Each billing period includes a fixed
-    credit allowance. After the allowance is exhausted, requests continue only
-    while overage (surcharge) is enabled and within its limit; otherwise the API
-    returns HTTP 429.
+    credit allowance. After the allowance is exhausted, requests continue
+    through overage (surcharge), which is on by default on all paid plans and
+    can be turned off anytime on the dashboard. The API returns HTTP 429 when
+    the allowance is used up with overage turned off, or when the overage limit
+    is reached.
 
     Requests made using invalid API keys or unsupported subscriptions
     return **HTTP 401 Unauthorized**.
@@ -908,7 +910,7 @@ components:
         Too Many Requests. Returned for one of the following reasons:
         - The API credit allowance has been reached for a Free subscription.
         - The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).
-        - The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.
+        - The API credit allowance has been reached for a Paid subscription with surcharge usage turned off (it is on by default on all paid plans).
         - The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.
         - The surcharge (overage) credit limit has been reached for the subscribed plan.
       content:

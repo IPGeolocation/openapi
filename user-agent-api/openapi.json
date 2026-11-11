@@ -792,7 +792,7 @@
         }
       },
       "TooManyRequests": {
-        "description": "Too Many Requests. Returned for one of the following reasons:\n- The API credit allowance has been reached for a free subscription.\n- The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).\n- The API credit allowance has been reached for a paid subscription with surcharge usage disabled.\n- The API credit allowance has been reached for a paid subscription with status 'past due' or 'deleted'.\n- The surcharge (overage) credit limit has been reached.\n",
+        "description": "Too Many Requests. Returned for one of the following reasons:\n- The API credit allowance has been reached for a free subscription.\n- The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).\n- The API credit allowance has been reached for a paid subscription with surcharge usage turned off (it is on by default on all paid plans).\n- The API credit allowance has been reached for a paid subscription with status 'past due' or 'deleted'.\n- The surcharge (overage) credit limit has been reached.\n",
         "content": {
           "application/json": {
             "schema": {

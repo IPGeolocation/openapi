@@ -109,8 +109,10 @@ info:
     - **Paid plans:** No rate limits. Each billing period includes a fixed credit
       allowance (Starter 150,000/month, Plus 500,000/month, Pro 1,000,000/month,
       Business 2,000,000/month, Premium 5,000,000/month). After the allowance is
-      exhausted, requests keep succeeding only while overage (surcharge) is enabled
-      and within its limit; otherwise the API returns HTTP 429.
+      exhausted, requests keep succeeding through overage (surcharge), which
+      is on by default on all paid plans and can be turned off anytime on the
+      dashboard. The API returns HTTP 429 when the allowance is used up with
+      overage turned off, or when the overage limit is reached.
 
     ## Free vs. Paid Plan Differences
 
@@ -1600,7 +1602,7 @@ components:
 
         - The API credit allowance has been reached for a Free subscription.
         - The API credit allowance has been reached for an active trial subscription (capped at 100,000 API credits).
-        - The API credit allowance has been reached for a Paid subscription with surcharge usage disabled.
+        - The API credit allowance has been reached for a Paid subscription with surcharge usage turned off (it is on by default on all paid plans).
         - The API credit allowance has been reached for a Paid subscription with status 'past due' or 'deleted'.
         - The surcharge (overage) credit limit has been reached for the subscribed plan.
       content:
