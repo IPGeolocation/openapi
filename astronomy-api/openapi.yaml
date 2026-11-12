@@ -1618,14 +1618,14 @@ components:
         mid_night:
           type: string
           description: |
-            Astronomical midnight (nadir) for the given date, in `HH:mm` format.
+            Astronomical midnight (nadir) for the given date, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided.
           example: "00:06"
 
         night_end:
           type: string
           description: |
             End of night / start of astronomical twilight in the morning,
-            in `HH:mm` format.
+            in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided.
           example: "04:49"
 
         morning:
@@ -1635,7 +1635,7 @@ components:
           type: string
           description: |
             Time at which the sun rises at the resolved location, in `HH:mm`
-            format. Returns `"-:-"` if the sun does not rise on this date
+            format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `"-:-"` if the sun does not rise on this date
             (polar day or polar night).
           example: "06:20"
 
@@ -1643,7 +1643,7 @@ components:
           type: string
           description: |
             Time at which the sun sets at the resolved location, in `HH:mm`
-            format. Returns `"-:-"` if the sun does not set on this date
+            format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `"-:-"` if the sun does not set on this date
             (polar day or polar night).
           example: "19:00"
 
@@ -1654,7 +1654,7 @@ components:
           type: string
           description: |
             Start of night / end of astronomical twilight in the evening,
-            in `HH:mm` format.
+            in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided.
           example: "20:31"
 
         sun_status:
@@ -1673,7 +1673,7 @@ components:
           type: string
           description: |
             The time when the sun is at its highest point in the sky,
-            in `HH:mm` format.
+            in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided.
           example: "12:40"
 
         day_length:
@@ -1728,14 +1728,14 @@ components:
           type: string
           description: |
             Time at which the moon rises at the resolved location, in `HH:mm`
-            format. Returns `"-:-"` if the moon does not rise on this date.
+            format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `"-:-"` if the moon does not rise on this date.
           example: "08:45"
 
         moonset:
           type: string
           description: |
             Time at which the moon sets at the resolved location, in `HH:mm`
-            format. Returns `"-:-"` if the moon does not set on this date.
+            format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `"-:-"` if the moon does not set on this date.
           example: "22:10"
 
         moon_status:
@@ -1842,14 +1842,14 @@ components:
         sunrise:
           type: string
           description: |
-            Time at which the sun rises, in `HH:mm` format. Returns `"-:-"`
+            Time at which the sun rises, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `"-:-"`
             if the sun does not rise on this date.
           example: "06:20"
 
         sunset:
           type: string
           description: |
-            Time at which the sun sets, in `HH:mm` format. Returns `"-:-"`
+            Time at which the sun sets, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `"-:-"`
             if the sun does not set on this date.
           example: "19:00"
 
@@ -1898,14 +1898,14 @@ components:
         moonrise:
           type: string
           description: |
-            Time at which the moon rises, in `HH:mm` format. Returns `"-:-"`
+            Time at which the moon rises, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `"-:-"`
             if the moon does not rise on this date.
           example: "08:45"
 
         moonset:
           type: string
           description: |
-            Time at which the moon sets, in `HH:mm` format. Returns `"-:-"`
+            Time at which the moon sets, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `"-:-"`
             if the moon does not set on this date.
           example: "22:10"
 

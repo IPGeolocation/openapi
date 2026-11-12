@@ -1322,12 +1322,12 @@
           },
           "mid_night": {
             "type": "string",
-            "description": "Astronomical midnight (nadir) for the given date, in `HH:mm` format.\n",
+            "description": "Astronomical midnight (nadir) for the given date, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided.\n",
             "example": "00:06"
           },
           "night_end": {
             "type": "string",
-            "description": "End of night / start of astronomical twilight in the morning,\nin `HH:mm` format.\n",
+            "description": "End of night / start of astronomical twilight in the morning,\nin `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided.\n",
             "example": "04:49"
           },
           "morning": {
@@ -1335,12 +1335,12 @@
           },
           "sunrise": {
             "type": "string",
-            "description": "Time at which the sun rises at the resolved location, in `HH:mm`\nformat. Returns `\"-:-\"` if the sun does not rise on this date\n(polar day or polar night).\n",
+            "description": "Time at which the sun rises at the resolved location, in `HH:mm`\nformat, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `\"-:-\"` if the sun does not rise on this date\n(polar day or polar night).\n",
             "example": "06:20"
           },
           "sunset": {
             "type": "string",
-            "description": "Time at which the sun sets at the resolved location, in `HH:mm`\nformat. Returns `\"-:-\"` if the sun does not set on this date\n(polar day or polar night).\n",
+            "description": "Time at which the sun sets at the resolved location, in `HH:mm`\nformat, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `\"-:-\"` if the sun does not set on this date\n(polar day or polar night).\n",
             "example": "19:00"
           },
           "evening": {
@@ -1348,7 +1348,7 @@
           },
           "night_begin": {
             "type": "string",
-            "description": "Start of night / end of astronomical twilight in the evening,\nin `HH:mm` format.\n",
+            "description": "Start of night / end of astronomical twilight in the evening,\nin `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided.\n",
             "example": "20:31"
           },
           "sun_status": {
@@ -1358,7 +1358,7 @@
           },
           "solar_noon": {
             "type": "string",
-            "description": "The time when the sun is at its highest point in the sky,\nin `HH:mm` format.\n",
+            "description": "The time when the sun is at its highest point in the sky,\nin `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided.\n",
             "example": "12:40"
           },
           "day_length": {
@@ -1401,12 +1401,12 @@
           },
           "moonrise": {
             "type": "string",
-            "description": "Time at which the moon rises at the resolved location, in `HH:mm`\nformat. Returns `\"-:-\"` if the moon does not rise on this date.\n",
+            "description": "Time at which the moon rises at the resolved location, in `HH:mm`\nformat, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `\"-:-\"` if the moon does not rise on this date.\n",
             "example": "08:45"
           },
           "moonset": {
             "type": "string",
-            "description": "Time at which the moon sets at the resolved location, in `HH:mm`\nformat. Returns `\"-:-\"` if the moon does not set on this date.\n",
+            "description": "Time at which the moon sets at the resolved location, in `HH:mm`\nformat, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `\"-:-\"` if the moon does not set on this date.\n",
             "example": "22:10"
           },
           "moon_status": {
@@ -1480,12 +1480,12 @@
           },
           "sunrise": {
             "type": "string",
-            "description": "Time at which the sun rises, in `HH:mm` format. Returns `\"-:-\"`\nif the sun does not rise on this date.\n",
+            "description": "Time at which the sun rises, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `\"-:-\"`\nif the sun does not rise on this date.\n",
             "example": "06:20"
           },
           "sunset": {
             "type": "string",
-            "description": "Time at which the sun sets, in `HH:mm` format. Returns `\"-:-\"`\nif the sun does not set on this date.\n",
+            "description": "Time at which the sun sets, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `\"-:-\"`\nif the sun does not set on this date.\n",
             "example": "19:00"
           },
           "evening": {
@@ -1528,12 +1528,12 @@
           },
           "moonrise": {
             "type": "string",
-            "description": "Time at which the moon rises, in `HH:mm` format. Returns `\"-:-\"`\nif the moon does not rise on this date.\n",
+            "description": "Time at which the moon rises, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `\"-:-\"`\nif the moon does not rise on this date.\n",
             "example": "08:45"
           },
           "moonset": {
             "type": "string",
-            "description": "Time at which the moon sets, in `HH:mm` format. Returns `\"-:-\"`\nif the moon does not set on this date.\n",
+            "description": "Time at which the moon sets, in `HH:mm` format, or `yyyy-MM-dd HH:mm` when `time_zone` is provided. Returns `\"-:-\"`\nif the moon does not set on this date.\n",
             "example": "22:10"
           },
           "moon_status": {
