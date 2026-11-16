@@ -569,7 +569,10 @@ paths:
           description: |
             Bad request. Returned for one of the following reasons:
 
-            - The provided IPv4 address, IPv6 address, or domain name is invalid.
+            - The provided value is not a valid IPv4 or IPv6 address and not a well-formed
+              domain name (for example `foo..bar`, or a name with a port or path).
+            - The domain name is well-formed but doesn't resolve to any IP address
+              (for example `google.bar`).
             - Special characters such as [ ] { } | ^ ` are present in the API URL,
               either in a parameter name or its value (especially in the API key).
             - An invalid or unsupported `lang` parameter is provided.
@@ -582,6 +585,14 @@ paths:
                   summary: Invalid IPv4/IPv6/domain input
                   value:
                     message: "Provided name, service or IP address '999.999.999.999' is not valid."
+                malformedDomain:
+                  summary: Domain name that is not well-formed
+                  value:
+                    message: "Provided name, service or IP address 'foo..bar' is not valid."
+                domainNotResolved:
+                  summary: Domain name that does not resolve
+                  value:
+                    message: "Provided domain or service name 'google.bar' doesn't resolve to any IP address."
                 specialCharacters:
                   summary: Special characters in API URL or key
                   value:
@@ -605,7 +616,8 @@ paths:
             - Any of the following `include` values are used with a Free/Developer plan API key:
               `hostname`, `liveHostname`, `hostnameFallbackLive`, `security`,
               `abuse`, `geo_accuracy`, `dma_code`, or `user_agent`.
-            - A domain name lookup is performed using a Free subscription API key.
+            - A domain name that resolves is looked up using a Free subscription API key
+              (a malformed name or one that doesn't resolve returns HTTP 400 instead).
             - A language other than English is specified in the `lang` parameter
               while using a Free/Developer plan API key.
           content:
@@ -665,7 +677,8 @@ paths:
               instead of `/v3/ipgeo?ip=8.8.8.8`).
             - A non-existent or incorrect API endpoint is called.
 
-            Invalid or malformed IPv4, IPv6, or domain input returns HTTP 400 instead.
+            Invalid or malformed IPv4, IPv6, or domain input, or a domain name that doesn't
+            resolve to any IP address, returns HTTP 400 instead.
           content:
             application/json:
               schema:
@@ -675,6 +688,10 @@ paths:
                   summary: IPv4/IPv6 not found in database
                   value:
                     message: "Provided IP Address 'IP_ADDRESS' doesn't exist in our database."
+                domainNotInDatabase:
+                  summary: Domain resolves, but its IP is not in our database
+                  value:
+                    message: "Provided domain or service name 'example.com' doesn't exist in our database."
                 ipAsPathVariable:
                   summary: IP passed as path variable instead of query parameter
                   value:
@@ -682,7 +699,7 @@ paths:
                 wrongEndpoint:
                   summary: Incorrect or non-existent endpoint
                   value:
-                    message: "No endpoint GET /v3/security-invalid."
+                    message: "No endpoint GET /v3/ipgeo-invalid."
         "405":
           $ref: "#/components/responses/MethodNotAllowed"
         "423":
@@ -717,7 +734,7 @@ paths:
 
         The response is a JSON array with one element per IP in the request. Each element
         is either a lookup result or an object with only a `message` field. An entry gets
-        a `message` object when it is invalid, empty or `null`, not in the database, a
+        a `message` object when it is invalid, empty or `null`, a domain that doesn't resolve, not in the database, a
         bogon or private IP, or when `lang` is unsupported. These entries are not charged.
 
         This endpoint supports the same query parameters as the single lookup endpoint,
@@ -911,7 +928,7 @@ paths:
           description: |
             An array of results, one per input entry. Each element is either a lookup
             result or an object with only a `message` field. An entry gets a `message`
-            object when it is invalid, empty or `null`, not in the database, a bogon or
+            object when it is invalid, empty or `null`, a domain that doesn't resolve, not in the database, a bogon or
             private IP, or when `lang` is unsupported. These entries are not charged.
             `X-Successful-Record` is returned only when at least one submitted entry
             fails and the number of successful lookups is lower than the number of
@@ -1030,7 +1047,7 @@ paths:
             valid JSON, `ips` is missing, is not a JSON array, or is empty, or `ips` has more
             than 50,000 entries, or when special characters such as [ ] { } | ^ ` are
             present in the API URL, either in a parameter name or its value (especially in
-            the API key). An invalid IP or domain or an unsupported `lang` does not fail the
+            the API key). An invalid IP or domain, a domain that doesn't resolve, or an unsupported `lang` does not fail the
             request: that entry is returned as a `message` object inside the HTTP 200 array.
           content:
             application/json:
@@ -5631,7 +5648,7 @@ components:
         message:
           type: string
           description: Human-readable error for the specific bulk entry.
-          example: "Provided name, service or IP address 'invalid-ip' is not valid."
+          example: "Provided name, service or IP address 'foo..bar' is not valid."
 
     IpGeolocationResponse:
       type: object
