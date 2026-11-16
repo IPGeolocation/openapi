@@ -256,7 +256,21 @@
                   "value": "application/json"
                 }
               ],
-              "body": "{\n  \"message\": \"Provided name, service or IP address 'not_an_ip' is not valid.\"\n}"
+              "body": "{\n  \"message\": \"Provided name, service or IP address 'foo..bar' is not valid.\"\n}"
+            },
+            {
+              "name": "400 Bad Request – Domain doesn't resolve",
+              "originalRequest": {},
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Provided domain or service name 'google.bar' doesn't resolve to any IP address.\"\n}"
             },
             {
               "name": "401 Unauthorized – Invalid or missing API key",
@@ -327,6 +341,20 @@
                 }
               ],
               "body": "{\n  \"message\": \"Provided IP Address 'IP_ADDRESS' doesn't exist in our database.\"\n}"
+            },
+            {
+              "name": "404 Not Found – Domain not in our Database",
+              "originalRequest": {},
+              "status": "Not Found",
+              "code": 404,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"message\": \"Provided domain or service name 'example.com' doesn't exist in our database.\"\n}"
             },
             {
               "name": "405 Method Not Allowed – Post used on single endpoint",
@@ -468,7 +496,7 @@
                 }
               ]
             },
-            "description": "Returns geolocation and enrichment data for up to 50,000 IPv4 addresses, IPv6\naddresses, or domain names in a single request. The request body must be a JSON\nobject with an `ips` array.\n\nThis endpoint requires a paid plan.\n\nThe response is a JSON array with one element per IP in the request. Each element\nis either a lookup result or an object with only a `message` field. An entry gets\na `message` object when it is invalid, empty or `null`, not in the database, a\nbogon or private IP, or when `lang` is unsupported. These entries are not charged,\nand the rest of the request still succeeds.\n\nThis endpoint supports the same query parameters as the single lookup endpoint,\nincluding `lang`, `include`, `fields`, `excludes`, and `output`.\n\nCredits are calculated as: credits per lookup multiplied by the number of valid\nIPs in the request. The total is returned in the `X-Credits-Charged` response\nheader. When one or more entries are returned as a `message` object, the\n`X-Successful-Record` response header gives the number of charged entries.\n\nOnly the `POST` method is accepted. Sending a `GET` request returns HTTP 405.",
+            "description": "Returns geolocation and enrichment data for up to 50,000 IPv4 addresses, IPv6\naddresses, or domain names in a single request. The request body must be a JSON\nobject with an `ips` array.\n\nThis endpoint requires a paid plan.\n\nThe response is a JSON array with one element per IP in the request. Each element\nis either a lookup result or an object with only a `message` field. An entry gets\na `message` object when it is invalid, empty or `null`, a domain that doesn't resolve, not in the database, a\nbogon or private IP, or when `lang` is unsupported. These entries are not charged,\nand the rest of the request still succeeds.\n\nThis endpoint supports the same query parameters as the single lookup endpoint,\nincluding `lang`, `include`, `fields`, `excludes`, and `output`.\n\nCredits are calculated as: credits per lookup multiplied by the number of valid\nIPs in the request. The total is returned in the `X-Credits-Charged` response\nheader. When one or more entries are returned as a `message` object, the\n`X-Successful-Record` response header gives the number of charged entries.\n\nOnly the `POST` method is accepted. Sending a `GET` request returns HTTP 405.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"ips\": [\n    \"8.8.8.8\",\n    \"91.128.103.196\",\n    \"2607:fb91:16c6:8860:e531:2d1d:4944:6c7c\",\n    \"ipgeolocation.io\"\n  ]\n}",
