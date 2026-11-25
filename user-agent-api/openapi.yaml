@@ -965,7 +965,7 @@ components:
 
     ClientClosedRequest:
       description: |
-        Client Closed Request. Returned when the client sets a very short timeout,
+        Client Closed Request. Logged when the client sets a very short timeout,
         causing the connection to close before the server responds (logged by the
         edge proxy; the client receives no response). Increase the timeout on the
         client side.
