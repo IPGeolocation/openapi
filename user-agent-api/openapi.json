@@ -822,7 +822,7 @@
         }
       },
       "ClientClosedRequest": {
-        "description": "Client Closed Request. Returned when the client sets a very short timeout,\ncausing the connection to close before the server responds (logged by the\nedge proxy; the client receives no response). Increase the timeout on the\nclient side.\n"
+        "description": "Client Closed Request. Logged when the client sets a very short timeout,\ncausing the connection to close before the server responds (logged by the\nedge proxy; the client receives no response). Increase the timeout on the\nclient side.\n"
       },
       "InternalServerError": {
         "description": "Internal Server Error. The server encountered an unexpected condition\nthat prevented it from fulfilling the request. If the issue persists,\ncontact support@ipgeolocation.io.\n",
